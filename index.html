@@ -1,0 +1,740 @@
+<!doctype html><html lang="fr"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<link rel="icon" type="image/png" href="icon-192.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Cartes Volley">
+<style>[hidden]{display:none!important}body{margin:0}img{max-width:100%}
+:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}
+.sort,.compare select,.text-in{font-size:16px!important}
+html{-webkit-text-size-adjust:100%}</style>
+<script>window.STANDALONE_WEB=true</script>
+</head><body>
+<title>Cartes Volley</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="theme-color" content="#0A1430">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@700;800;900&family=Chakra+Petch:wght@500;600;700&family=Barlow:wght@400;500;600&display=swap">
+<style>
+/* Layout: appli mobile plein écran, salle de volley de nuit. Barre d'app collante, filtres par poste, grille de cartes métallisées (bronze, argent, or, icône), fiches plein écran pour le détail et la saisie. */
+:root{
+  color-scheme:dark;
+  --night:#0A1430; --court:#122660; --panel:#15296A; --panel-2:#1C3580;
+  --line:rgba(190,205,255,.14); --ink:#F3F5FF; --muted:#9FB0DA;
+  --orange:#FF7A2F; --ball:#FFD23F; --cyan:#5CD6FF; --danger:#FF5A5A;
+  --display:"Big Shoulders Display","Arial Narrow",Impact,sans-serif;
+  --data:"Chakra Petch","Roboto Mono",ui-monospace,monospace;
+  --body:"Barlow",system-ui,-apple-system,"Segoe UI",Roboto,sans-serif;
+}
+[hidden]{display:none!important}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html{background:var(--night)}
+body{min-height:100%;color:var(--ink);font-family:var(--body);font-size:15px;line-height:1.45;
+  background:
+    radial-gradient(90% 45% at 50% -8%,rgba(255,122,47,.30),transparent 70%),
+    radial-gradient(70% 40% at 100% 100%,rgba(92,214,255,.10),transparent 70%),
+    linear-gradient(180deg,var(--court),var(--night) 55%);
+  background-attachment:fixed;
+  padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:0 120px}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:10;background:var(--night)}
+button{font:inherit;color:inherit;cursor:pointer}
+:focus-visible{outline:3px solid var(--ball);outline-offset:2px}
+
+/* Barre d'app */
+.appbar{position:sticky;top:env(safe-area-inset-top,0px);z-index:9;margin-inline:calc(-1 * max(16px,env(safe-area-inset-left,0px)));
+  padding:12px max(16px,env(safe-area-inset-right,0px)) 12px max(16px,env(safe-area-inset-left,0px));
+  display:flex;align-items:center;gap:12px;background:rgba(10,20,48,.78);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-bottom:1px solid var(--line)}
+.logo{width:34px;height:34px;flex:none}
+.brand{flex:1;min-width:0}
+.brand h1{margin:0;font-family:var(--display);font-weight:900;font-size:1.6rem;line-height:1;letter-spacing:.02em;text-transform:uppercase}
+.brand h1 span{color:var(--orange)}
+.sync{display:inline-flex;align-items:center;gap:6px;font-size:.74rem;color:var(--muted);margin-top:3px}
+.sync i{width:7px;height:7px;border-radius:50%;background:var(--muted)}
+.sync.cloud i{background:#3EE08F;box-shadow:0 0 8px #3EE08F}
+.sync.local i{background:var(--ball)}
+.icon-btn{width:42px;height:42px;border-radius:12px;border:1px solid var(--line);background:rgba(255,255,255,.04);display:grid;place-items:center;flex:none}
+.icon-btn svg{width:22px;height:22px}
+
+.main{max-width:1000px;margin:0 auto;display:flex;flex-direction:column;gap:16px;padding-top:16px}
+
+/* Résumé */
+.summary{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.sum{background:rgba(255,255,255,.04);border:1px solid var(--line);border-radius:14px;padding:10px 12px;min-width:0}
+.sum b{display:block;font-family:var(--data);font-weight:700;font-size:1.35rem;line-height:1.1;font-variant-numeric:tabular-nums;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.sum span{font-size:.7rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+
+.toolbar{display:flex;gap:10px;align-items:center}
+.chips{display:flex;gap:8px;overflow-x:auto;scrollbar-width:none;flex:1;min-width:0;padding-block:2px}
+.chips::-webkit-scrollbar{display:none}
+.chip{flex:none;border:1px solid var(--line);background:rgba(255,255,255,.04);border-radius:99px;padding:7px 14px;font-family:var(--data);font-weight:600;font-size:.82rem;letter-spacing:.04em}
+.chip[aria-pressed="true"]{background:var(--orange);border-color:var(--orange);color:#1B0A00}
+.sort{flex:none;font:inherit;font-size:.85rem;color:var(--ink);background:rgba(255,255,255,.06);border:1px solid var(--line);border-radius:10px;padding:7px 8px}
+
+.banner{display:flex;gap:12px;align-items:center;background:linear-gradient(90deg,rgba(255,210,63,.16),rgba(255,210,63,.04));border:1px solid rgba(255,210,63,.35);border-radius:14px;padding:12px 14px;font-size:.9rem}
+.banner b{color:var(--ball)}
+
+/* Cartes */
+.grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:14px}
+.card{--a:#E9B489;--b:#A8643A;--c:#6E3B1E;--cink:#2A1408;--mx:0%;
+  position:relative;display:block;width:100%;border:0;padding:0;background:none;text-align:center;color:var(--cink);
+  filter:drop-shadow(0 10px 16px rgba(0,0,0,.45));transition:transform .18s ease;animation:deal .5s both;animation-delay:calc(var(--i,0) * 45ms)}
+.card:active{transform:scale(.97)}
+.card.silver{--a:#F4F7FA;--b:#B9C3CE;--c:#7D8896;--cink:#18202A}
+.card.gold{--a:#FFF0A8;--b:#E3B23C;--c:#A97818;--cink:#2A1C02}
+.face{position:relative;aspect-ratio:5/7;max-width:100%;overflow:hidden;
+  clip-path:polygon(0 7%,9% 0,91% 0,100% 7%,100% 87%,50% 100%,0 87%);
+  background:
+    repeating-linear-gradient(135deg,rgba(255,255,255,.07) 0 2px,transparent 2px 9px),
+    radial-gradient(120% 60% at 75% 0%,rgba(255,255,255,.65),transparent 55%),
+    linear-gradient(165deg,var(--a),var(--b) 55%,var(--c));
+  display:grid;grid-template-rows:auto minmax(0,1fr) auto auto;padding:9% 9% 17%;gap:3%}
+.card.icon .face{--cink:#1A1033;color:#1A1033;
+  background:
+    repeating-linear-gradient(135deg,rgba(255,255,255,.12) 0 2px,transparent 2px 9px),
+    radial-gradient(120% 60% at 75% 0%,rgba(255,255,255,.7),transparent 55%),
+    linear-gradient(140deg,#FFD6F5,#B8E6FF 35%,#C9FFD9 65%,#FFF3B0)}
+.face::after{content:"";position:absolute;inset:0;pointer-events:none;mix-blend-mode:overlay;
+  background:linear-gradient(110deg,transparent 35%,rgba(255,255,255,.75) 48%,transparent 60%);
+  background-size:260% 100%;background-position:var(--mx) 0;animation:sheen 2.4s ease-out .3s both}
+.c-top{display:flex;justify-content:space-between;align-items:flex-start;text-align:left}
+.c-ovr{font-family:var(--display);font-weight:900;font-size:clamp(2rem,10vw,2.7rem);line-height:.85}
+.c-pos{display:block;font-family:var(--data);font-weight:700;font-size:.78rem;letter-spacing:.06em;margin-top:4px}
+.c-hex{width:30%;opacity:.85}
+.c-photo{position:relative;margin:0 auto;height:100%;width:auto;aspect-ratio:1;max-width:62%;border-radius:50%;overflow:hidden;align-self:center;
+  background:rgba(0,0,0,.14);border:2px solid rgba(0,0,0,.18);display:grid;place-items:center;
+  font-family:var(--display);font-weight:900;font-size:clamp(1.6rem,8vw,2.3rem)}
+.c-photo img{width:100%;height:100%;object-fit:cover;display:block}
+.c-name{font-family:var(--display);font-weight:900;font-size:clamp(1.05rem,5vw,1.35rem);text-transform:uppercase;letter-spacing:.03em;line-height:1;
+  border-bottom:1px solid currentColor;border-color:rgba(0,0,0,.28);padding-bottom:4px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.c-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:1px 4px;font-family:var(--data);font-variant-numeric:tabular-nums;line-height:1.15}
+.c-stats div{display:flex;flex-direction:column;align-items:center}
+.c-stats b{font-weight:700;font-size:clamp(.9rem,4vw,1.05rem)}
+.c-stats span{font-size:.6rem;font-weight:600;letter-spacing:.08em;opacity:.8}
+.tag{position:absolute;top:1.5%;left:50%;transform:translateX(-50%);z-index:2;font-family:var(--data);font-size:.58rem;font-weight:700;letter-spacing:.14em;text-transform:uppercase;background:#0A1430;color:var(--ball);padding:2px 8px;border-radius:99px}
+
+.empty-filter{color:var(--muted);text-align:center;padding:30px 10px;border:1px dashed var(--line);border-radius:14px}
+
+.fab{position:fixed;right:calc(18px + env(safe-area-inset-right,0px));bottom:calc(20px + env(safe-area-inset-bottom,0px));z-index:8;
+  height:60px;padding:0 22px 0 18px;border-radius:20px;border:0;background:var(--orange);color:#1B0A00;
+  display:flex;align-items:center;gap:8px;font-family:var(--display);font-weight:900;font-size:1.25rem;letter-spacing:.04em;text-transform:uppercase;
+  box-shadow:0 10px 26px rgba(255,122,47,.45),0 2px 0 rgba(255,255,255,.35) inset}
+.fab b{font-size:2rem;line-height:1;font-weight:700;margin-top:-3px}
+
+/* Fiches plein écran */
+.sheet{position:fixed;inset:0;z-index:30;background:var(--night);overflow-y:auto;overscroll-behavior:contain;
+  padding:env(safe-area-inset-top,0px) max(16px,env(safe-area-inset-right,0px)) calc(24px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px));
+  animation:up .28s cubic-bezier(.2,.8,.2,1)}
+.sheet.bg{background:radial-gradient(90% 40% at 50% 0%,rgba(255,122,47,.22),transparent 70%),var(--night)}
+.sheet-bar{position:sticky;top:0;z-index:3;display:flex;align-items:center;gap:10px;padding-block:12px;margin-bottom:6px;
+  background:linear-gradient(var(--night) 70%,transparent)}
+.sheet-bar h2{flex:1;margin:0;font-family:var(--display);font-weight:900;font-size:1.5rem;text-transform:uppercase;letter-spacing:.02em;min-width:0;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.inner{max-width:560px;margin:0 auto;display:flex;flex-direction:column;gap:18px}
+
+.section{background:rgba(255,255,255,.04);border:1px solid var(--line);border-radius:18px;padding:16px;display:flex;flex-direction:column;gap:12px}
+.label{font-family:var(--data);font-size:.72rem;font-weight:600;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+
+/* Détail */
+.hero-card{width:min(250px,68vw);margin:4px auto 0;perspective:900px}
+.hero-card .card{animation:none;transform:rotateX(var(--rx,0deg)) rotateY(var(--ry,0deg));transition:transform .12s ease;filter:drop-shadow(0 22px 30px rgba(0,0,0,.6))}
+.tier-line{text-align:center;font-family:var(--data);font-weight:600;font-size:.8rem;letter-spacing:.16em;text-transform:uppercase;color:var(--muted)}
+.tier-line b{color:var(--ink)}
+.radar svg{width:100%;height:auto;display:block;max-width:400px;margin:0 auto}
+.grow{animation:grow .7s cubic-bezier(.2,.9,.3,1.15) both}
+.compare{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.compare select{flex:1;min-width:0;font:inherit;color:var(--ink);background:var(--panel);border:1px solid var(--line);border-radius:10px;padding:9px 10px}
+.legend{display:flex;gap:14px;font-size:.82rem;color:var(--muted);flex-wrap:wrap}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.legend i{width:12px;height:12px;border-radius:3px}
+.traits{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.trait{border-radius:14px;padding:12px;background:rgba(255,255,255,.04);border:1px solid var(--line)}
+.trait .label{display:block;margin-bottom:4px}
+.trait b{font-family:var(--display);font-weight:800;font-size:1.25rem;text-transform:uppercase}
+.trait.up b{color:#3EE08F}.trait.down b{color:var(--ball)}
+.bars{display:grid;gap:10px}
+.bar{display:grid;grid-template-columns:88px 1fr 3ch;gap:10px;align-items:center;font-variant-numeric:tabular-nums}
+.bar span{font-weight:600}
+.track{height:10px;border-radius:99px;background:rgba(255,255,255,.07);overflow:hidden}
+.track i{display:block;height:100%;border-radius:99px;background:linear-gradient(90deg,var(--orange),var(--ball));transform-origin:left;animation:fill .7s cubic-bezier(.2,.8,.2,1) both}
+.bar b{font-family:var(--data);font-weight:700;text-align:right}
+.row-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.btn{border-radius:14px;border:1px solid var(--line);background:rgba(255,255,255,.06);padding:14px;font-weight:600;font-size:1rem}
+.btn.primary{background:var(--orange);border-color:var(--orange);color:#1B0A00;font-family:var(--display);font-weight:900;font-size:1.2rem;letter-spacing:.04em;text-transform:uppercase}
+.btn.danger{background:var(--danger);border-color:var(--danger);color:#fff}
+.btn.full{grid-column:1/-1}
+
+/* Formulaire */
+.photo-pick{display:flex;align-items:center;gap:14px}
+.photo-pick .pick{position:relative;width:84px;height:84px;border-radius:50%;flex:none;overflow:hidden;cursor:pointer;
+  background:var(--panel-2);border:2px dashed rgba(255,255,255,.3);display:grid;place-items:center;font-family:var(--display);font-weight:900;font-size:2rem;color:var(--muted)}
+.pick img{width:100%;height:100%;object-fit:cover}
+.pick input{position:absolute;inset:0;opacity:0;cursor:pointer}
+.pick-txt{display:flex;flex-direction:column;gap:6px;align-items:flex-start}
+.linkbtn{border:0;background:none;padding:0;color:var(--cyan);font-weight:600}
+.text-in{width:100%;font:inherit;font-size:1.15rem;font-weight:600;color:var(--ink);background:var(--panel);border:1px solid var(--line);border-radius:12px;padding:12px 14px}
+.postes{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
+.postes label{position:relative;border:1px solid var(--line);border-radius:12px;padding:9px 6px;text-align:center;background:rgba(255,255,255,.04);cursor:pointer;line-height:1.15}
+.postes input{position:absolute;opacity:0;pointer-events:none}
+.postes b{display:block;font-family:var(--data);font-weight:700}
+.postes small{font-size:.7rem;color:var(--muted)}
+.postes label:has(input:checked){background:var(--orange);border-color:var(--orange);color:#1B0A00}
+.postes label:has(input:checked) small{color:#4A1F00}
+.postes label:has(input:focus-visible){outline:3px solid var(--ball);outline-offset:2px}
+.live{position:sticky;top:64px;z-index:2;display:grid;grid-template-columns:120px 1fr;gap:12px;align-items:center;
+  background:rgba(21,41,106,.92);backdrop-filter:blur(10px);-webkit-backdrop-filter:blur(10px);border:1px solid var(--line);border-radius:18px;padding:8px 14px 8px 8px}
+.live svg{width:100%;height:auto;display:block}
+.live-ovr{font-family:var(--display);font-weight:900;font-size:3.2rem;line-height:.85}
+.live-tier{font-family:var(--data);font-size:.75rem;font-weight:600;letter-spacing:.12em;text-transform:uppercase}
+.sliders{display:grid;gap:16px}
+.sl{display:grid;grid-template-columns:1fr auto;gap:6px 12px;align-items:center}
+.sl label{font-weight:600}
+.sl output{font-family:var(--data);font-weight:700;font-size:1.2rem;font-variant-numeric:tabular-nums;min-width:3ch;text-align:right}
+.sl input{grid-column:1/-1}
+input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:32px;background:transparent;--v:50%}
+input[type=range]::-webkit-slider-runnable-track{height:10px;border-radius:99px;background:linear-gradient(90deg,var(--orange),var(--ball)) 0/var(--v) 100% no-repeat,rgba(255,255,255,.1)}
+input[type=range]::-moz-range-track{height:10px;border-radius:99px;background:rgba(255,255,255,.1)}
+input[type=range]::-moz-range-progress{height:10px;border-radius:99px;background:linear-gradient(90deg,var(--orange),var(--ball))}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:28px;height:28px;margin-top:-9px;border-radius:50%;background:#fff;border:4px solid var(--orange);box-shadow:0 2px 8px rgba(0,0,0,.4)}
+input[type=range]::-moz-range-thumb{width:20px;height:20px;border-radius:50%;background:#fff;border:4px solid var(--orange)}
+.err{color:var(--danger);font-weight:600;margin:0}
+.cropper{position:fixed;inset:0;z-index:40;background:var(--night);display:flex;flex-direction:column;
+  padding:env(safe-area-inset-top,0px) max(16px,env(safe-area-inset-right,0px)) calc(20px + env(safe-area-inset-bottom,0px)) max(16px,env(safe-area-inset-left,0px))}
+.crop-body{flex:1;display:flex;flex-direction:column;justify-content:center;align-items:center;gap:22px;min-height:0}
+.crop-stage{position:relative;width:min(86vw,380px,55vh);aspect-ratio:1;max-width:100%;overflow:hidden;border-radius:50%;outline:2px solid rgba(255,255,255,.85);outline-offset:0;background:#000;touch-action:none;cursor:grab;user-select:none;-webkit-user-select:none}
+.crop-stage:active{cursor:grabbing}
+.crop-stage img{position:absolute;left:50%;top:50%;max-width:none;transform-origin:center;pointer-events:none;-webkit-user-drag:none}
+.crop-ring{position:absolute;inset:0;border-radius:50%;box-shadow:0 0 0 999px rgba(10,20,48,.62);border:2px solid rgba(255,255,255,.85);pointer-events:none}
+.crop-zoom{width:min(86vw,380px);display:grid;grid-template-columns:auto 1fr auto;gap:12px;align-items:center;color:var(--muted);font-family:var(--data);font-weight:700}
+.crop-hint{color:var(--muted);font-size:.9rem;margin:0;text-align:center}
+.crop-actions{display:grid;grid-template-columns:1fr 1fr;gap:10px;width:min(100%,560px);margin:0 auto}
+.save-bar{position:sticky;bottom:0;padding-top:12px;background:linear-gradient(transparent,var(--night) 35%)}
+
+/* Menu */
+.menu-item{display:flex;gap:14px;align-items:center;width:100%;text-align:left;border:1px solid var(--line);background:rgba(255,255,255,.04);border-radius:14px;padding:14px}
+.menu-item svg{width:24px;height:24px;flex:none;color:var(--orange)}
+.menu-item b{display:block}
+.menu-item small{color:var(--muted)}
+.steps{margin:0;padding-left:20px;display:grid;gap:6px}
+.note{color:var(--muted);font-size:.88rem;margin:0}
+
+.toast{position:fixed;left:50%;bottom:calc(96px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);z-index:50;
+  background:var(--ink);color:var(--night);font-weight:600;padding:11px 18px;border-radius:12px;max-width:calc(100% - 32px);box-shadow:0 10px 30px rgba(0,0,0,.4)}
+
+@keyframes deal{from{opacity:0;transform:translateY(14px) scale(.96)}}
+@keyframes sheen{from{background-position:120% 0}to{background-position:-30% 0}}
+@keyframes grow{from{transform:scale(0)}}
+@keyframes fill{from{transform:scaleX(0)}}
+@keyframes up{from{transform:translateY(24px);opacity:.4}}
+@media (prefers-reduced-motion:reduce){*,*::before,*::after{animation:none!important;transition:none!important}}
+@media (min-width:700px){.summary{grid-template-columns:repeat(3,minmax(0,200px))}}
+</style>
+
+<header class="appbar">
+  <svg class="logo" viewBox="0 0 40 40" aria-hidden="true"><polygon points="20,2 36,11 36,29 20,38 4,29 4,11" fill="none" stroke="#FF7A2F" stroke-width="3"/><polygon points="20,10 29,15 27,26 20,30 12,25 12,15" fill="#FFD23F"/></svg>
+  <div class="brand">
+    <h1>Cartes <span>Volley</span></h1>
+    <div class="sync" id="sync"><i></i><span id="sync-txt">Connexion…</span></div>
+  </div>
+  <button class="icon-btn" id="menu-btn" type="button" aria-label="Sauvegarde et installation">
+    <svg viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="12" cy="19" r="2"/></svg>
+  </button>
+</header>
+
+<main class="main">
+  <div class="banner" id="banner" hidden>
+    <span><b>Exemples</b> pour te montrer le rendu. Crée ta première carte avec le bouton « Joueur » : les exemples disparaîtront.</span>
+  </div>
+  <div class="summary" id="summary"></div>
+  <div class="toolbar">
+    <div class="chips" id="chips" role="group" aria-label="Filtrer par poste"></div>
+    <select class="sort" id="sort" aria-label="Trier">
+      <option value="ovr">Note</option>
+      <option value="name">Nom</option>
+    </select>
+  </div>
+  <div class="grid" id="grid"></div>
+  <p class="empty-filter" id="empty-filter" hidden>Aucun joueur à ce poste pour l'instant.</p>
+</main>
+
+<button class="fab" id="fab" type="button"><b>+</b> Joueur</button>
+
+<!-- Détail -->
+<section class="sheet bg" id="detail" hidden aria-labelledby="d-title">
+  <div class="sheet-bar">
+    <button class="icon-btn" type="button" data-close aria-label="Retour"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
+    <h2 id="d-title"></h2>
+  </div>
+  <div class="inner">
+    <div class="hero-card" id="d-card"></div>
+    <div class="tier-line" id="d-tier"></div>
+    <div class="section">
+      <span class="label">Profil de jeu</span>
+      <div class="radar" id="d-radar"></div>
+      <div class="compare">
+        <label class="label" for="d-compare">Comparer</label>
+        <select id="d-compare"></select>
+      </div>
+      <div class="legend" id="d-legend"></div>
+    </div>
+    <div class="traits" id="d-traits"></div>
+    <div class="section"><span class="label">Détail des notes</span><div class="bars" id="d-bars"></div></div>
+    <div class="row-actions" id="d-actions"></div>
+  </div>
+</section>
+
+<!-- Formulaire -->
+<section class="sheet" id="editor" hidden aria-labelledby="f-title">
+  <div class="sheet-bar">
+    <button class="icon-btn" type="button" data-close aria-label="Annuler"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+    <h2 id="f-title">Nouveau joueur</h2>
+  </div>
+  <form class="inner" id="form" novalidate>
+    <div class="section">
+      <div class="photo-pick">
+        <label class="pick" for="f-photo" id="f-avatar">?<input type="file" id="f-photo" accept="image/*" aria-label="Choisir une photo"></label>
+        <div class="pick-txt">
+          <span class="label">Photo</span>
+          <span class="note">Touche le rond pour en choisir une.</span>
+          <button class="linkbtn" type="button" id="f-photo-crop" hidden>Recadrer</button>
+          <button class="linkbtn" type="button" id="f-photo-clear" hidden>Retirer la photo</button>
+        </div>
+      </div>
+      <label class="label" for="f-name">Nom</label>
+      <input class="text-in" type="text" id="f-name" maxlength="18" placeholder="Prénom ou surnom" autocomplete="off" enterkeyhint="done">
+      <span class="label">Poste</span>
+      <div class="postes" id="f-postes"></div>
+    </div>
+    <div class="live" id="f-live">
+      <div id="f-radar"></div>
+      <div><div class="live-ovr" id="f-ovr">50</div><div class="live-tier" id="f-tier">Carte bronze</div></div>
+    </div>
+    <div class="section"><span class="label">Notes de 0 à 100</span><div class="sliders" id="sliders"></div></div>
+    <p class="err" id="f-err" hidden></p>
+    <div class="save-bar"><button class="btn primary" style="width:100%" type="submit" id="f-submit">Créer la carte</button></div>
+  </form>
+</section>
+
+<!-- Menu -->
+<section class="sheet" id="menu" hidden aria-labelledby="m-title">
+  <div class="sheet-bar">
+    <button class="icon-btn" type="button" data-close aria-label="Fermer"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+    <h2 id="m-title">Sauvegarde</h2>
+  </div>
+  <div class="inner">
+    <div class="section">
+      <span class="label">Où sont tes cartes</span>
+      <p class="note" id="m-status" style="color:var(--ink)"></p>
+    </div>
+    <div class="section">
+      <span class="label">Copie de secours</span>
+      <button class="menu-item" type="button" id="m-export">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12m0 0l-5-5m5 5l5-5M4 21h16"/></svg>
+        <span><b>Enregistrer une sauvegarde</b><small>Un fichier .json à garder dans Fichiers ou à t'envoyer, photos comprises</small></span>
+      </button>
+      <label class="menu-item" for="m-import" style="cursor:pointer">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21V9m0 0l-5 5m5-5l5 5M4 3h16"/></svg>
+        <span><b>Restaurer une sauvegarde</b><small>Ajoute les cartes d'un fichier .json</small></span>
+        <input type="file" id="m-import" accept=".json,application/json" hidden>
+      </label>
+    </div>
+    <div class="section" id="m-install">
+      <span class="label">Installer sur ton téléphone</span>
+      <p class="note" style="color:var(--ink)"><b>iPhone</b>, dans Safari :</p>
+      <ol class="steps">
+        <li>Touche le bouton <b>Partager</b> (le carré avec une flèche).</li>
+        <li>Choisis <b>Sur l'écran d'accueil</b>, puis <b>Ajouter</b>.</li>
+      </ol>
+      <p class="note" style="color:var(--ink)"><b>Android</b>, dans Chrome : menu <b>⋮</b> puis <b>Ajouter à l'écran d'accueil</b>.</p>
+      <p class="note">Crée tes cartes depuis l'icône installée : sur iPhone, l'appli installée et Safari ne partagent pas les mêmes cartes.</p>
+    </div>
+  </div>
+</section>
+
+<section class="cropper" id="cropper" hidden aria-labelledby="c-title">
+  <div class="sheet-bar">
+    <button class="icon-btn" type="button" id="c-cancel" aria-label="Annuler"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+    <h2 id="c-title">Recadrer la photo</h2>
+  </div>
+  <div class="crop-body">
+    <div class="crop-stage" id="c-stage"><img id="c-img" alt=""></div>
+    <p class="crop-hint">Glisse pour déplacer, écarte deux doigts pour zoomer.</p>
+    <div class="crop-zoom"><span>−</span><input type="range" id="c-zoom" min="1" max="5" step="0.01" value="1" aria-label="Zoom"><span>+</span></div>
+  </div>
+  <div class="crop-actions">
+    <button class="btn" type="button" id="c-reset">Recentrer</button>
+    <button class="btn primary" type="button" id="c-ok">Valider</button>
+  </div>
+</section>
+
+<div class="toast" id="toast" role="status" hidden></div>
+
+<script>
+const SKILLS=[
+  {k:'ser',l:'Service',a:'SER'},{k:'rec',l:'Réception',a:'REC'},{k:'pas',l:'Passe',a:'PAS'},
+  {k:'att',l:'Attaque',a:'ATT'},{k:'blo',l:'Bloc',a:'BLO'},{k:'def',l:'Défense',a:'DEF'}];
+const POSTES=[
+  {v:'PAS',l:'Passeur'},{v:'R4',l:'Récep-attaque'},{v:'PTU',l:'Pointu'},
+  {v:'CEN',l:'Central'},{v:'LIB',l:'Libéro'},{v:'POL',l:'Polyvalent'}];
+const EXAMPLES=[
+  {id:'ex1',example:true,name:'Léa',poste:'PAS',photo:null,s:{ser:70,rec:62,pas:88,att:52,blo:48,def:69}},
+  {id:'ex2',example:true,name:'Tom',poste:'R4',photo:null,s:{ser:80,rec:82,pas:62,att:88,blo:68,def:76}},
+  {id:'ex3',example:true,name:'Inès',poste:'LIB',photo:null,s:{ser:35,rec:91,pas:66,att:22,blo:15,def:93}},
+  {id:'ex4',example:true,name:'Karim',poste:'CEN',photo:null,s:{ser:60,rec:38,pas:44,att:76,blo:89,def:47}},
+  {id:'ex5',example:true,name:'Max',poste:'PTU',photo:null,s:{ser:92,rec:70,pas:80,att:95,blo:84,def:79}},
+  {id:'ex6',example:true,name:'Sacha',poste:'POL',photo:null,s:{ser:55,rec:58,pas:60,att:57,blo:50,def:62}}];
+const APP=!!window.AndroidBridge;
+const LS='cartes-volley-v1', LS_MIG='cartes-volley-migre';
+const $=id=>document.getElementById(id);
+const esc=t=>String(t??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]);
+const ovr=s=>Math.round(SKILLS.reduce((t,x)=>t+(+s[x.k]||0),0)/SKILLS.length);
+const tier=o=>o>=85?'icon':o>=75?'gold':o>=65?'silver':'bronze';
+const TIER_L={icon:'Carte icône',gold:'Carte or',silver:'Carte argent',bronze:'Carte bronze'};
+const posteL=v=>(POSTES.find(p=>p.v===v)||{l:v}).l;
+const initials=n=>(n||'').trim().split(/\s+/).filter(Boolean).map(w=>w[0]).slice(0,2).join('').toUpperCase()||'?';
+const clampN=v=>Math.max(0,Math.min(100,Math.round(+v||0)));
+
+/* ---------- État et sauvegarde ---------- */
+let players=readLocal();
+let mode='pending', col=null, downloads=null;
+let filter='ALL', openId=null, editing=null, draftPhoto=null;
+
+function readLocal(){
+  try{const r=JSON.parse(localStorage.getItem(LS)||'null');return Array.isArray(r)?r.filter(p=>p&&p.id&&!p.example).map(normalize):[];}catch(e){return[];}
+}
+function writeLocal(){try{localStorage.setItem(LS,JSON.stringify(players));}catch(e){}}
+function normalize(p){
+  const s={};SKILLS.forEach(x=>s[x.k]=clampN(p.s&&p.s[x.k]));
+  return{id:String(p.id),name:String(p.name||'').slice(0,18)||'Sans nom',poste:POSTES.some(q=>q.v===p.poste)?p.poste:'POL',
+    photo:typeof p.photo==='string'&&p.photo.startsWith('data:image/')?p.photo:null,s,updatedAt:p.updatedAt||Date.now()};
+}
+const body=p=>({name:p.name,poste:p.poste,photo:p.photo,s:p.s,updatedAt:p.updatedAt});
+const shown=()=>players.length?players:EXAMPLES;
+
+function setMode(m){
+  mode=m;
+  const el=$('sync');el.className='sync '+(m==='cloud'?'cloud':m==='local'?'local':'');
+  $('sync-txt').textContent=m==='cloud'?'Sauvegardé dans ton compte':m==='local'?(APP?'Sauvegardé sur ce téléphone':'Sauvegardé sur cet appareil'):'Connexion…';
+  $('m-status').textContent=m==='cloud'
+    ?"Tes cartes sont enregistrées dans ton compte Claude. Tu les retrouves sur ce téléphone et sur tes autres appareils, même si tu vides le cache. Une copie reste aussi sur ce téléphone."
+    :APP?"Tes cartes sont enregistrées dans l'appli, sur ce téléphone. Elles restent quand tu fermes l'appli ou que tu la mets à jour. Si tu la désinstalles ou effaces ses données, elles disparaissent : garde une copie de secours de temps en temps.":"Tes cartes sont enregistrées dans ce navigateur, sur ce téléphone uniquement. Si tu effaces les données du navigateur, elles disparaissent : pense à garder une copie de secours.";
+}
+
+async function connect(){
+  if(APP||!window.claude||!window.claude.use){setMode('local');return;}
+  try{
+    const [db,user,dl]=await Promise.all([claude.use('db'),claude.use('user'),claude.use('downloads')]);
+    downloads=dl;
+    const uid=user?await user.id():null;
+    if(!db||!uid){setMode('local');return;}
+    col=db.collection('data/users/'+uid);
+    let migrated=false;try{migrated=localStorage.getItem(LS_MIG)==='1';}catch(e){}
+    if(!migrated&&players.length){
+      const snap=await col.get();const have=new Set(snap.docs.map(d=>d.id));
+      for(const p of players){if(!have.has(p.id))await col.doc(p.id).set(body(p));}
+    }
+    try{localStorage.setItem(LS_MIG,'1');}catch(e){}
+    setMode('cloud');
+    col.onSnapshot(s=>{
+      players=s.docs.map(d=>normalize({...d.data(),id:d.id}));
+      writeLocal();render();refreshOpen();
+    },()=>{setMode('local');});
+  }catch(e){setMode('local');}
+}
+
+async function persist(p){
+  p.updatedAt=Date.now();
+  const i=players.findIndex(x=>x.id===p.id);
+  if(i>=0)players[i]=p;else players.push(p);
+  writeLocal();render();
+  if(mode==='cloud'){
+    try{await col.doc(p.id).set(body(p));}
+    catch(e){toast(e&&e.code==='quota_exceeded'?"L'espace en ligne est plein. Supprime une carte ou retire des photos.":"Enregistré sur ce téléphone, mais pas en ligne. Réessaie plus tard.");}
+  }
+}
+async function remove(id){
+  players=players.filter(p=>p.id!==id);writeLocal();render();
+  if(mode==='cloud'){try{await col.doc(id).delete();}catch(e){toast("Supprimée ici, mais pas en ligne. Réessaie plus tard.");}}
+}
+
+/* ---------- Dessin ---------- */
+function hexIcon(s){
+  const c=20,r=18,pts=SKILLS.map((x,i)=>{const a=-Math.PI/2+i*Math.PI/3,v=(+s[x.k]||0)/100;return(c+Math.cos(a)*r*v).toFixed(1)+','+(c+Math.sin(a)*r*v).toFixed(1)}).join(' ');
+  const out=SKILLS.map((_,i)=>{const a=-Math.PI/2+i*Math.PI/3;return(c+Math.cos(a)*r).toFixed(1)+','+(c+Math.sin(a)*r).toFixed(1)}).join(' ');
+  return`<svg class="c-hex" viewBox="0 0 40 40" aria-hidden="true"><polygon points="${out}" fill="none" stroke="currentColor" stroke-opacity=".45" stroke-width="1.5"/><polygon points="${pts}" fill="currentColor" fill-opacity=".75"/></svg>`;
+}
+function cardHTML(p,i=0,tagOk=true){
+  const o=ovr(p.s);
+  return`<button class="card ${tier(o)}" type="button" data-id="${esc(p.id)}" style="--i:${i}" aria-label="${esc(p.name)}, ${posteL(p.poste)}, note ${o}">
+    ${p.example&&tagOk?'<span class="tag">Exemple</span>':''}
+    <div class="face">
+      <div class="c-top"><div><div class="c-ovr">${o}</div><span class="c-pos">${esc(p.poste)}</span></div>${hexIcon(p.s)}</div>
+      <div class="c-photo">${p.photo?`<img src="${p.photo}" alt="">`:esc(initials(p.name))}</div>
+      <div class="c-name">${esc(p.name)}</div>
+      <div class="c-stats">${SKILLS.map(x=>`<div><b>${p.s[x.k]}</b><span>${x.a}</span></div>`).join('')}</div>
+    </div></button>`;
+}
+function radar(s,{size=340,labels=true,anim=true,cmp=null}={}){
+  const pad=labels?56:6,c=size/2,r=c-pad,n=6;
+  const pt=(i,v)=>{const a=-Math.PI/2+i*2*Math.PI/n;return[(c+Math.cos(a)*r*v/100).toFixed(1),(c+Math.sin(a)*r*v/100).toFixed(1)]};
+  const poly=(v)=>SKILLS.map((x,i)=>pt(i,typeof v==='number'?v:(+v[x.k]||0)).join(',')).join(' ');
+  let g=`<defs><radialGradient id="rg${size}" cx="50%" cy="50%" r="50%"><stop offset="0" stop-color="#FFD23F" stop-opacity=".55"/><stop offset="1" stop-color="#FF7A2F" stop-opacity=".45"/></radialGradient></defs>`;
+  [100,80,60,40,20].forEach((v,k)=>{g+=`<polygon points="${poly(v)}" fill="${k%2?'rgba(255,255,255,.035)':'rgba(255,255,255,.06)'}" stroke="rgba(190,205,255,.18)" stroke-width="1"/>`;});
+  SKILLS.forEach((_,i)=>{const[x,y]=pt(i,100);g+=`<line x1="${c}" y1="${c}" x2="${x}" y2="${y}" stroke="rgba(190,205,255,.14)"/>`;});
+  if(labels)[20,40,60,80].forEach(v=>{const[x,y]=pt(0,v);g+=`<text x="${+x+4}" y="${+y+3}" font-size="9" fill="#9FB0DA" font-family="Chakra Petch,monospace">${v}</text>`;});
+  const T=`style="transform-origin:${c}px ${c}px"`;
+  if(cmp)g+=`<polygon class="${anim?'grow':''}" ${T} points="${poly(cmp)}" fill="rgba(92,214,255,.18)" stroke="#5CD6FF" stroke-width="2" stroke-dasharray="5 4" stroke-linejoin="round"/>`;
+  g+=`<g class="${anim?'grow':''}" ${T}><polygon points="${poly(s)}" fill="url(#rg${size})" stroke="#FF7A2F" stroke-width="${labels?3:2.5}" stroke-linejoin="round"/>`;
+  SKILLS.forEach((x,i)=>{const[px,py]=pt(i,+s[x.k]||0);g+=`<circle cx="${px}" cy="${py}" r="${labels?4.5:3}" fill="#FFD23F" stroke="#0A1430" stroke-width="1.5"/>`;});
+  g+='</g>';
+  if(labels)SKILLS.forEach((x,i)=>{
+    const a=-Math.PI/2+i*2*Math.PI/n,lx=c+Math.cos(a)*(r+26),ly=c+Math.sin(a)*(r+20);
+    const an=Math.abs(Math.cos(a))<.2?'middle':Math.cos(a)>0?'start':'end';
+    const ax=an==='start'?lx-10:an==='end'?lx+10:lx, by=Math.sin(a)<-.5?ly-10:Math.sin(a)>.5?ly+4:ly-4;
+    g+=`<text x="${ax.toFixed(1)}" y="${by.toFixed(1)}" text-anchor="${an}" font-size="12" font-weight="600" fill="#9FB0DA" font-family="Barlow,sans-serif">${x.l}</text>`;
+    g+=`<text x="${ax.toFixed(1)}" y="${(by+20).toFixed(1)}" text-anchor="${an}" font-size="20" font-weight="700" fill="#F3F5FF" font-family="Chakra Petch,monospace">${+s[x.k]||0}${cmp?`<tspan font-size="13" fill="#5CD6FF"> / ${+cmp[x.k]||0}</tspan>`:''}</text>`;
+  });
+  const vb=labels?`-34 0 ${size+68} ${size}`:`0 0 ${size} ${size}`;
+  return`<svg viewBox="${vb}" role="img" aria-label="Radar des compétences">${g}</svg>`;
+}
+
+/* ---------- Collection ---------- */
+function render(){
+  const list=shown();
+  $('banner').hidden=players.length>0;
+  const avg=list.length?Math.round(list.reduce((t,p)=>t+ovr(p.s),0)/list.length):0;
+  const best=[...list].sort((a,b)=>ovr(b.s)-ovr(a.s))[0];
+  $('summary').innerHTML=`<div class="sum"><b>${list.length}</b><span>Joueurs</span></div>
+    <div class="sum"><b>${avg}</b><span>Moyenne</span></div>
+    <div class="sum"><b>${best?esc(best.name):'–'}</b><span>Top note</span></div>`;
+  const counts={};list.forEach(p=>counts[p.poste]=(counts[p.poste]||0)+1);
+  $('chips').innerHTML=[{v:'ALL',l:'Tous'},...POSTES.filter(p=>counts[p.v])].map(p=>
+    `<button class="chip" type="button" data-f="${p.v}" aria-pressed="${filter===p.v}">${p.v==='ALL'?'Tous':p.v} <span style="opacity:.6">${p.v==='ALL'?list.length:counts[p.v]}</span></button>`).join('');
+  if(filter!=='ALL'&&!counts[filter]){filter='ALL';return render();}
+  const sort=$('sort').value;
+  const view=list.filter(p=>filter==='ALL'||p.poste===filter)
+    .sort((a,b)=>sort==='name'?a.name.localeCompare(b.name,'fr'):ovr(b.s)-ovr(a.s));
+  $('grid').innerHTML=view.map((p,i)=>cardHTML(p,i)).join('');
+  $('empty-filter').hidden=view.length>0;
+}
+$('chips').addEventListener('click',e=>{const b=e.target.closest('.chip');if(!b)return;filter=b.dataset.f;render();});
+$('sort').addEventListener('change',render);
+$('grid').addEventListener('click',e=>{const c=e.target.closest('.card');if(c)openDetail(c.dataset.id);});
+$('grid').addEventListener('pointermove',e=>{const c=e.target.closest('.card');if(!c)return;const r=c.getBoundingClientRect();c.style.setProperty('--mx',(100-((e.clientX-r.left)/r.width)*100)+'%');});
+
+/* ---------- Fiches ---------- */
+function show(id){['detail','editor','menu'].forEach(s=>$(s).hidden=s!==id);document.body.style.overflow=id?'hidden':'';if(id)$(id).scrollTop=0;}
+function closeAll(){show(null);openId=null;}
+document.querySelectorAll('[data-close]').forEach(b=>b.addEventListener('click',()=>{
+  if(b.closest('#editor')&&editing&&editing.id&&players.some(p=>p.id===editing.id)){openDetail(editing.id);return;}
+  closeAll();}));
+document.addEventListener('keydown',e=>{if(e.key==='Escape'){if(!$('cropper').hidden)closeCropper();else closeAll();}});
+
+function findP(id){return shown().find(p=>p.id===id);}
+function openDetail(id,keepScroll){
+  const p=findP(id);if(!p){closeAll();return;}
+  openId=id;const o=ovr(p.s);
+  $('d-title').textContent=p.name;
+  $('d-card').innerHTML=cardHTML(p,0,false);
+  $('d-tier').innerHTML=`${TIER_L[tier(o)]} · <b>${posteL(p.poste)}</b>${p.example?' · exemple':''}`;
+  const others=shown().filter(x=>x.id!==id);
+  const prev=$('d-compare').value;
+  $('d-compare').innerHTML=`<option value="">Personne</option>`+others.map(x=>`<option value="${esc(x.id)}">${esc(x.name)} (${ovr(x.s)})</option>`).join('');
+  $('d-compare').value=keepScroll&&others.some(x=>x.id===prev)?prev:'';
+  drawDetailRadar(true);
+  const sorted=[...SKILLS].sort((a,b)=>p.s[b.k]-p.s[a.k]);
+  $('d-traits').innerHTML=`<div class="trait up"><span class="label">Point fort</span><b>${sorted[0].l}</b></div>
+    <div class="trait down"><span class="label">À travailler</span><b>${sorted[5].l}</b></div>`;
+  $('d-bars').innerHTML=SKILLS.map(x=>`<div class="bar"><span>${x.l}</span><span class="track"><i style="width:${p.s[x.k]}%"></i></span><b>${p.s[x.k]}</b></div>`).join('');
+  $('d-actions').innerHTML=p.example
+    ?`<button class="btn primary full" type="button" id="d-template">Partir de ce modèle</button>`
+    :`<button class="btn" type="button" id="d-del">Supprimer</button><button class="btn primary" type="button" id="d-edit">Modifier</button>`;
+  if(!keepScroll)show('detail');
+}
+function drawDetailRadar(anim){
+  const p=findP(openId);if(!p)return;const q=findP($('d-compare').value);
+  $('d-radar').innerHTML=radar(p.s,{cmp:q?q.s:null,anim});
+  $('d-legend').innerHTML=q?`<span><i style="background:#FF7A2F"></i>${esc(p.name)}</span><span><i style="background:#5CD6FF"></i>${esc(q.name)}</span>`:'';
+}
+$('d-compare').addEventListener('change',()=>drawDetailRadar(true));
+function refreshOpen(){
+  if(!$('detail').hidden&&openId){findP(openId)?openDetail(openId,true):closeAll();}
+}
+let delArm=null;
+$('d-actions').addEventListener('click',e=>{
+  const b=e.target.closest('button');if(!b)return;const p=findP(openId);
+  if(b.id==='d-edit')openEditor(p);
+  if(b.id==='d-template')openEditor({...p,id:null,name:'',example:false});
+  if(b.id==='d-del'){
+    if(!b.classList.contains('danger')){b.classList.add('danger');b.textContent='Confirmer';clearTimeout(delArm);delArm=setTimeout(()=>{b.classList.remove('danger');b.textContent='Supprimer';},4000);return;}
+    const n=p.name;remove(p.id);closeAll();toast(n+' supprimé');
+  }
+});
+// Inclinaison de la grande carte
+$('d-card').addEventListener('pointermove',e=>{const c=e.currentTarget.querySelector('.card');if(!c)return;const r=c.getBoundingClientRect();
+  const x=(e.clientX-r.left)/r.width-.5,y=(e.clientY-r.top)/r.height-.5;
+  c.style.setProperty('--ry',(x*18)+'deg');c.style.setProperty('--rx',(-y*18)+'deg');c.style.setProperty('--mx',(100-(x+.5)*100)+'%');});
+$('d-card').addEventListener('pointerleave',e=>{const c=e.currentTarget.querySelector('.card');if(c){c.style.setProperty('--rx','0deg');c.style.setProperty('--ry','0deg');}});
+
+/* ---------- Formulaire ---------- */
+$('f-postes').innerHTML=POSTES.map(p=>`<label><input type="radio" name="poste" id="f-p-${p.v}" value="${p.v}"><b>${p.v}</b><small>${p.l}</small></label>`).join('');
+$('sliders').innerHTML=SKILLS.map(x=>`<div class="sl"><label for="f-${x.k}">${x.l}</label><output id="o-${x.k}" for="f-${x.k}">50</output>
+  <input type="range" id="f-${x.k}" min="0" max="100" step="1" value="50"></div>`).join('');
+function formS(){const s={};SKILLS.forEach(x=>s[x.k]=+$('f-'+x.k).value);return s;}
+function updateLive(){
+  const s=formS();SKILLS.forEach(x=>{$('o-'+x.k).textContent=s[x.k];$('f-'+x.k).style.setProperty('--v',s[x.k]+'%');});
+  const o=ovr(s),t=tier(o);$('f-ovr').textContent=o;$('f-tier').textContent=TIER_L[t];
+  $('f-ovr').style.color={icon:'#C9B8FF',gold:'#FFD23F',silver:'#DCE3EA',bronze:'#E9A877'}[t];
+  $('f-radar').innerHTML=radar(s,{size:120,labels:false,anim:false});
+}
+function setAvatar(){
+  const el=$('f-avatar'),inp=$('f-photo');
+  el.textContent='';
+  if(draftPhoto){const im=new Image();im.src=draftPhoto;im.alt='';el.appendChild(im);}else el.append(initials($('f-name').value));
+  el.appendChild(inp);$('f-photo-clear').hidden=!draftPhoto;$('f-photo-crop').hidden=!draftPhoto;
+}
+document.querySelectorAll('#sliders input').forEach(i=>i.addEventListener('input',updateLive));
+$('f-name').addEventListener('input',setAvatar);
+$('f-photo').addEventListener('change',e=>{const f=e.target.files[0];e.target.value='';if(!f)return;
+  const url=URL.createObjectURL(f);openCropper(url,()=>URL.revokeObjectURL(url));});
+$('f-photo-clear').addEventListener('click',()=>{draftPhoto=null;setAvatar();});
+$('f-photo-crop').addEventListener('click',()=>{if(draftPhoto)openCropper(draftPhoto,null);});
+
+/* Curseurs : jamais de clavier. Toucher ailleurs que le champ texte le referme. */
+document.addEventListener('pointerdown',e=>{
+  const a=document.activeElement;
+  if(a&&a.matches&&a.matches('input[type=text]')&&e.target!==a){a.blur();}
+  if(e.target.matches&&e.target.matches('input[type=range]'))e.target.focus({preventScroll:true});
+},true);
+$('f-name').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();e.target.blur();}});
+
+/* ---------- Recadrage ---------- */
+const crop={img:$('c-img'),stage:$('c-stage'),w:0,h:0,base:1,z:1,x:0,y:0,ptrs:new Map(),pinch:null,done:null};
+function openCropper(src,cleanup){
+  const im=new Image();
+  im.onload=()=>{
+    crop.done=cleanup;crop.w=im.naturalWidth;crop.h=im.naturalHeight;
+    crop.img.src=src;crop.img.style.width=crop.w+'px';crop.img.style.height=crop.h+'px';
+    $('cropper').hidden=false;if(document.activeElement&&document.activeElement.blur)document.activeElement.blur();
+    requestAnimationFrame(resetCrop);
+  };
+  im.onerror=()=>{if(cleanup)cleanup();toast("Cette image n'a pas pu être lue. Essaie une photo JPG ou PNG.");};
+  im.src=src;
+}
+function stageSize(){return crop.stage.getBoundingClientRect().width||300;}
+function resetCrop(){crop.base=stageSize()/Math.min(crop.w,crop.h);crop.z=1;crop.x=0;crop.y=0;$('c-zoom').value=1;drawCrop();}
+function clampCrop(){
+  const S=stageSize(),k=crop.base*crop.z,mx=Math.max(0,(crop.w*k-S)/2),my=Math.max(0,(crop.h*k-S)/2);
+  crop.x=Math.max(-mx,Math.min(mx,crop.x));crop.y=Math.max(-my,Math.min(my,crop.y));
+}
+function drawCrop(){clampCrop();crop.img.style.transform=`translate(-50%,-50%) translate(${crop.x}px,${crop.y}px) scale(${crop.base*crop.z})`;}
+function zoomTo(z,cx=0,cy=0){
+  z=Math.max(1,Math.min(5,z));const f=z/crop.z;
+  crop.x=cx-(cx-crop.x)*f;crop.y=cy-(cy-crop.y)*f;crop.z=z;$('c-zoom').value=z;$('c-zoom').style.setProperty('--v',((z-1)/4*100)+'%');drawCrop();
+}
+function local(e){const r=crop.stage.getBoundingClientRect();return[e.clientX-r.left-r.width/2,e.clientY-r.top-r.height/2];}
+crop.stage.addEventListener('pointerdown',e=>{crop.stage.setPointerCapture(e.pointerId);crop.ptrs.set(e.pointerId,local(e));
+  if(crop.ptrs.size===2){const[a,b]=[...crop.ptrs.values()];crop.pinch={d:Math.hypot(a[0]-b[0],a[1]-b[1])||1,z:crop.z};}});
+crop.stage.addEventListener('pointermove',e=>{
+  if(!crop.ptrs.has(e.pointerId))return;
+  const prev=crop.ptrs.get(e.pointerId),cur=local(e);crop.ptrs.set(e.pointerId,cur);
+  if(crop.ptrs.size===1){crop.x+=cur[0]-prev[0];crop.y+=cur[1]-prev[1];drawCrop();}
+  else if(crop.ptrs.size===2&&crop.pinch){
+    const[a,b]=[...crop.ptrs.values()],d=Math.hypot(a[0]-b[0],a[1]-b[1]);
+    crop.x+=(cur[0]-prev[0])/2;crop.y+=(cur[1]-prev[1])/2;
+    zoomTo(crop.pinch.z*d/crop.pinch.d,(a[0]+b[0])/2,(a[1]+b[1])/2);
+  }});
+function endPtr(e){crop.ptrs.delete(e.pointerId);if(crop.ptrs.size<2)crop.pinch=null;}
+crop.stage.addEventListener('pointerup',endPtr);crop.stage.addEventListener('pointercancel',endPtr);
+crop.stage.addEventListener('wheel',e=>{e.preventDefault();const[cx,cy]=local(e);zoomTo(crop.z*(e.deltaY<0?1.1:1/1.1),cx,cy);},{passive:false});
+$('c-zoom').addEventListener('input',e=>zoomTo(+e.target.value));
+$('c-reset').addEventListener('click',resetCrop);
+function closeCropper(){$('cropper').hidden=true;crop.ptrs.clear();crop.pinch=null;if(crop.done){crop.done();crop.done=null;}}
+$('c-cancel').addEventListener('click',closeCropper);
+$('c-ok').addEventListener('click',()=>{
+  const S=stageSize(),k=crop.base*crop.z,side=S/k;
+  const sx=(-S/2-crop.x)/k+crop.w/2,sy=(-S/2-crop.y)/k+crop.h/2;
+  const O=320,cv=document.createElement('canvas');cv.width=cv.height=O;
+  try{cv.getContext('2d').drawImage(crop.img,sx,sy,side,side,0,0,O,O);draftPhoto=cv.toDataURL('image/jpeg',.85);setAvatar();}
+  catch(err){toast("Le recadrage n'a pas marché. Réessaie avec une autre photo.");}
+  closeCropper();
+});
+window.addEventListener('resize',()=>{if(!$('cropper').hidden&&crop.w){const old=crop.base;crop.base=stageSize()/Math.min(crop.w,crop.h);crop.x*=crop.base/old;crop.y*=crop.base/old;drawCrop();}});
+
+function openEditor(p){
+  editing=p&&p.id?p:{id:null};draftPhoto=p?p.photo||null:null;
+  $('f-title').textContent=p&&p.id?'Modifier '+p.name:'Nouveau joueur';
+  $('f-submit').textContent=p&&p.id?'Enregistrer':'Créer la carte';
+  $('f-name').value=p?p.name:'';
+  const po=p?p.poste:'POL';document.querySelectorAll('#f-postes input').forEach(i=>i.checked=i.value===po);
+  SKILLS.forEach(x=>$('f-'+x.k).value=p?p.s[x.k]:50);
+  $('f-err').hidden=true;setAvatar();updateLive();show('editor');
+}
+$('form').addEventListener('submit',async e=>{
+  e.preventDefault();
+  const name=$('f-name').value.trim();
+  if(!name){$('f-err').textContent='Écris un nom pour créer la carte.';$('f-err').hidden=false;$('f-name').focus();return;}
+  const poste=(document.querySelector('#f-postes input:checked')||{}).value||'POL';
+  const isNew=!editing.id;
+  const id=editing.id||('p'+Date.now().toString(36)+Math.random().toString(36).slice(2,6));
+  const p={id,name,poste,photo:draftPhoto,s:formS()};
+  await persist(p);
+  toast(isNew?'Carte créée':'Carte mise à jour');
+  editing=null;openDetail(id);
+});
+
+/* ---------- Menu : sauvegarde ---------- */
+$('menu-btn').addEventListener('click',()=>show('menu'));
+$('m-export').addEventListener('click',async()=>{
+  if(!players.length){toast("Crée au moins une carte avant d'enregistrer une sauvegarde.");return;}
+  if(APP){
+    const d=new Date(),stamp=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+    let res='error';try{res=AndroidBridge.saveFile(`cartes-volley-${stamp}.json`,JSON.stringify({app:'cartes-volley',version:1,exportedAt:d.toISOString(),players},null,1));}catch(e){}
+    toast(res==='ok'?'Sauvegarde enregistrée dans Téléchargements':"La sauvegarde n'a pas pu être enregistrée.");return;
+  }
+  if(window.STANDALONE_WEB){
+    const d=new Date(),name=`cartes-volley-${d.toISOString().slice(0,10)}.json`;
+    const file=new File([JSON.stringify({app:'cartes-volley',version:1,exportedAt:d.toISOString(),players},null,1)],name,{type:'application/json'});
+    if(navigator.canShare&&navigator.canShare({files:[file]})){
+      try{await navigator.share({files:[file],title:'Sauvegarde Cartes Volley'});toast('Sauvegarde prête');}
+      catch(e){if(!e||e.name!=='AbortError')toast("La sauvegarde n'a pas pu être partagée.");}
+      return;
+    }
+    const a=document.createElement('a');a.href=URL.createObjectURL(file);a.download=name;document.body.appendChild(a);a.click();
+    setTimeout(()=>{URL.revokeObjectURL(a.href);a.remove();},3000);toast('Sauvegarde téléchargée');return;
+  }
+  if(!downloads){toast("L'enregistrement de fichier n'est pas disponible dans cette vue. Ouvre la page dans l'appli Claude ou dans Chrome.");return;}
+  const d=new Date(),stamp=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
+  const data=JSON.stringify({app:'cartes-volley',version:1,exportedAt:d.toISOString(),players},null,1);
+  try{await downloads.save({filename:`cartes-volley-${stamp}.json`,data});toast('Sauvegarde enregistrée');}
+  catch(err){if(err&&err.code==='declined')return;toast(err&&err.code==='rate_limited'?'Une demande est déjà ouverte. Réessaie dans un instant.':"La sauvegarde n'a pas pu être enregistrée ici.");}
+});
+$('m-import').addEventListener('change',async e=>{
+  const f=e.target.files[0];e.target.value='';if(!f)return;
+  try{
+    const j=JSON.parse(await f.text());const arr=Array.isArray(j)?j:j.players;
+    if(!Array.isArray(arr))throw 0;
+    const list=arr.filter(p=>p&&p.id&&!p.example).map(normalize);
+    if(!list.length){toast('Ce fichier ne contient aucune carte.');return;}
+    for(const p of list)await persist(p);
+    toast(list.length+(list.length>1?' cartes restaurées':' carte restaurée'));closeAll();
+  }catch(err){toast("Ce fichier n'est pas une sauvegarde Cartes Volley.");}
+});
+
+window.__back=function(){
+  if(!$('cropper').hidden){closeCropper();return true;}
+  if(!$('editor').hidden){if(editing&&editing.id&&players.some(p=>p.id===editing.id))openDetail(editing.id);else closeAll();return true;}
+  if(!$('detail').hidden||!$('menu').hidden){closeAll();return true;}
+  return false;
+};
+if(APP||matchMedia('(display-mode: standalone)').matches||navigator.standalone)$('m-install').hidden=true;
+if('serviceWorker' in navigator&&location.protocol==='https:')navigator.serviceWorker.register('sw.js').catch(()=>{});
+let tt;function toast(m){const t=$('toast');t.textContent=m;t.hidden=false;clearTimeout(tt);tt=setTimeout(()=>t.hidden=true,3000);}
+$('fab').addEventListener('click',()=>openEditor(null));
+
+setMode('pending');render();connect();
+</script>
+
+</body></html>
