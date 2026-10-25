@@ -1,5 +1,5 @@
 // Garde l'appli disponible hors connexion.
-const V = 'cartes-volley-v12';
+const V = 'cartes-volley-v13';
 const CORE = ['./', './index.html', './manifest.webmanifest', './icon-192.png', './icon-512.png', './apple-touch-icon.png'];
 self.addEventListener('install', e => { e.waitUntil(caches.open(V).then(c => c.addAll(CORE))); self.skipWaiting(); });
 self.addEventListener('activate', e => {
@@ -8,6 +8,7 @@ self.addEventListener('activate', e => {
 self.addEventListener('fetch', e => {
   const req = e.request; if (req.method !== 'GET') return;
   const url = new URL(req.url);
+  if (url.searchParams.has('heure')) return; // vérification de l'heure : toujours sur le réseau, jamais en cache
   if (url.origin === location.origin) {
     // Réseau d'abord pour avoir la dernière version, sinon la copie en cache.
     e.respondWith(fetch(req).then(res => { const cp = res.clone(); caches.open(V).then(c => c.put(req, cp)); return res; })

@@ -174,6 +174,43 @@ textarea.text-in{font-size:1rem;font-weight:500;resize:none;line-height:1.35}
   filter:drop-shadow(0 0 14px rgba(255,255,255,.55));animation:slam .55s cubic-bezier(.2,.9,.3,1.35) both,slide 1.2s linear infinite}
 @keyframes holoSweep{0%,100%{background-position:0% 50%}50%{background-position:100% 50%}}
 @keyframes glit{50%{opacity:.2}}
+
+/* Booster du jour */
+.lock-txt{margin:-6px 0 0;text-align:center;color:var(--muted);font-weight:600}
+.lock-txt b{font-family:var(--data);color:var(--ink);font-variant-numeric:tabular-nums;font-size:1.15rem;letter-spacing:.04em}
+.newtag{position:absolute;top:-7px;left:50%;transform:translateX(-50%);z-index:3;white-space:nowrap;font-family:var(--data);font-weight:700;font-size:.56rem;letter-spacing:.12em;
+  background:var(--ball);color:#1B0A00;padding:2px 7px;border-radius:99px;box-shadow:0 2px 8px rgba(0,0,0,.4)}
+.sum-mini{position:relative}
+/* Classeur */
+.b-progress{display:grid;grid-template-columns:1fr auto;gap:12px;align-items:center}
+.b-progress .track{height:12px}
+.b-progress b{font-family:var(--data);font-weight:700;font-variant-numeric:tabular-nums}
+.binder{position:relative;perspective:1600px;touch-action:pan-y;user-select:none;-webkit-user-select:none}
+.b-page{position:relative;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:12px 10px;padding:16px 14px 16px 34px;border-radius:6px 18px 18px 6px;
+  background:linear-gradient(90deg,rgba(0,0,0,.4),transparent 9%),linear-gradient(160deg,#1C3378,#11204F);border:1px solid var(--line);box-shadow:0 18px 40px rgba(0,0,0,.45);transform-origin:left center}
+.b-page.next{animation:pageNext .5s cubic-bezier(.2,.8,.2,1)}
+.b-page.prev{animation:pagePrev .5s cubic-bezier(.2,.8,.2,1)}
+.b-rings{position:absolute;left:9px;top:10%;bottom:10%;width:14px;z-index:2;pointer-events:none;
+  background:radial-gradient(circle,#DCE3EA 0 3.5px,#7D8896 4px 5.5px,transparent 6px) 50% 0/14px 33.33% repeat-y}
+.bslot{position:relative;aspect-ratio:5/7;border-radius:8px;background:rgba(255,255,255,.04);border:1px solid rgba(255,255,255,.1);display:grid;place-items:center;min-width:0}
+.bslot::after{content:"";position:absolute;inset:0;border-radius:8px;pointer-events:none;background:linear-gradient(130deg,rgba(255,255,255,.14),transparent 38%)}
+.bslot.own{border:0;background:none;cursor:pointer;padding:0}
+.bslot.own::after{display:none}
+.bslot.own .mini{width:100%}
+.bslot.miss{border:2px dashed var(--tc)}
+.bslot .bnum{position:absolute;top:7%;left:0;right:0;text-align:center;font-family:var(--data);font-weight:700;font-size:.72rem;letter-spacing:.06em;color:var(--tc)}
+.bslot.own .bnum{top:auto;bottom:-2px;z-index:2;font-size:.56rem;color:#fff;text-shadow:0 1px 3px rgba(0,0,0,.9)}
+.bslot .sil{width:50%;color:var(--tc);opacity:.4}
+.bslot .qm{position:absolute;bottom:12%;font-family:var(--display);font-weight:900;font-size:1.3rem;color:var(--tc);opacity:.6}
+.bslot.blank{border:1px dashed rgba(255,255,255,.07);background:transparent}
+.bslot.blank::after{display:none}
+.b-nav{display:flex;justify-content:center;align-items:center;gap:18px;font-family:var(--data);font-weight:700;color:var(--muted);font-variant-numeric:tabular-nums}
+.icon-btn:disabled{opacity:.3;cursor:default}
+.b-dots{display:flex;justify-content:center;gap:6px;flex-wrap:wrap}
+.b-dots button{width:9px;height:9px;padding:0;border:0;border-radius:50%;background:rgba(255,255,255,.22)}
+.b-dots button[aria-current="true"]{background:var(--orange);width:22px;border-radius:99px}
+@keyframes pageNext{from{transform:rotateY(-80deg);opacity:.15}}
+@keyframes pagePrev{from{transform:rotateY(40deg) translateX(-24px);opacity:.15}}
 .empty-filter{color:var(--muted);text-align:center;padding:30px 10px;border:1px dashed var(--line);border-radius:14px}
 
 .fab{position:fixed;right:calc(18px + env(safe-area-inset-right,0px));bottom:calc(20px + env(safe-area-inset-bottom,0px));z-index:8;
@@ -283,10 +320,13 @@ input[type=range]::-moz-range-thumb{width:20px;height:20px;border-radius:50%;bac
 
 
 /* Onglets */
-.tabs{display:grid;grid-template-columns:1fr 1fr;gap:4px;background:rgba(255,255,255,.05);border:1px solid var(--line);border-radius:14px;padding:4px}
+.tabs{display:grid;grid-template-columns:repeat(3,1fr);gap:4px;background:rgba(255,255,255,.05);border:1px solid var(--line);border-radius:14px;padding:4px}
 .tab{border:0;background:transparent;border-radius:10px;padding:10px;font-family:var(--display);font-weight:900;font-size:1.15rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);display:flex;gap:8px;justify-content:center;align-items:center}
 .tab[aria-selected="true"]{background:var(--panel-2);color:var(--ink);box-shadow:0 0 0 1px var(--line) inset}
-.tab svg{width:18px;height:18px}
+.tab svg{width:18px;height:18px;flex:none}
+.tab{min-width:0;overflow:hidden;white-space:nowrap}
+@media (max-width:460px){.tab{font-size:1.05rem;padding:10px 4px;gap:6px}.tab svg{width:16px;height:16px}}
+@media (max-width:370px){.tab svg{display:none}}
 .tabpane{display:flex;flex-direction:column;gap:16px}
 
 /* Onglet Packs */
@@ -495,6 +535,8 @@ input[type=range]::-moz-range-thumb{width:20px;height:20px;border-radius:50%;bac
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"><rect x="3" y="4" width="8" height="11" rx="1.5"/><rect x="13" y="9" width="8" height="11" rx="1.5"/></svg>Cartes</button>
     <button class="tab" role="tab" type="button" id="tab-btn-packs" data-tab="packs" aria-selected="false" aria-controls="tab-packs">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"><path d="M6 3h12l-1 4H7z"/><path d="M7 7h10v14H7z"/><path d="M10 13l2-2 2 2-2 3z" fill="currentColor"/></svg>Packs</button>
+    <button class="tab" role="tab" type="button" id="tab-btn-binder" data-tab="binder" aria-selected="false" aria-controls="tab-binder">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"><rect x="5" y="3" width="15" height="18" rx="2"/><path d="M5 7H3M5 12H3M5 17H3"/><path d="M10 8h6M10 12h6"/></svg>Classeur</button>
   </div>
   <div class="tabpane" id="tab-cards" role="tabpanel" aria-labelledby="tab-btn-cards">
   <div class="banner" id="banner" hidden>
@@ -514,14 +556,27 @@ input[type=range]::-moz-range-thumb{width:20px;height:20px;border-radius:50%;bac
   <div class="tabpane" id="tab-packs" role="tabpanel" aria-labelledby="tab-btn-packs" hidden>
     <div class="pack-head">
       <div><h2 class="pane-title">Ouvre un booster</h2>
-        <p class="note">5 cartes tirées au sort parmi tes cartes. Plus une carte est forte, plus elle est rare.</p></div>
+        <p class="note">Un booster par jour, 5 cartes tirées au sort parmi tes cartes. Plus une carte est forte, plus elle est rare. Nouveau booster chaque jour à minuit.</p></div>
       <button class="icon-btn mute-btn" type="button" id="mute-btn" aria-label="Couper le son et les vibrations"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5L6 9H3v6h3l5 4z"/><path class="w1" d="M15.5 8.5a5 5 0 010 7"/><path class="w2" d="M18.5 5.5a9 9 0 010 13"/><path class="x" d="M16 9l6 6M22 9l-6 6"/></svg></button>
     </div>
     <div class="banner" id="pack-ex" hidden><span>Tirage parmi les <b>exemples</b> tant que tu n'as pas créé de cartes.</span></div>
     <div class="banner" id="pack-few" hidden><span>Il faut au moins <b>5 cartes</b> pour ouvrir un booster : tu en as <b id="pack-few-n">0</b>. Crée-en d'autres dans l'onglet Cartes.</span></div>
     <div class="pack-zone" id="pack-zone"><div class="rays"></div><button class="pack" id="pack" type="button" aria-label="Ouvrir le booster"></button></div>
     <button class="btn primary open-btn" type="button" id="open-btn">Ouvrir le booster</button>
+    <p class="lock-txt" id="pack-lock" hidden></p>
     <div class="section"><span class="label">Chances d'apparaître dans un booster, de la plus rare à la plus courante</span><div class="odds" id="odds"></div></div>
+  </div>
+  <div class="tabpane" id="tab-binder" role="tabpanel" aria-labelledby="tab-btn-binder" hidden>
+    <div class="pack-head"><div><h2 class="pane-title">Mon classeur</h2><p class="note" id="b-sub">Chaque carte a sa place. Ouvre ton booster du jour pour le remplir.</p></div></div>
+    <div class="b-progress"><span class="track"><i id="b-bar" style="width:0%"></i></span><b id="b-count">0 / 0</b></div>
+    <div class="binder" id="binder"><div class="b-rings"></div><div class="b-page" id="b-page"></div></div>
+    <div class="b-nav">
+      <button class="icon-btn" type="button" id="b-prev" aria-label="Page précédente"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M15 5l-7 7 7 7"/></svg></button>
+      <span id="b-pageno">Page 1 / 1</span>
+      <button class="icon-btn" type="button" id="b-next" aria-label="Page suivante"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M9 5l7 7-7 7"/></svg></button>
+    </div>
+    <div class="b-dots" id="b-dots"></div>
+    <p class="empty-filter" id="b-empty" hidden>Crée des cartes dans l'onglet Cartes : chacune aura sa place dans le classeur.</p>
   </div>
 </main>
 
@@ -706,10 +761,12 @@ function readLocal(){
   try{const r=JSON.parse(localStorage.getItem(LS)||'null');return Array.isArray(r)?r.filter(p=>p&&p.id&&!p.example).map(normalize):[];}catch(e){return[];}
 }
 function writeLocal(){try{localStorage.setItem(LS,JSON.stringify(players));}catch(e){}}
+function idTime(id){const m=/^p([0-9a-z]{8})/.exec(id);if(!m)return 0;const t=parseInt(m[1],36);return t>1.6e12&&t<4e12?t:0;}
 function normalize(p){
   const base={id:String(p.id),name:String(p.name||'').slice(0,18)||'Sans nom',
     photo:typeof p.photo==='string'&&p.photo.startsWith('data:image/')?p.photo:null,updatedAt:p.updatedAt||Date.now()};
   base.fullart=!!p.fullart&&!!base.photo;
+  base.createdAt=+p.createdAt||idTime(base.id)||base.updatedAt;
   if(p.kind==='divers'){ // une carte divers n'a qu'une note : on la recopie partout pour que tri, rareté et boosters marchent pareil
     const note=clampN(p.note!=null?p.note:(p.s?ovr(p.s):50));
     return{...base,kind:'divers',poste:'DIV',note,desc:String(p.desc||'').slice(0,60),s:allS(note)};
@@ -717,10 +774,43 @@ function normalize(p){
   const s={};SKILLS.forEach(x=>s[x.k]=clampN(p.s&&p.s[x.k]));
   return{...base,kind:'joueur',poste:POSTES.some(q=>q.v===p.poste)?p.poste:'POL',s};
 }
-const body=p=>({...bodyBase(p),fullart:!!p.fullart});
+const body=p=>({...bodyBase(p),fullart:!!p.fullart,createdAt:p.createdAt||Date.now()});
 const bodyBase=p=>isDiv(p)?{kind:'divers',name:p.name,poste:'DIV',photo:p.photo,note:p.note,desc:p.desc||'',s:p.s,updatedAt:p.updatedAt}
   :{kind:'joueur',name:p.name,poste:p.poste,photo:p.photo,s:p.s,updatedAt:p.updatedAt};
 const shown=()=>players.length?players:EXAMPLES;
+
+/* ---------- Classeur et booster du jour : état ---------- */
+const LS_STATE='cartes-volley-etat';
+let state=loadState(),timeOffset=null,lockTimer=null,packStatus='checking',openBusy=false;
+function loadState(){
+  try{const j=JSON.parse(localStorage.getItem(LS_STATE)||'null');if(j&&Array.isArray(j.owned))return{owned:j.owned.map(String),lastDay:String(j.lastDay||''),lastTs:+j.lastTs||0};}catch(e){}
+  return{owned:[],lastDay:'',lastTs:0};
+}
+function mergeState(o){ // union des cartes obtenues, et on garde toujours le dernier booster ouvert
+  if(!o)return false;const before=JSON.stringify(state);const set=new Set(state.owned);
+  (Array.isArray(o.owned)?o.owned:[]).forEach(x=>set.add(String(x)));state.owned=[...set];
+  if(String(o.lastDay||'')>state.lastDay)state.lastDay=String(o.lastDay);state.lastTs=Math.max(state.lastTs,+o.lastTs||0);
+  return JSON.stringify(state)!==before;
+}
+async function saveState(){
+  try{localStorage.setItem(LS_STATE,JSON.stringify(state));}catch(e){}
+  if(mode==='cloud'&&col){try{await col.doc('_state').set({owned:state.owned,lastDay:state.lastDay,lastTs:state.lastTs});}catch(e){}}
+}
+/* Heure fiable : elle vient d'internet, jamais de l'horloge du téléphone */
+async function trustedNow(){
+  let n=0;
+  if(window.AndroidBridge&&AndroidBridge.serverTime){await new Promise(r=>setTimeout(r,30));try{n=+AndroidBridge.serverTime()||0;}catch(e){}}
+  else{try{const ctl=new AbortController(),tm=setTimeout(()=>ctl.abort(),7000);
+    const res=await fetch(location.pathname+'?heure='+Date.now(),{method:'HEAD',cache:'no-store',signal:ctl.signal});clearTimeout(tm);
+    const d=res.headers.get('Date');if(d)n=Date.parse(d)||0;}catch(e){}}
+  if(n>1.6e12){timeOffset=n-Date.now();return n;}
+  return null;
+}
+const estNow=()=>timeOffset==null?null:Date.now()+timeOffset;
+const PARIS=new Intl.DateTimeFormat('en-CA',{timeZone:'Europe/Paris',year:'numeric',month:'2-digit',day:'2-digit',hour:'2-digit',minute:'2-digit',second:'2-digit',hourCycle:'h23'});
+function parisParts(ms){const o={};PARIS.formatToParts(new Date(ms)).forEach(x=>o[x.type]=x.value);return o;}
+function parisDay(ms){const o=parisParts(ms);return`${o.year}-${o.month}-${o.day}`;}
+function msToMidnight(ms){const o=parisParts(ms);return(((23-(+o.hour%24))*3600+(59-+o.minute)*60+(60-+o.second))*1000);}
 
 function setMode(m){
   mode=m;
@@ -746,8 +836,11 @@ async function connect(){
     }
     try{localStorage.setItem(LS_MIG,'1');}catch(e){}
     setMode('cloud');
+    try{const st=await col.doc('_state').get();if(st.exists)mergeState(st.data());}catch(e){}
+    saveState();
     col.onSnapshot(s=>{
-      players=s.docs.map(d=>normalize({...d.data(),id:d.id}));
+      players=s.docs.filter(d=>d.id!=='_state').map(d=>normalize({...d.data(),id:d.id}));
+      const sd=s.docs.find(d=>d.id==='_state');if(sd&&mergeState(sd.data())){try{localStorage.setItem(LS_STATE,JSON.stringify(state));}catch(e){}}
       writeLocal();render();refreshOpen();
     },()=>{setMode('local');});
   }catch(e){setMode('local');}
@@ -831,6 +924,7 @@ function render(){
   $('grid').innerHTML=view.map((p,i)=>cardHTML(p,i)).join('');
   $('empty-filter').hidden=view.length>0;
   renderPacks();
+  if(!$('tab-binder').hidden)renderBinder();
 }
 $('chips').addEventListener('click',e=>{const b=e.target.closest('.chip');if(!b)return;filter=b.dataset.f;render();});
 $('sort').addEventListener('change',render);
@@ -1025,6 +1119,7 @@ $('form').addEventListener('submit',async e=>{
   const fullart=$('f-fullart').checked;
   const p=formDiv()?{id,fullart,kind:'divers',name,poste:'DIV',note:n,desc:$('f-desc').value.trim().slice(0,60),photo:draftPhoto,s:allS(n)}
     :{id,fullart,kind:'joueur',name,poste,photo:draftPhoto,s:formS()};
+  p.createdAt=(editing&&editing.createdAt)||Date.now();
   await persist(p);
   toast(isNew?'Carte créée':'Carte mise à jour');
   editing=null;openDetail(id);
@@ -1036,7 +1131,7 @@ $('m-export').addEventListener('click',async()=>{
   if(!players.length){toast("Crée au moins une carte avant d'enregistrer une sauvegarde.");return;}
   if(APP){
     const d=new Date(),stamp=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
-    let res='error';try{res=AndroidBridge.saveFile(`cartes-volley-${stamp}.json`,JSON.stringify({app:'cartes-volley',version:1,exportedAt:d.toISOString(),players},null,1));}catch(e){}
+    let res='error';try{res=AndroidBridge.saveFile(`cartes-volley-${stamp}.json`,JSON.stringify({app:'cartes-volley',version:2,exportedAt:d.toISOString(),players,classeur:state},null,1));}catch(e){}
     toast(res==='ok'?'Sauvegarde enregistrée dans Téléchargements':"La sauvegarde n'a pas pu être enregistrée.");return;
   }
   if(window.STANDALONE_WEB){
@@ -1052,7 +1147,7 @@ $('m-export').addEventListener('click',async()=>{
   }
   if(!downloads){toast("L'enregistrement de fichier n'est pas disponible dans cette vue. Ouvre la page dans l'appli Claude ou dans Chrome.");return;}
   const d=new Date(),stamp=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
-  const data=JSON.stringify({app:'cartes-volley',version:1,exportedAt:d.toISOString(),players},null,1);
+  const data=JSON.stringify({app:'cartes-volley',version:2,exportedAt:d.toISOString(),players,classeur:state},null,1);
   try{await downloads.save({filename:`cartes-volley-${stamp}.json`,data});toast('Sauvegarde enregistrée');}
   catch(err){if(err&&err.code==='declined')return;toast(err&&err.code==='rate_limited'?'Une demande est déjà ouverte. Réessaie dans un instant.':"La sauvegarde n'a pas pu être enregistrée ici.");}
 });
@@ -1064,6 +1159,7 @@ $('m-import').addEventListener('change',async e=>{
     const list=arr.filter(p=>p&&p.id&&!p.example).map(normalize);
     if(!list.length){toast('Ce fichier ne contient aucune carte.');return;}
     for(const p of list)await persist(p);
+    if(j&&j.classeur&&mergeState(j.classeur)){await saveState();render();}
     toast(list.length+(list.length>1?' cartes restaurées':' carte restaurée'));closeAll();
   }catch(err){toast("Ce fichier n'est pas une sauvegarde Cartes Volley.");}
 });
@@ -1127,22 +1223,84 @@ function miniHTML(p){const o=ovr(p.s);const fa=p.fullart&&p.photo;return`<div cl
   <div class="mp">${p.photo?`<img src="${p.photo}" alt="">`:esc(initials(p.name))}</div><div class="mn">${esc(p.name)}</div></div></div>`;}
 $('pack').innerHTML=packHTML();
 function renderPacks(){
-  const pool=shown();$('pack-ex').hidden=players.length>0;
+  const pool=players;$('pack-ex').hidden=true;
   const few=pool.length<PACK_SIZE;
   $('pack-few').hidden=!few;$('pack-few-n').textContent=pool.length;
-  $('open-btn').disabled=few;$('pack').disabled=few;$('pack-zone').classList.toggle('off',few);
+  renderLock();
   const od=few?null:packOdds(pool);
   const rows=pool.map(p=>({p,o:ovr(p.s),w:weightOf(p),c:few?0:od.get(p.id)})).sort((a,b)=>a.w-b.w||b.o-a.o); // de la plus rare à la plus courante
   const col={icon:'#C9B8FF',gold:'#FFD23F',silver:'#DCE3EA',bronze:'#E9A877'};
   $('odds').innerHTML=rows.map(x=>`<div class="odd"><i style="background:${col[tier(x.o)]}"></i><span>${esc(x.p.name)}${x.p.fullart&&x.p.photo?' <em class="fa-tag">FULL ART</em>':''}</span><b>${x.o}</b><span>${few?'–':(x.c*100).toFixed(x.c<.1?1:0)+' %'}</span></div>`).join('');
 }
 function setTab(t){
-  $('tab-cards').hidden=t!=='cards';$('tab-packs').hidden=t!=='packs';
-  $('tab-btn-cards').setAttribute('aria-selected',t==='cards');$('tab-btn-packs').setAttribute('aria-selected',t==='packs');
+  ['cards','packs','binder'].forEach(k=>{$('tab-'+k).hidden=t!==k;$('tab-btn-'+k).setAttribute('aria-selected',t===k);});
   $('fab').hidden=t!=='cards';try{localStorage.setItem('cartes-volley-onglet',t);}catch(e){}
+  if(t==='packs')refreshPackLock();
+  if(t==='binder')renderBinder();
 }
 document.querySelectorAll('.tab').forEach(b=>b.addEventListener('click',()=>setTab(b.dataset.tab)));
-try{if(localStorage.getItem('cartes-volley-onglet')==='packs')setTab('packs');}catch(e){}
+document.addEventListener('visibilitychange',()=>{if(!document.hidden&&!$('tab-packs').hidden)refreshPackLock();});
+
+async function refreshPackLock(){
+  if(openBusy)return;packStatus='checking';renderLock();
+  const n=await trustedNow();
+  packStatus=n==null?'offline':(state.lastDay===parisDay(n)||n<state.lastTs)?'locked':'ready';
+  renderLock();
+}
+function renderLock(){
+  const few=players.length<PACK_SIZE,b=$('open-btn'),l=$('pack-lock');
+  clearInterval(lockTimer);
+  if(few){b.disabled=true;b.textContent='Ouvrir le booster';l.hidden=true;}
+  else if(packStatus==='checking'){b.disabled=true;b.textContent="Vérification de l'heure…";l.hidden=true;}
+  else if(packStatus==='offline'){b.disabled=false;b.textContent='Réessayer';l.hidden=false;
+    l.textContent="Connecte-toi à internet : l'heure est vérifiée en ligne avant d'ouvrir le booster du jour.";}
+  else if(packStatus==='locked'){b.disabled=true;b.textContent='Booster du jour ouvert';l.hidden=false;
+    const tick=()=>{const n=estNow();if(n==null){l.textContent='Reviens demain pour un nouveau booster.';return;}
+      const ms=msToMidnight(n);if(ms<=1000){clearInterval(lockTimer);setTimeout(refreshPackLock,1500);return;}
+      const h=Math.floor(ms/3.6e6),m=Math.floor(ms%3.6e6/6e4),sec=Math.floor(ms%6e4/1e3),z=v=>String(v).padStart(2,'0');
+      l.innerHTML=`Prochain booster dans <b>${z(h)}:${z(m)}:${z(sec)}</b>`;};
+    tick();lockTimer=setInterval(tick,1000);}
+  else{b.disabled=false;b.textContent='Ouvrir le booster du jour';l.hidden=true;}
+  $('pack').disabled=packStatus!=='ready'||few;
+  $('pack-zone').classList.toggle('off',few||packStatus==='locked');
+}
+
+/* ---------- Classeur ---------- */
+const PER_PAGE=9;let binderPage=0;
+const TIER_COL={icon:'#C9B8FF',gold:'#FFD23F',silver:'#DCE3EA',bronze:'#E9A877'};
+const SIL_P='<svg class="sil" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="12" cy="8" r="4.2"/><path d="M3.5 21c.8-4.6 4.2-7 8.5-7s7.7 2.4 8.5 7z"/></svg>';
+const SIL_D='<svg class="sil" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l2.9 6.6 7.1.6-5.4 4.7 1.6 7L12 17.3 5.8 20.9l1.6-7L2 9.2l7.1-.6z"/></svg>';
+const binderList=()=>[...players].sort((a,b)=>(a.createdAt||0)-(b.createdAt||0)||a.id.localeCompare(b.id));
+function renderBinder(dir){
+  const list=binderList(),N=list.length,pages=Math.max(1,Math.ceil(N/PER_PAGE)),own=new Set(state.owned);
+  binderPage=Math.max(0,Math.min(binderPage,pages-1));
+  const got=list.filter(p=>own.has(p.id)).length;
+  $('b-count').textContent=`${got} / ${N}`;$('b-bar').style.width=(N?got/N*100:0)+'%';
+  $('b-empty').hidden=N>0;$('binder').hidden=N===0;
+  $('b-sub').textContent=N===0?'Chaque carte que tu crées aura sa place ici.':got===N?'Classeur complet, bravo !':`Il te manque ${N-got} carte${N-got>1?'s':''}. Ouvre ton booster du jour pour le remplir.`;
+  const start=binderPage*PER_PAGE,slots=[];
+  for(let k=0;k<PER_PAGE;k++){
+    const i=start+k,p=list[i];
+    if(!p){slots.push('<div class="bslot blank" aria-hidden="true"></div>');continue;}
+    const num='#'+String(i+1).padStart(3,'0'),tc=TIER_COL[tier(ovr(p.s))];
+    slots.push(own.has(p.id)
+      ?`<button class="bslot own" type="button" data-id="${esc(p.id)}" aria-label="${num} ${esc(p.name)}">${miniHTML(p)}<span class="bnum">${num}</span></button>`
+      :`<div class="bslot miss" style="--tc:${tc}" aria-label="${num}, carte pas encore obtenue"><span class="bnum">${num}</span>${isDiv(p)?SIL_D:SIL_P}<span class="qm">?</span></div>`);
+  }
+  const pg=$('b-page');pg.innerHTML=slots.join('');
+  pg.classList.remove('next','prev');if(dir){void pg.offsetWidth;pg.classList.add(dir);}
+  $('b-pageno').textContent=`Page ${binderPage+1} / ${pages}`;
+  $('b-prev').disabled=binderPage===0;$('b-next').disabled=binderPage>=pages-1;
+  $('b-dots').innerHTML=pages>1?Array.from({length:pages},(_,k)=>`<button type="button" data-p="${k}" aria-label="Page ${k+1}" aria-current="${k===binderPage}"></button>`).join(''):'';
+}
+function turnPage(d){const pages=Math.max(1,Math.ceil(players.length/PER_PAGE)),np=binderPage+d;if(np<0||np>=pages)return;binderPage=np;renderBinder(d>0?'next':'prev');sfx.whoosh();}
+$('b-prev').addEventListener('click',()=>turnPage(-1));$('b-next').addEventListener('click',()=>turnPage(1));
+$('b-dots').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;const k=+b.dataset.p;if(k===binderPage)return;const d=k>binderPage?'next':'prev';binderPage=k;renderBinder(d);});
+$('b-page').addEventListener('click',e=>{const c=e.target.closest('.bslot.own');if(c&&!swiped)openDetail(c.dataset.id);});
+let swX=null,swY=null,swiped=false;
+$('binder').addEventListener('pointerdown',e=>{swX=e.clientX;swY=e.clientY;swiped=false;});
+$('binder').addEventListener('pointerup',e=>{if(swX==null)return;const dx=e.clientX-swX,dy=e.clientY-swY;swX=null;
+  if(Math.abs(dx)>45&&Math.abs(dx)>Math.abs(dy)*1.3){swiped=true;turnPage(dx<0?1:-1);setTimeout(()=>swiped=false,50);}});
 
 /* ---- Son (synthétisé, aucun fichier) ---- */
 const SFX={ctx:null,muted:false,nb:null};
@@ -1247,8 +1405,8 @@ $('opening').addEventListener('pointerup',e=>{if(e.target.closest('.op-bar butto
 function hint(t,blink=true){const h=$('op-hint');h.textContent=t;h.classList.toggle('blink',blink&&!!t);}
 function closeOpening(){run++;$('opening').classList.remove('dark');$('opening').querySelectorAll('.prism').forEach(e=>e.remove());if(tapResolve){const r=tapResolve;tapResolve=null;r();}$('opening').hidden=true;FX.parts=[];document.body.style.overflow='';}
 $('op-close').addEventListener('click',closeOpening);
-$('open-btn').addEventListener('click',()=>openPack());
-$('pack').addEventListener('click',()=>openPack());
+$('open-btn').addEventListener('click',()=>{if(packStatus==='offline')refreshPackLock();else openPack();});
+$('pack').addEventListener('click',()=>{if(packStatus==='ready')openPack();});
 
 const CHARGE_MS={bronze:1300,silver:1700,gold:2400,icon:3300};
 function fireworks(colors,ms,alive){
@@ -1268,10 +1426,20 @@ async function countUp(el,to,ms,alive){
 }
 
 async function openPack(){
-  const pool=shown();if(pool.length<PACK_SIZE){renderPacks();setTab('packs');toast('Il faut au moins 5 cartes pour ouvrir un booster.');return;}
-  ac();
+  const pool=players;if(pool.length<PACK_SIZE){renderPacks();setTab('packs');toast('Il faut au moins 5 cartes pour ouvrir un booster.');return;}
+  if(openBusy)return;
+  ac(); // le son doit démarrer pendant le toucher, avant toute attente
+  openBusy=true;packStatus='checking';renderLock();
+  const now=await trustedNow();openBusy=false;
+  if(now==null){packStatus='offline';renderLock();toast("Pas de connexion : impossible de vérifier l'heure.");return;}
+  const today=parisDay(now);
+  if(state.lastDay===today||now<state.lastTs){packStatus='locked';renderLock();toast("Tu as déjà ouvert ton booster aujourd'hui. Reviens après minuit !");return;}
   const my=++run,alive=()=>my===run;
   const pulled=revealOrder(drawPack(pool));
+  // Enregistré tout de suite : fermer l'animation ne rend pas le booster
+  const before=new Set(state.owned),fresh=new Set(pulled.filter(p=>!before.has(p.id)).map(p=>p.id));
+  state.lastDay=today;state.lastTs=now;pulled.forEach(p=>{if(!before.has(p.id))state.owned.push(p.id);});
+  saveState();packStatus='locked';renderLock();
   const best=pulled.map(p=>tier(ovr(p.s))).reduce((m,t)=>TIER_RANK[t]>TIER_RANK[m]?t:m,'bronze'),bestR=TIER_RANK[best]; // la lueur annonce le plus haut niveau du booster
   const O=$('opening'),stage=$('op-stage'),tray=$('op-tray');
   O.hidden=false;O.classList.remove('dark');document.body.style.overflow='hidden';fxSize();FX.parts=[];
@@ -1361,7 +1529,7 @@ async function openPack(){
     if(R===3){sfx.fanfare();fireworks(fx.c,3200,alive);buzz([150,80,150,80,300]);
       setTimeout(()=>{if(alive()){const[x,y]=centerOf(fl);burst(x,y,fx.c,220,18,{up:4});flash('#E9DDFF');shake();}},700);}
     tease.className='tease';
-    hint(i<4?'Touche pour la suivante':'Touche pour voir ton booster');
+    hint((fresh.has(p.id)?'Nouvelle carte ! ':'Déjà dans ton classeur. ')+(i<4?'Touche pour la suivante':'Touche pour voir ton booster'));
     await nextTap();if(!alive())return;hint('',false);
     walk.classList.remove('on','rainbow');O.classList.remove('dark');const fab=$('op-fa');if(fab)fab.remove();
     fl.classList.add('leave');await wait(300);if(!alive())return;fl.remove();
@@ -1371,17 +1539,21 @@ async function openPack(){
   $('op-count').textContent='TON BOOSTER';tray.hidden=true;
   stage.querySelectorAll('.stack-back').forEach(e=>e.remove());
   const top=pulled[4],rest=pulled.slice(0,4).reverse();
-  stage.insertAdjacentHTML('beforeend',`<div class="op-summary"><span class="best-label">Carte la plus rare</span><div class="best">${miniHTML(top)}</div>
-    <div class="rest">${rest.map((p,i)=>`<div style="animation-delay:${i*70}ms">${miniHTML(p)}</div>`).join('')}</div>
-    <div class="op-actions"><button class="btn" type="button" id="op-done">Terminé</button><button class="btn primary" type="button" id="op-again">Ouvrir un autre</button></div></div>`);
+  const tagNew=p=>fresh.has(p.id)?'<span class="newtag">NOUVELLE</span>':'';
+  stage.insertAdjacentHTML('beforeend',`<div class="op-summary"><span class="best-label">Carte la plus rare</span><div class="best sum-mini">${miniHTML(top)}${tagNew(top)}</div>
+    <div class="rest">${rest.map((p,i)=>`<div class="sum-mini" style="animation-delay:${i*70}ms">${miniHTML(p)}${tagNew(p)}</div>`).join('')}</div>
+    <p class="note" style="margin:0;text-align:center">${fresh.size?`${fresh.size} nouvelle${fresh.size>1?'s':''} carte${fresh.size>1?'s':''} dans ton classeur`:'Aucune nouvelle carte cette fois'}</p>
+    <div class="op-actions"><button class="btn" type="button" id="op-done">Terminé</button><button class="btn primary" type="button" id="op-again">Voir le classeur</button></div></div>`);
   $('op-done').addEventListener('click',closeOpening);
-  $('op-again').addEventListener('click',()=>openPack());
+  $('op-again').addEventListener('click',()=>{closeOpening();setTab('binder');});
   const[bx,by]=centerOf(stage.querySelector('.best'));burst(bx,by,TIER_FX[tier(ovr(top.s))].c,60,8);
 }
 window.addEventListener('resize',()=>{if(!$('opening').hidden)fxSize();});
 
 
-setMode('pending');render();connect();
+setMode('pending');render();
+try{const t=localStorage.getItem('cartes-volley-onglet');if(t==='packs'||t==='binder')setTab(t);}catch(e){}
+connect();
 </script>
 
 </body></html>
