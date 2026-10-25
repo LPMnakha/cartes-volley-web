@@ -332,6 +332,31 @@ input[type=range]::-moz-range-thumb{width:20px;height:20px;border-radius:50%;bac
 .op-actions{display:grid;grid-template-columns:1fr 1.4fr;gap:10px;width:100%}
 .best-label{font-family:var(--data);font-weight:700;letter-spacing:.16em;text-transform:uppercase;font-size:.78rem;color:var(--ball)}
 
+
+/* Suspense selon la rareté */
+.opening::before{content:"";position:absolute;inset:0;background:#000;opacity:0;transition:opacity .9s ease;z-index:0;pointer-events:none}
+.opening.dark::before{opacity:.92}
+.opening.dark .op-tray,.opening.dark .op-count{opacity:.25;transition:opacity .6s}
+.tease{position:absolute;z-index:2;width:min(95vw,460px);aspect-ratio:1;border-radius:50%;pointer-events:none;opacity:0;transition:opacity .5s;
+  background:radial-gradient(circle,var(--tc,#fff) 0,transparent 60%)}
+.tease.on{opacity:.5;animation:pulseGlow 1.2s ease-in-out infinite}
+.tease.icon{background:radial-gradient(circle,#FF6BD6 0,#7AD8FF 30%,#8CFFB0 45%,transparent 62%);animation:pulseGlow .8s ease-in-out infinite,hue 1.6s linear infinite}
+.flipper.trem{animation:tremble .28s linear infinite}
+.flipper.trem2{animation:tremble .14s linear infinite}
+.flipper.slow .inner3d{transition-duration:1.1s}
+.flipper.spin .inner3d{transition:transform 1.6s cubic-bezier(.15,.7,.2,1.04)}
+.flipper.flipped.spin .inner3d{transform:rotateY(540deg)}
+.flipper.rise{transform:scale(1.08);transition:transform .8s ease}
+.walk.rainbow .beams{background:repeating-conic-gradient(#FF8BE0 0 5deg,transparent 5deg 13deg,#7AD8FF 13deg 18deg,transparent 18deg 26deg,#8CFFB0 26deg 31deg,transparent 31deg 39deg,#FFF07A 39deg 44deg,transparent 44deg 52deg);
+  opacity:.55;animation:spin 2.6s linear infinite,hue 3s linear infinite}
+.walk-txt .w.huge{font-size:clamp(3.2rem,19vw,7.5rem);letter-spacing:.02em}
+.walk-txt .w.cnt{font-size:clamp(5rem,34vw,11rem);font-family:var(--data);font-variant-numeric:tabular-nums;animation:none}
+.walk-txt .w.rb{background:linear-gradient(90deg,#FF8BE0,#7AD8FF,#8CFFB0,#FFF07A,#FF8BE0);background-size:200% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;
+  animation:slam .55s cubic-bezier(.2,.9,.3,1.35) both,slide 1.2s linear infinite;text-shadow:none;filter:drop-shadow(0 0 18px rgba(201,184,255,.9))}
+.walk-txt .w.q{font-size:clamp(2rem,12vw,4rem);opacity:.9}
+@keyframes tremble{0%{transform:translate(0,0) rotate(0)}25%{transform:translate(-3px,1px) rotate(-1.2deg)}50%{transform:translate(3px,-1px) rotate(1.2deg)}75%{transform:translate(-2px,-1px) rotate(-.6deg)}100%{transform:translate(0,0) rotate(0)}}
+@keyframes hue{to{filter:hue-rotate(360deg)}}
+@keyframes slide{to{background-position:200% 0}}
 @keyframes spin{to{transform:rotate(360deg)}}
 @keyframes float{50%{transform:translateY(-10px) rotate(-1.5deg)}}
 @keyframes sheenLoop{0%,20%{background-position:120% 0}70%,100%{background-position:-40% 0}}
@@ -997,40 +1022,63 @@ const wait=ms=>new Promise(r=>setTimeout(r,RM?Math.min(ms,250):ms));
 const nextTap=()=>new Promise(r=>{tapResolve=r;});
 $('opening').addEventListener('pointerup',e=>{if(e.target.closest('button'))return;if(tapResolve){const r=tapResolve;tapResolve=null;r();}});
 function hint(t,blink=true){const h=$('op-hint');h.textContent=t;h.classList.toggle('blink',blink&&!!t);}
-function closeOpening(){run++;if(tapResolve){const r=tapResolve;tapResolve=null;r();}$('opening').hidden=true;FX.parts=[];document.body.style.overflow='';}
+function closeOpening(){run++;$('opening').classList.remove('dark');if(tapResolve){const r=tapResolve;tapResolve=null;r();}$('opening').hidden=true;FX.parts=[];document.body.style.overflow='';}
 $('op-close').addEventListener('click',closeOpening);
 $('open-btn').addEventListener('click',()=>openPack());
 $('pack').addEventListener('click',()=>openPack());
+
+const CHARGE_MS={bronze:1300,silver:1700,gold:2400,icon:3300};
+function fireworks(colors,ms,alive){
+  const end=performance.now()+(RM?300:ms);
+  const shot=()=>{if(!alive()||performance.now()>end||!FX.w)return;
+    const x=FX.w*(.15+Math.random()*.7),y=FX.h*(.12+Math.random()*.4);
+    tone('sine',500,1500,.22,.03);setTimeout(()=>{if(!alive())return;burst(x,y,colors,80,8,{up:0,g:.07,spark:.7});hiss(.25,.25,2500,300,'lowpass');},220);
+    setTimeout(shot,180+Math.random()*220);};
+  shot();
+}
+function heartbeat(n,gap,alive){for(let i=0;i<n;i++)setTimeout(()=>{if(!alive())return;tone('sine',70,40,.18,.55);setTimeout(()=>tone('sine',65,38,.16,.4),170);buzz([30,140,25]);},i*gap);}
+async function countUp(el,to,ms,alive){
+  const t0=performance.now();let last=-1;
+  await new Promise(res=>{const step=()=>{if(!alive())return res();const k=Math.min(1,(performance.now()-t0)/ms),e=1-Math.pow(1-k,3),v=Math.round(e*to);
+    if(v!==last){el.textContent=v;last=v;tone('square',900+v*6,900+v*6,.03,.025);}
+    if(k<1)requestAnimationFrame(step);else res();};step();});
+}
 
 async function openPack(){
   const pool=shown();if(!pool.length)return;
   ac();
   const my=++run,alive=()=>my===run;
   const pulled=drawPack(pool).sort((a,b)=>ovr(a.s)-ovr(b.s));
-  const best=tier(ovr(pulled[4].s));
+  const best=tier(ovr(pulled[4].s)),bestR=TIER_RANK[best];
   const O=$('opening'),stage=$('op-stage'),tray=$('op-tray');
-  O.hidden=false;document.body.style.overflow='hidden';fxSize();FX.parts=[];
+  O.hidden=false;O.classList.remove('dark');document.body.style.overflow='hidden';fxSize();FX.parts=[];
   $('op-count').textContent='BOOSTER';tray.innerHTML='<div class="slot"></div>'.repeat(5);tray.hidden=false;
-  stage.innerHTML=`<div class="glowring" id="op-glow"></div><div class="walk" id="walk"><div class="beams"></div><div class="walk-txt" id="walk-txt"></div></div><button class="pack" id="op-pack" type="button" aria-label="Ouvrir">${packHTML()}</button>`;
-  const pack=$('op-pack');
+  stage.innerHTML=`<div class="glowring" id="op-glow"></div><div class="tease" id="op-tease"></div><div class="walk" id="walk"><div class="beams"></div><div class="walk-txt" id="walk-txt"></div></div><button class="pack" id="op-pack" type="button" aria-label="Ouvrir">${packHTML()}</button>`;
+  const pack=$('op-pack'),glow=$('op-glow');
   hint('Touche le booster pour l\'ouvrir');
   await nextTap();if(!alive())return;
   hint('',false);
-  // 1. Charge : tremble de plus en plus, la lueur prend la couleur de la meilleure carte
-  pack.classList.add('charge');sfx.riser(1.7);buzz([30,120,30,90,40,60,50,40,60,20,80]);
-  const glow=$('op-glow');
-  setTimeout(()=>{if(!alive())return;pack.style.setProperty('--glow',TIER_FX[best].glow);glow.style.setProperty('--wc',TIER_FX[best].glow);glow.classList.add('on');},850);
-  const sparkT=setInterval(()=>{if(!alive()||!FX.w)return;const[x,y]=centerOf(pack);burst(x,y,TIER_FX[best].c,TIER_RANK[best]>=2?10:4,4,{up:1,spark:1,big:3});},140);
-  await wait(1700);clearInterval(sparkT);if(!alive())return;
+  // 1. Charge : plus le booster est rare, plus elle dure, et la lueur change de couleur en chemin
+  const CM=CHARGE_MS[best];
+  pack.style.animationDuration=CM+'ms';pack.classList.add('charge');sfx.riser(CM/1000);
+  buzz([30,120,30,90,40,60,50,40,60,20,80,20,100]);
+  const setGlow=t=>{pack.style.setProperty('--glow',TIER_FX[t].glow);glow.style.setProperty('--wc',TIER_FX[t].glow);glow.classList.add('on');};
+  if(bestR>=1)setTimeout(()=>alive()&&setGlow(bestR>=2?'silver':best),CM*.35);
+  if(bestR>=2)setTimeout(()=>alive()&&setGlow('gold'),CM*.6);
+  if(bestR===3)setTimeout(()=>{if(!alive())return;setGlow('icon');glow.style.animation='pulseGlow .6s ease-in-out infinite, hue 1.2s linear infinite';O.classList.add('dark');heartbeat(2,500,alive);},CM*.82);
+  const sparkT=setInterval(()=>{if(!alive()||!FX.w)return;const[x,y]=centerOf(pack);burst(x,y,TIER_FX[best].c,bestR>=2?12:4,4+bestR,{up:1,spark:1,big:3});},140);
+  await wait(CM);clearInterval(sparkT);if(!alive())return;
   // 2. Explosion
   const[cx,cy]=centerOf(pack);
-  pack.classList.add('tear');sfx.boom();buzz(160);flash(TIER_RANK[best]>=2?'#FFF6D0':'#FFFFFF');shake();
-  burst(cx,cy,TIER_FX[best].c.concat(['#FF7A2F','#FFD23F']),RM?20:220,15,{up:3});
-  await wait(650);if(!alive())return;
-  pack.remove();glow.classList.remove('on');
+  pack.classList.add('tear');sfx.boom();buzz(bestR>=2?[200,60,140]:160);flash(bestR>=2?'#FFF6D0':'#FFFFFF');shake();
+  burst(cx,cy,TIER_FX[best].c.concat(['#FF7A2F','#FFD23F']),RM?20:[160,220,300,380][bestR],13+bestR*2,{up:3});
+  if(bestR===3)setTimeout(()=>{if(!alive())return;sfx.boom();flash('#E9DDFF');shake();burst(cx,cy,TIER_FX.icon.c,240,18,{up:4});},380);
+  await wait(bestR===3?900:650);if(!alive())return;
+  O.classList.remove('dark');pack.remove();glow.classList.remove('on');glow.style.animation='';
   // 3. Révélation carte par carte, la meilleure en dernier
+  const walk=$('walk'),txt=$('walk-txt'),tease=$('op-tease');
   for(let i=0;i<5;i++){
-    const p=pulled[i],t=tier(ovr(p.s)),fx=TIER_FX[t],special=TIER_RANK[t]>=2;
+    const p=pulled[i],o=ovr(p.s),t=tier(o),fx=TIER_FX[t],R=TIER_RANK[t];
     $('op-count').textContent=`CARTE ${i+1} / 5`;
     stage.querySelectorAll('.stack-back').forEach(e=>e.remove());
     for(let k=4-i;k>0;k--)stage.insertAdjacentHTML('beforeend',`<div class="stack-back" style="transform:translate(${k*5}px,${k*-5}px) rotate(${k*1.5}deg)"><div class="cardback">${HEX_BIG}</div></div>`);
@@ -1039,27 +1087,55 @@ async function openPack(){
     stage.appendChild(fl);sfx.whoosh();
     await wait(450);if(!alive())return;
     fl.classList.remove('enter');
-    hint(special?'Ça brille… touche pour révéler':'Touche pour révéler');
+    // Indice avant de toucher : lueur et tremblement selon la rareté
+    tease.className='tease';tease.style.removeProperty('--tc');
+    if(R>=1){tease.style.setProperty('--tc',fx.glow);tease.classList.add('on');if(t==='icon')tease.classList.add('icon');}
+    if(R===2)fl.classList.add('trem');if(R===3)fl.classList.add('trem2');
+    hint(['Touche pour révéler','Touche pour révéler','Ça brille… touche pour révéler','Attention… touche pour révéler'][R]);
     await nextTap();if(!alive())return;hint('',false);
-    if(special){ // Entrée façon walkout
-      const walk=$('walk'),txt=$('walk-txt');walk.style.setProperty('--wc',fx.glow);txt.style.setProperty('--wc',fx.glow);
+    fl.classList.remove('trem','trem2');
+    if(R===1){ // Argent : la carte tremble et s'illumine
+      fl.classList.add('trem');sfx.whoosh();buzz(50);await wait(650);if(!alive())return;fl.classList.remove('trem');
+    }
+    if(R>=2){ // Or et icône : extinction des lumières puis walkout
+      O.classList.add('dark');tease.classList.remove('on');
       stage.querySelectorAll('.stack-back').forEach(e=>e.style.opacity='0');fl.classList.add('hide');
+      heartbeat(R===3?3:2,R===3?700:600,alive);
+      await wait(R===3?2000:1100);if(!alive())return;
+      const gold=TIER_FX.gold.glow;
+      walk.classList.remove('rainbow');walk.style.setProperty('--wc',gold);txt.style.setProperty('--wc',gold);
       walk.classList.add('on');sfx.thump();buzz(60);
-      const steps=[`<span class="w mid">${esc(posteL(p.poste))}</span>`,`<span class="w mid">${TIER_L[t]}</span>`,
-        `<span class="w ph">${p.photo?`<img src="${p.photo}" alt="">`:esc(initials(p.name))}</span>`];
-      for(const st of steps){txt.innerHTML=st;sfx.thump();buzz(40);const[x,y]=centerOf(txt);burst(x,y,fx.c,40,7,{spark:.8});await wait(900);if(!alive())return;}
+      if(R===3){ // fausse piste : on croit à une carte or…
+        txt.innerHTML='<span class="w q">Carte or ?</span>';await wait(1100);if(!alive())return;
+        txt.innerHTML='';flash('#FFFFFF');shake();sfx.boom();buzz([120,50,200]);
+        walk.classList.add('rainbow');txt.style.setProperty('--wc',fx.glow);
+        const[x,y]=centerOf(txt);burst(x,y,fx.c,200,15,{up:2});
+        txt.innerHTML='<span class="w huge rb">ICÔNE</span>';sfx.sparkle();await wait(1400);if(!alive())return;
+      }
+      const steps=[`<span class="w mid">${esc(posteL(p.poste))}</span>`];
+      if(R===2)steps.push(`<span class="w mid">${TIER_L[t]}</span>`);
+      steps.push(`<span class="w ph">${p.photo?`<img src="${p.photo}" alt="">`:esc(initials(p.name))}</span>`);
+      for(const st of steps){txt.innerHTML=st;sfx.thump();buzz(40);const[x,y]=centerOf(txt);burst(x,y,fx.c,R===3?70:40,7,{spark:.8});await wait(R===3?1000:900);if(!alive())return;}
+      if(R===3){ // la note défile jusqu'à la vraie valeur
+        txt.innerHTML='<span class="w cnt" id="op-cnt">0</span>';await countUp($('op-cnt'),o,1800,alive);if(!alive())return;
+        sfx.boom();shake();flash('#F3E8FF');const[x,y]=centerOf(txt);burst(x,y,fx.c,160,12,{up:2});await wait(900);if(!alive())return;
+      }
       txt.innerHTML='';fl.classList.remove('hide');
     }
     fl.querySelector('.front').innerHTML=cardHTML(p,0,false);
-    fl.classList.add('flipped');sfx.flip();
-    await wait(380);if(!alive())return;
+    if(R===2)fl.classList.add('slow');if(R===3)fl.classList.add('spin');
+    fl.classList.add('flipped');sfx.flip();if(R===3)sfx.whoosh();
+    await wait([380,420,700,1100][R]);if(!alive())return;
     const[fx0,fy0]=centerOf(fl);
-    sfx.ding(t);burst(fx0,fy0,fx.c,fx.n,special?13:8,{up:special?3:1});
-    if(special){flash(fx.glow);shake();buzz([80,60,120]);sfx.sparkle();rain(fx.c,t==='icon'?180:110);}
-    if(t==='icon'){sfx.fanfare();setTimeout(()=>{if(alive()){const[x,y]=centerOf(fl);burst(x,y,fx.c,200,16,{up:4});flash('#E9DDFF');}},600);}
+    sfx.ding(t);burst(fx0,fy0,fx.c,[25,70,180,260][R],[7,10,13,17][R],{up:R>=2?3:1});
+    if(R===1){flash('rgba(232,238,245,.5)');sfx.sparkle();}
+    if(R>=2){flash(fx.glow);shake();buzz([80,60,120]);sfx.sparkle();rain(fx.c,R===3?220:130);}
+    if(R===3){sfx.fanfare();fireworks(fx.c,3200,alive);buzz([150,80,150,80,300]);
+      setTimeout(()=>{if(alive()){const[x,y]=centerOf(fl);burst(x,y,fx.c,220,18,{up:4});flash('#E9DDFF');shake();}},700);}
+    tease.className='tease';
     hint(i<4?'Touche pour la suivante':'Touche pour voir ton booster');
     await nextTap();if(!alive())return;hint('',false);
-    $('walk').classList.remove('on');
+    walk.classList.remove('on','rainbow');O.classList.remove('dark');
     fl.classList.add('leave');await wait(300);if(!alive())return;fl.remove();
     tray.children[i].innerHTML=miniHTML(p);sfx.whoosh();
   }
