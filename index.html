@@ -418,6 +418,38 @@ input[type=range]::-moz-range-thumb{width:20px;height:20px;border-radius:50%;bac
 @keyframes tremble{0%{transform:translate(0,0) rotate(0)}25%{transform:translate(-3px,1px) rotate(-1.2deg)}50%{transform:translate(3px,-1px) rotate(1.2deg)}75%{transform:translate(-2px,-1px) rotate(-.6deg)}100%{transform:translate(0,0) rotate(0)}}
 @keyframes hue{to{filter:hue-rotate(360deg)}}
 @keyframes slide{to{background-position:200% 0}}
+
+/* Cinématique Full Art */
+.flipper.holo-back .cardback{position:relative}
+.flipper.holo-back .cardback::after{content:"";position:absolute;inset:0;mix-blend-mode:screen;pointer-events:none;
+  background:linear-gradient(115deg,transparent 25%,rgba(255,139,224,.6) 40%,rgba(122,216,255,.6) 50%,rgba(140,255,176,.6) 60%,transparent 75%);background-size:260% 100%;animation:holoSweep 1.8s ease-in-out infinite}
+.tease.prismatic{background:conic-gradient(from 0deg,#FF8BE0,#7AD8FF,#8CFFB0,#FFF07A,#FF8BE0);
+  -webkit-mask:radial-gradient(circle,#000 18%,transparent 62%);mask:radial-gradient(circle,#000 18%,transparent 62%);animation:spin 3s linear infinite}
+.tease.prismatic.on{opacity:.5}
+.flipper.fa .inner3d{transition:none}
+.fa-cover{position:absolute;inset:0;z-index:5;pointer-events:none}
+.fa-cover .cardback{position:relative}
+.fa-cover.go{animation:faShatter .8s cubic-bezier(.3,0,.7,1) forwards}
+.card.fa-intro .fa-art img{animation:faZoom 1.8s cubic-bezier(.2,.7,.2,1) both}
+.card.fa-intro .fa-art::after{animation:fadeIn 1.2s .6s both}
+.card.fa-intro .c-top,.card.fa-intro .c-name,.card.fa-intro .c-stats,.card.fa-intro .c-div{animation:faText .55s cubic-bezier(.2,.9,.3,1.3) both}
+.card.fa-intro .c-top{animation-delay:1.15s}.card.fa-intro .c-name{animation-delay:1.35s}
+.card.fa-intro .c-stats,.card.fa-intro .c-div{animation-delay:1.55s}
+.prism{position:absolute;inset:-20% -80%;z-index:6;pointer-events:none;mix-blend-mode:screen;
+  background:linear-gradient(105deg,transparent 38%,rgba(255,139,224,.6) 44%,rgba(122,216,255,.65) 48%,rgba(140,255,176,.6) 52%,rgba(255,240,122,.55) 56%,transparent 62%);
+  animation:prism 1.3s cubic-bezier(.4,0,.2,1) forwards}
+.prism.b{animation-delay:.35s;opacity:.7}
+.flipper.wobble .inner3d{animation:wobble 2.6s ease-in-out}
+.fa-banner.letters{background:none;animation:none;color:#fff;filter:drop-shadow(0 0 16px rgba(255,255,255,.6))}
+.fa-banner.letters span{display:inline-block;background:linear-gradient(90deg,#FF8BE0,#7AD8FF,#8CFFB0,#FFF07A,#FF8BE0);background-size:300% 100%;
+  -webkit-background-clip:text;background-clip:text;color:transparent;animation:slamL .5s cubic-bezier(.2,.9,.3,1.5) both,slide 1.4s linear infinite}
+@keyframes faShatter{0%{transform:scale(1)}35%{transform:scale(1.06);filter:brightness(2.6) saturate(2)}100%{transform:scale(1.3);filter:brightness(4) blur(8px);opacity:0}}
+@keyframes faZoom{from{transform:scale(1.5);filter:blur(10px) saturate(1.8) brightness(1.5)}}
+@keyframes faText{from{opacity:0;transform:translateY(12px) scale(.9)}}
+@keyframes fadeIn{from{opacity:0}}
+@keyframes prism{from{transform:translateX(-60%)}to{transform:translateX(60%)}}
+@keyframes wobble{0%,100%{transform:rotateY(180deg)}25%{transform:rotateY(160deg) rotateX(5deg)}62%{transform:rotateY(200deg) rotateX(-5deg)}}
+@keyframes slamL{from{transform:translateY(-40px) scale(2.2) rotate(-12deg);opacity:0;filter:blur(6px)}}
 @keyframes spin{to{transform:rotate(360deg)}}
 @keyframes float{50%{transform:translateY(-10px) rotate(-1.5deg)}}
 @keyframes sheenLoop{0%,20%{background-position:120% 0}70%,100%{background-position:-40% 0}}
@@ -1141,6 +1173,9 @@ const sfx={
   ding(t){const f={bronze:[523],silver:[659,784],gold:[784,988,1175],icon:[784,988,1175,1568]}[t];f.forEach((x,i)=>tone('sine',x,x,.5,.1,i*.07));},
   sparkle(){[1568,2093,2637,3136,2637,3520].forEach((x,i)=>tone('sine',x,x*1.01,.25,.05,i*.06));},
   thump(){tone('sine',110,45,.45,.45);hiss(.2,.25,1200,200,'lowpass');},
+  prism(){tone('sine',400,2400,1.1,.05);[880,1109,1319,1760,2217,2637,3520].forEach((f,i)=>tone('sine',f,f*1.01,.35,.05,.1+i*.08));hiss(1.2,.1,2000,9000,'highpass',0,.5);},
+  crack(){hiss(.4,.5,7000,1500,'highpass');tone('square',2000,300,.15,.05);tone('sine',90,40,.5,.4);},
+  chord(){[523,659,784,1047,1319,1568].forEach((f,i)=>tone('triangle',f,f,1.8,.045,i*.03));},
   fanfare(){[[523,659,784],[587,740,880],[784,988,1175,1568]].forEach((ch,k)=>ch.forEach(f=>tone('triangle',f,f,k===2?1.4:.32,.07,k*.3)));setTimeout(()=>sfx.sparkle(),700);}
 };
 function buzz(pat){try{if(window.AndroidBridge&&AndroidBridge.vibrate){AndroidBridge.vibrate(String(pat));return;}if(navigator.vibrate)navigator.vibrate(pat);}catch(e){}}
@@ -1158,6 +1193,36 @@ function burst(x,y,colors,n,power=9,opts={}){
 }
 function rain(colors,n){for(let i=0;i<n;i++)FX.parts.push({x:Math.random()*FX.w,y:-20-Math.random()*FX.h*.5,vx:(Math.random()-.5)*1.5,vy:2+Math.random()*3,life:1,decay:.004+Math.random()*.004,
   size:3+Math.random()*5,color:colors[i%colors.length],rot:Math.random()*6,vr:(Math.random()-.5)*.3,kind:'confetti',g:.04});if(!FX.raf)FX.raf=requestAnimationFrame(fxLoop);}
+function burstRect(el,colors,n){
+  const r=el.getBoundingClientRect(),o=FX.cv.getBoundingClientRect(),cx=r.left-o.left+r.width/2,cy=r.top-o.top+r.height/2;if(RM)n=Math.min(n,20);
+  for(let i=0;i<n;i++){const x=r.left-o.left+Math.random()*r.width,y=r.top-o.top+Math.random()*r.height,a=Math.atan2(y-cy,x-cx),v=2+Math.random()*8;
+    FX.parts.push({x,y,vx:Math.cos(a)*v,vy:Math.sin(a)*v,life:1,decay:.012+Math.random()*.016,size:2+Math.random()*4,color:colors[i%colors.length],rot:Math.random()*6,vr:.25,kind:Math.random()<.6?'spark':'confetti',g:.05});}
+  if(!FX.raf)FX.raf=requestAnimationFrame(fxLoop);
+}
+function ring(x,y,colors,n,v){for(let i=0;i<n;i++){const a=i/n*Math.PI*2;
+  FX.parts.push({x,y,vx:Math.cos(a)*v,vy:Math.sin(a)*v,life:1,decay:.013,size:3.2,color:colors[i%colors.length],rot:0,vr:0,kind:'spark',g:0});}
+  if(!FX.raf)FX.raf=requestAnimationFrame(fxLoop);}
+const PRISM_C=['#FF8BE0','#7AD8FF','#8CFFB0','#FFF07A','#C9B8FF','#FFFFFF'];
+async function faReveal(fl,alive){
+  const O=$('opening'),stage=$('op-stage');
+  const card=fl.querySelector('.front .card');if(card)card.classList.add('fa-intro');
+  fl.insertAdjacentHTML('beforeend',`<div class="fa-cover"><div class="cardback">${HEX_BIG}</div></div>`);
+  fl.classList.remove('holo-back');
+  O.insertAdjacentHTML('beforeend','<div class="prism"></div><div class="prism b"></div>');
+  sfx.prism();buzz([20,40,20,40,30,40,60]);
+  await wait(650);if(!alive())return;
+  fl.classList.add('fa','flipped'); // la face est prête sous le dos qui éclate
+  fl.querySelector('.fa-cover').classList.add('go');sfx.crack();flash('rgba(255,255,255,.9)');shake();burstRect(fl,PRISM_C,260);
+  await wait(800);if(!alive())return;
+  O.querySelectorAll('.prism').forEach(e=>e.remove());const cv=fl.querySelector('.fa-cover');if(cv)cv.remove();
+  await wait(900);if(!alive())return;
+  stage.insertAdjacentHTML('beforeend',`<div class="fa-banner letters" id="op-fa">${'FULL ART'.split('').map((c,i)=>`<span style="animation-delay:${i*70}ms,${i*70}ms">${c===' '?'&nbsp;':c}</span>`).join('')}</div>`);
+  sfx.chord();sfx.sparkle();buzz([60,40,90]);
+  const[x,y]=centerOf(fl);ring(x,y,PRISM_C,72,7);setTimeout(()=>{if(alive())ring(x,y,PRISM_C,48,4.5);},180);
+  flash('rgba(255,214,245,.6)');rain(PRISM_C,90);
+  fl.classList.add('wobble');
+  await wait(700);
+}
 function fxLoop(){
   const c=FX.ctx;c.clearRect(0,0,FX.w,FX.h);
   FX.parts=FX.parts.filter(p=>p.life>0&&p.y<FX.h+40);
@@ -1179,7 +1244,7 @@ const wait=ms=>new Promise(r=>setTimeout(r,RM?Math.min(ms,250):ms));
 const nextTap=()=>new Promise(r=>{tapResolve=r;});
 $('opening').addEventListener('pointerup',e=>{if(e.target.closest('.op-bar button, .op-actions button'))return;if(tapResolve){const r=tapResolve;tapResolve=null;r();}});
 function hint(t,blink=true){const h=$('op-hint');h.textContent=t;h.classList.toggle('blink',blink&&!!t);}
-function closeOpening(){run++;$('opening').classList.remove('dark');if(tapResolve){const r=tapResolve;tapResolve=null;r();}$('opening').hidden=true;FX.parts=[];document.body.style.overflow='';}
+function closeOpening(){run++;$('opening').classList.remove('dark');$('opening').querySelectorAll('.prism').forEach(e=>e.remove());if(tapResolve){const r=tapResolve;tapResolve=null;r();}$('opening').hidden=true;FX.parts=[];document.body.style.overflow='';}
 $('op-close').addEventListener('click',closeOpening);
 $('open-btn').addEventListener('click',()=>openPack());
 $('pack').addEventListener('click',()=>openPack());
@@ -1248,7 +1313,9 @@ async function openPack(){
     tease.className='tease';tease.style.removeProperty('--tc');
     if(R>=1){tease.style.setProperty('--tc',fx.glow);tease.classList.add('on');if(t==='icon')tease.classList.add('icon');}
     if(R===2)fl.classList.add('trem');if(R===3)fl.classList.add('trem2');
-    hint(['Touche pour révéler','Touche pour révéler','Ça brille… touche pour révéler','Attention… touche pour révéler'][R]);
+    const isFA=!!(p.fullart&&p.photo);
+    if(isFA){fl.classList.add('holo-back');if(R<2)tease.classList.add('on','prismatic');}
+    hint(isFA&&R<2?'Un reflet arc-en-ciel… touche pour révéler':['Touche pour révéler','Touche pour révéler','Ça brille… touche pour révéler','Attention… touche pour révéler'][R]);
     await nextTap();if(!alive())return;hint('',false);
     fl.classList.remove('trem','trem2');
     if(R===1){ // Argent : la carte tremble et s'illumine
@@ -1280,21 +1347,18 @@ async function openPack(){
       txt.innerHTML='';fl.classList.remove('hide');
     }
     fl.querySelector('.front').innerHTML=cardHTML(p,0,false);
-    if(R===2)fl.classList.add('slow');if(R===3)fl.classList.add('spin');
-    fl.classList.add('flipped');sfx.flip();if(R===3)sfx.whoosh();
-    await wait([380,420,700,1100][R]);if(!alive())return;
+    if(isFA){tease.className='tease';await faReveal(fl,alive);if(!alive())return;}
+    else{
+      if(R===2)fl.classList.add('slow');if(R===3)fl.classList.add('spin');
+      fl.classList.add('flipped');sfx.flip();if(R===3)sfx.whoosh();
+      await wait([380,420,700,1100][R]);if(!alive())return;
+    }
     const[fx0,fy0]=centerOf(fl);
     sfx.ding(t);burst(fx0,fy0,fx.c,[25,70,180,260][R],[7,10,13,17][R],{up:R>=2?3:1});
     if(R===1){flash('rgba(232,238,245,.5)');sfx.sparkle();}
     if(R>=2){flash(fx.glow);shake();buzz([80,60,120]);sfx.sparkle();rain(fx.c,R===3?220:130);}
     if(R===3){sfx.fanfare();fireworks(fx.c,3200,alive);buzz([150,80,150,80,300]);
       setTimeout(()=>{if(alive()){const[x,y]=centerOf(fl);burst(x,y,fx.c,220,18,{up:4});flash('#E9DDFF');shake();}},700);}
-    if(p.fullart&&p.photo){
-      await wait(R>=2?500:250);if(!alive())return;
-      stage.insertAdjacentHTML('beforeend','<div class="fa-banner" id="op-fa">FULL ART</div>');
-      flash('rgba(255,214,245,.75)');sfx.sparkle();sfx.ding('icon');buzz([40,40,60]);
-      const[hx,hy]=centerOf(fl);burst(hx,hy,TIER_FX.icon.c,150,12,{up:2,spark:.7});
-    }
     tease.className='tease';
     hint(i<4?'Touche pour la suivante':'Touche pour voir ton booster');
     await nextTap();if(!alive())return;hint('',false);
