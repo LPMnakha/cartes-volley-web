@@ -515,7 +515,7 @@ input[type=range]::-moz-range-thumb{width:20px;height:20px;border-radius:50%;bac
     <div class="pack-head">
       <div><h2 class="pane-title">Ouvre un booster</h2>
         <p class="note">5 cartes tirées au sort parmi tes cartes. Plus une carte est forte, plus elle est rare.</p></div>
-      <button class="icon-btn mute-btn" type="button" id="mute-btn" aria-label="Couper le son"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5L6 9H3v6h3l5 4z"/><path class="w1" d="M15.5 8.5a5 5 0 010 7"/><path class="w2" d="M18.5 5.5a9 9 0 010 13"/><path class="x" d="M16 9l6 6M22 9l-6 6"/></svg></button>
+      <button class="icon-btn mute-btn" type="button" id="mute-btn" aria-label="Couper le son et les vibrations"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5L6 9H3v6h3l5 4z"/><path class="w1" d="M15.5 8.5a5 5 0 010 7"/><path class="w2" d="M18.5 5.5a9 9 0 010 13"/><path class="x" d="M16 9l6 6M22 9l-6 6"/></svg></button>
     </div>
     <div class="banner" id="pack-ex" hidden><span>Tirage parmi les <b>exemples</b> tant que tu n'as pas créé de cartes.</span></div>
     <div class="banner" id="pack-few" hidden><span>Il faut au moins <b>5 cartes</b> pour ouvrir un booster : tu en as <b id="pack-few-n">0</b>. Crée-en d'autres dans l'onglet Cartes.</span></div>
@@ -659,7 +659,7 @@ input[type=range]::-moz-range-thumb{width:20px;height:20px;border-radius:50%;bac
   <div class="op-bar">
     <button class="icon-btn" type="button" id="op-close" aria-label="Fermer"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
     <span class="op-count" id="op-count"></span>
-    <button class="icon-btn mute-btn" type="button" id="op-mute" aria-label="Couper le son"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5L6 9H3v6h3l5 4z"/><path class="w1" d="M15.5 8.5a5 5 0 010 7"/><path class="w2" d="M18.5 5.5a9 9 0 010 13"/><path class="x" d="M16 9l6 6M22 9l-6 6"/></svg></button>
+    <button class="icon-btn mute-btn" type="button" id="op-mute" aria-label="Couper le son et les vibrations"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5L6 9H3v6h3l5 4z"/><path class="w1" d="M15.5 8.5a5 5 0 010 7"/><path class="w2" d="M18.5 5.5a9 9 0 010 13"/><path class="x" d="M16 9l6 6M22 9l-6 6"/></svg></button>
   </div>
   <div class="op-stage" id="op-stage"></div>
   <p class="op-hint" id="op-hint"></p>
@@ -1147,9 +1147,10 @@ try{if(localStorage.getItem('cartes-volley-onglet')==='packs')setTab('packs');}c
 /* ---- Son (synthétisé, aucun fichier) ---- */
 const SFX={ctx:null,muted:false,nb:null};
 try{SFX.muted=localStorage.getItem('cartes-volley-muet')==='1';}catch(e){}
-function syncMute(){document.querySelectorAll('.mute-btn').forEach(b=>{b.classList.toggle('muted',SFX.muted);b.setAttribute('aria-label',SFX.muted?'Remettre le son':'Couper le son');});}
+function syncMute(){document.querySelectorAll('.mute-btn').forEach(b=>{b.classList.toggle('muted',SFX.muted);b.setAttribute('aria-label',SFX.muted?'Remettre le son et les vibrations':'Couper le son et les vibrations');});}
 document.querySelectorAll('.mute-btn').forEach(b=>b.addEventListener('click',e=>{e.stopPropagation();SFX.muted=!SFX.muted;
-  try{localStorage.setItem('cartes-volley-muet',SFX.muted?'1':'0');}catch(err){}syncMute();if(!SFX.muted)ac();}));
+  try{localStorage.setItem('cartes-volley-muet',SFX.muted?'1':'0');}catch(err){}syncMute();if(!SFX.muted)ac();
+  else{try{if(window.AndroidBridge&&AndroidBridge.vibrate)AndroidBridge.vibrate('0');else if(navigator.vibrate)navigator.vibrate(0);}catch(err){}}}));
 syncMute();
 function ac(){
   if(SFX.muted)return null;
@@ -1178,7 +1179,7 @@ const sfx={
   chord(){[523,659,784,1047,1319,1568].forEach((f,i)=>tone('triangle',f,f,1.8,.045,i*.03));},
   fanfare(){[[523,659,784],[587,740,880],[784,988,1175,1568]].forEach((ch,k)=>ch.forEach(f=>tone('triangle',f,f,k===2?1.4:.32,.07,k*.3)));setTimeout(()=>sfx.sparkle(),700);}
 };
-function buzz(pat){try{if(window.AndroidBridge&&AndroidBridge.vibrate){AndroidBridge.vibrate(String(pat));return;}if(navigator.vibrate)navigator.vibrate(pat);}catch(e){}}
+function buzz(pat){if(SFX.muted)return;try{if(window.AndroidBridge&&AndroidBridge.vibrate){AndroidBridge.vibrate(String(pat));return;}if(navigator.vibrate)navigator.vibrate(pat);}catch(e){}}
 
 /* ---- Particules ---- */
 const FX={cv:$('fx'),ctx:null,parts:[],raf:0,w:0,h:0};
