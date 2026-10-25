@@ -489,7 +489,7 @@ input[type=range]::-moz-range-thumb{width:20px;height:20px;border-radius:50%;bac
     <div class="banner" id="pack-few" hidden><span>Il faut au moins <b>5 cartes</b> pour ouvrir un booster : tu en as <b id="pack-few-n">0</b>. Crée-en d'autres dans l'onglet Cartes.</span></div>
     <div class="pack-zone" id="pack-zone"><div class="rays"></div><button class="pack" id="pack" type="button" aria-label="Ouvrir le booster"></button></div>
     <button class="btn primary open-btn" type="button" id="open-btn">Ouvrir le booster</button>
-    <div class="section"><span class="label">Chances d'apparaître dans un booster</span><div class="odds" id="odds"></div></div>
+    <div class="section"><span class="label">Chances d'apparaître dans un booster, de la plus rare à la plus courante</span><div class="odds" id="odds"></div></div>
   </div>
 </main>
 
@@ -1069,15 +1069,17 @@ function drawPack(pool){ // tirage pondéré sans remise : 5 joueurs différents
   }
   return out;
 }
-function revealOrder(cards){ // ordre au hasard, sauf la plus forte qui sort en dernier
-  const a=cards.slice();let bi=0;a.forEach((p,i)=>{if(ovr(p.s)>ovr(a[bi].s))bi=i;});
+// la plus rare = la plus petite chance de tirage (note et Full Art comprises) ; à égalité, la mieux notée
+const rarer=(p,q)=>weightOf(p)<weightOf(q)||(weightOf(p)===weightOf(q)&&ovr(p.s)>ovr(q.s));
+function revealOrder(cards){ // ordre au hasard, sauf la plus rare qui sort en dernier
+  const a=cards.slice();let bi=0;a.forEach((p,i)=>{if(rarer(p,a[bi]))bi=i;});
   const best=a.splice(bi,1)[0];
   for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}
   return a.concat([best]);
 }
 let oddsCache={key:'',map:null};
 function packOdds(pool){ // chance d'apparaître, estimée par simulation (le tirage sans remise n'a pas de formule simple)
-  const key=pool.map(p=>p.id+':'+ovr(p.s)).join('|');
+  const key=pool.map(p=>p.id+':'+ovr(p.s)+':'+(p.fullart&&p.photo?1:0)).join('|');
   if(oddsCache.key===key)return oddsCache.map;
   const N=pool.length<=PACK_SIZE?1:4000,cnt=new Map(pool.map(p=>[p.id,0]));
   for(let n=0;n<N;n++)drawPack(pool).forEach(p=>cnt.set(p.id,cnt.get(p.id)+1));
@@ -1093,7 +1095,7 @@ function renderPacks(){
   $('pack-few').hidden=!few;$('pack-few-n').textContent=pool.length;
   $('open-btn').disabled=few;$('pack').disabled=few;$('pack-zone').classList.toggle('off',few);
   const od=few?null:packOdds(pool);
-  const rows=pool.map(p=>({p,o:ovr(p.s),c:few?0:od.get(p.id)})).sort((a,b)=>b.o-a.o);
+  const rows=pool.map(p=>({p,o:ovr(p.s),w:weightOf(p),c:few?0:od.get(p.id)})).sort((a,b)=>a.w-b.w||b.o-a.o); // de la plus rare à la plus courante
   const col={icon:'#C9B8FF',gold:'#FFD23F',silver:'#DCE3EA',bronze:'#E9A877'};
   $('odds').innerHTML=rows.map(x=>`<div class="odd"><i style="background:${col[tier(x.o)]}"></i><span>${esc(x.p.name)}${x.p.fullart&&x.p.photo?' <em class="fa-tag">FULL ART</em>':''}</span><b>${x.o}</b><span>${few?'–':(x.c*100).toFixed(x.c<.1?1:0)+' %'}</span></div>`).join('');
 }
@@ -1199,7 +1201,7 @@ async function openPack(){
   ac();
   const my=++run,alive=()=>my===run;
   const pulled=revealOrder(drawPack(pool));
-  const best=tier(ovr(pulled[4].s)),bestR=TIER_RANK[best];
+  const best=pulled.map(p=>tier(ovr(p.s))).reduce((m,t)=>TIER_RANK[t]>TIER_RANK[m]?t:m,'bronze'),bestR=TIER_RANK[best]; // la lueur annonce le plus haut niveau du booster
   const O=$('opening'),stage=$('op-stage'),tray=$('op-tray');
   O.hidden=false;O.classList.remove('dark');document.body.style.overflow='hidden';fxSize();FX.parts=[];
   $('op-count').textContent='BOOSTER';tray.innerHTML='<div class="slot"></div>'.repeat(5);tray.hidden=false;
@@ -1299,7 +1301,7 @@ async function openPack(){
   $('op-count').textContent='TON BOOSTER';tray.hidden=true;
   stage.querySelectorAll('.stack-back').forEach(e=>e.remove());
   const top=pulled[4],rest=pulled.slice(0,4).reverse();
-  stage.insertAdjacentHTML('beforeend',`<div class="op-summary"><span class="best-label">Meilleure carte</span><div class="best">${miniHTML(top)}</div>
+  stage.insertAdjacentHTML('beforeend',`<div class="op-summary"><span class="best-label">Carte la plus rare</span><div class="best">${miniHTML(top)}</div>
     <div class="rest">${rest.map((p,i)=>`<div style="animation-delay:${i*70}ms">${miniHTML(p)}</div>`).join('')}</div>
     <div class="op-actions"><button class="btn" type="button" id="op-done">Terminé</button><button class="btn primary" type="button" id="op-again">Ouvrir un autre</button></div></div>`);
   $('op-done').addEventListener('click',closeOpening);
