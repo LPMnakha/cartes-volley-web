@@ -318,6 +318,7 @@ input[type=range]::-moz-range-thumb{width:20px;height:20px;border-radius:50%;bac
 .odd{display:grid;grid-template-columns:12px 1fr auto auto;gap:10px;align-items:center;font-size:.92rem}
 .odd i{width:12px;height:12px;border-radius:3px}
 .odd b{font-family:var(--data);font-weight:700}
+.fa-tag{font-style:normal;font-family:var(--data);font-weight:700;font-size:.62rem;letter-spacing:.1em;padding:1px 6px;border-radius:99px;color:#1A1033;background:linear-gradient(90deg,#FF8BE0,#7AD8FF,#8CFFB0)}
 .odd span:last-child{font-family:var(--data);color:var(--muted);min-width:5ch;text-align:right}
 
 /* Ouverture */
@@ -1056,7 +1057,8 @@ const TIER_FX={
   icon:{c:['#FFD6F5','#B8E6FF','#C9FFD9','#FFF3B0','#C9B8FF','#FFFFFF'],glow:'rgba(201,184,255,.95)',n:260}};
 const TIER_RANK={bronze:0,silver:1,gold:2,icon:3};
 const RM=matchMedia('(prefers-reduced-motion: reduce)').matches;
-const weightOf=p=>Math.pow(0.94,ovr(p.s)-40);
+const FULLART_RARITY=3; // une Full Art sort 3 fois moins souvent qu'une carte normale de même note
+const weightOf=p=>Math.pow(0.94,ovr(p.s)-40)/(p.fullart&&p.photo?FULLART_RARITY:1);
 const PACK_SIZE=5;
 function drawPack(pool){ // tirage pondéré sans remise : 5 joueurs différents
   const left=pool.map(p=>({p,w:weightOf(p)})),out=[];
@@ -1093,7 +1095,7 @@ function renderPacks(){
   const od=few?null:packOdds(pool);
   const rows=pool.map(p=>({p,o:ovr(p.s),c:few?0:od.get(p.id)})).sort((a,b)=>b.o-a.o);
   const col={icon:'#C9B8FF',gold:'#FFD23F',silver:'#DCE3EA',bronze:'#E9A877'};
-  $('odds').innerHTML=rows.map(x=>`<div class="odd"><i style="background:${col[tier(x.o)]}"></i><span>${esc(x.p.name)}</span><b>${x.o}</b><span>${few?'–':(x.c*100).toFixed(x.c<.1?1:0)+' %'}</span></div>`).join('');
+  $('odds').innerHTML=rows.map(x=>`<div class="odd"><i style="background:${col[tier(x.o)]}"></i><span>${esc(x.p.name)}${x.p.fullart&&x.p.photo?' <em class="fa-tag">FULL ART</em>':''}</span><b>${x.o}</b><span>${few?'–':(x.c*100).toFixed(x.c<.1?1:0)+' %'}</span></div>`).join('');
 }
 function setTab(t){
   $('tab-cards').hidden=t!=='cards';$('tab-packs').hidden=t!=='packs';
