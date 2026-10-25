@@ -18,7 +18,7 @@ html{-webkit-text-size-adjust:100%}</style>
 <meta name="theme-color" content="#0A1430">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Big+Shoulders+Display:wght@700;800;900&family=Chakra+Petch:wght@500;600;700&family=Barlow:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Great+Vibes&family=Big+Shoulders+Display:wght@700;800;900&family=Chakra+Petch:wght@500;600;700&family=Barlow:wght@400;500;600&display=swap">
 <style>
 /* Layout: appli mobile plein écran, salle de volley de nuit. Barre d'app collante, filtres par poste, grille de cartes métallisées (bronze, argent, or, icône), fiches plein écran pour le détail et la saisie. */
 :root{
@@ -211,6 +211,51 @@ textarea.text-in{font-size:1rem;font-weight:500;resize:none;line-height:1.35}
 .b-dots button[aria-current="true"]{background:var(--orange);width:22px;border-radius:99px}
 @keyframes pageNext{from{transform:rotateY(-80deg);opacity:.15}}
 @keyframes pagePrev{from{transform:rotateY(40deg) translateX(-24px);opacity:.15}}
+
+/* Signature : Full Art avec liseré or animé */
+.card.signature .sig-rim{position:absolute;inset:1.7% 2.8%;clip-path:polygon(0 6.5%,8.5% 0,91.5% 0,100% 6.5%,100% 87.5%,50% 100%,0 87.5%);z-index:0;
+  background:linear-gradient(120deg,#7A4E00,#FFE97A 22%,#B8860B 42%,#FFF6C8 52%,#C99700 72%,#7A4E00);background-size:260% 100%;animation:sigShine 2.6s linear infinite}
+.sig-badge{position:absolute;top:.6%;left:50%;transform:translateX(-50%);z-index:3;white-space:nowrap;line-height:1.1;
+  font-family:"Great Vibes","Brush Script MT","Segoe Script",cursive;font-size:clamp(.95rem,4.6vw,1.3rem);color:#FFE97A;
+  text-shadow:0 0 4px rgba(0,0,0,.95),0 0 12px rgba(255,200,0,.7)}
+.mini.signature .msr{position:absolute;inset:2% 3.6%;clip-path:polygon(0 6.5%,8.5% 0,91.5% 0,100% 6.5%,100% 87.5%,50% 100%,0 87.5%);background:linear-gradient(120deg,#7A4E00,#FFE97A 25%,#B8860B 45%,#FFF6C8 55%,#C99700 75%,#7A4E00);background-size:260% 100%;animation:sigShine 2.6s linear infinite}
+.mini.signature .mface::after{content:"Signature";position:absolute;left:50%;top:1%;transform:translateX(-50%);font-family:"Great Vibes",cursive;font-size:11cqw;color:#FFE97A;text-shadow:0 0 3px #000;white-space:nowrap}
+.sig-tag{font-style:normal;font-family:"Great Vibes",cursive;font-size:.95rem;padding:0 6px;border-radius:99px;color:#2A1C02;background:linear-gradient(90deg,#B8860B,#FFE97A,#FFD700)}
+.toggle.gold:has(input:checked){border-color:rgba(255,215,0,.7);background:linear-gradient(110deg,rgba(255,215,0,.16),rgba(255,246,200,.1))}
+.toggle.gold:has(input:checked) .sw{background:linear-gradient(90deg,#B8860B,#FFE97A,#FFD700)}
+.toggle:has(input:disabled){opacity:.6}
+/* Cinématique Signature */
+.opening.sig-dark::before{opacity:.97}
+.flipper.levitate{animation:levitate 2.4s ease-in-out infinite}
+.flipper.sig-back .cardback{position:relative}
+.flipper.sig-back .cardback::after{content:"";position:absolute;inset:0;mix-blend-mode:screen;pointer-events:none;
+  background:linear-gradient(115deg,transparent 30%,rgba(255,215,0,.7) 45%,rgba(255,246,200,.85) 50%,rgba(255,215,0,.7) 55%,transparent 70%);background-size:260% 100%;animation:holoSweep 2s ease-in-out infinite}
+.tease.goldaura{background:radial-gradient(circle,rgba(255,215,0,.95) 0,rgba(255,170,0,.35) 35%,transparent 62%)}
+.sig-pen{position:absolute;left:4%;top:28%;width:92%;height:auto;z-index:6;pointer-events:none;overflow:visible}
+.sig-pen path{fill:none;stroke:#FFD700;stroke-width:5;stroke-linecap:round;stroke-linejoin:round;filter:drop-shadow(0 0 6px #FFD700) drop-shadow(0 0 18px rgba(255,170,0,.9))}
+.sig-pen.flare{animation:penFlare 1.3s ease-out forwards}
+.walk.gold .beams{background:repeating-conic-gradient(rgba(255,215,0,.95) 0 4deg,transparent 4deg 13deg);opacity:.42;animation:spin 9s linear infinite}
+.walk-txt .sigword{font-family:"Great Vibes","Brush Script MT","Segoe Script",cursive;text-transform:none;font-weight:400;font-size:clamp(4rem,22vw,8rem);line-height:1.2;padding:0 .25em;
+  background:linear-gradient(90deg,#B8860B,#FFE97A,#FFF6C8,#FFD700,#B8860B);background-size:200% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;text-shadow:none;
+  filter:drop-shadow(0 0 18px rgba(255,200,0,.85));animation:writeOn 1.6s cubic-bezier(.5,0,.3,1) both,slide 2s linear infinite}
+.walk-txt .sigsub{font-size:clamp(.95rem,4.6vw,1.5rem);letter-spacing:.22em;color:#FFE97A;margin-top:8px;animation-delay:1.3s}
+.flipper.sig-spin{animation:sigSpin 2.4s cubic-bezier(.6,0,.35,1) both}
+.flipper.sig-spin .side.front{visibility:hidden}
+.flipper.sig-spin .side{backface-visibility:visible;-webkit-backface-visibility:visible}
+.flipper.sig-spin .cardback{filter:sepia(.7) saturate(3) brightness(1.25) drop-shadow(0 0 20px #FFD700)}
+.fa-cover.gold .cardback{filter:sepia(1) saturate(4) brightness(1.35)}
+.prism.gold{background:linear-gradient(105deg,transparent 40%,rgba(255,215,0,.6) 46%,rgba(255,246,200,.8) 50%,rgba(255,215,0,.6) 54%,transparent 60%)}
+.card.sig-lit .sig-rim{animation:sigShine 2.6s linear infinite,rimLit 1.6s ease-out}
+.sig-banner{position:absolute;z-index:6;top:0;left:0;right:0;text-align:center;pointer-events:none;
+  font-family:"Great Vibes","Brush Script MT",cursive;font-size:clamp(2.8rem,15vw,4.6rem);line-height:1.15;
+  background:linear-gradient(90deg,#B8860B,#FFE97A,#FFF6C8,#FFD700,#B8860B);background-size:200% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;
+  filter:drop-shadow(0 0 14px rgba(255,200,0,.85));animation:writeOn 1.4s cubic-bezier(.5,0,.3,1) both,slide 2s linear infinite}
+@keyframes sigShine{to{background-position:260% 0}}
+@keyframes levitate{50%{transform:translateY(-14px)}}
+@keyframes penFlare{30%{filter:brightness(2.6)}100%{opacity:0;transform:scale(1.15)}}
+@keyframes writeOn{from{clip-path:inset(0 100% 0 0)}to{clip-path:inset(0 -10% 0 0)}}
+@keyframes sigSpin{0%{transform:translateY(-60vh) rotateY(0) scale(.5);opacity:0}20%{opacity:1}100%{transform:translateY(0) rotateY(1080deg) scale(1)}}
+@keyframes rimLit{0%{filter:brightness(1)}35%{filter:brightness(3.2)}100%{filter:brightness(1)}}
 .empty-filter{color:var(--muted);text-align:center;padding:30px 10px;border:1px dashed var(--line);border-radius:14px}
 
 .fab{position:fixed;right:calc(18px + env(safe-area-inset-right,0px));bottom:calc(20px + env(safe-area-inset-bottom,0px));z-index:8;
@@ -635,6 +680,8 @@ input[type=range]::-moz-range-thumb{width:20px;height:20px;border-radius:50%;bac
       </div>
       <label class="toggle" for="f-fullart"><input type="checkbox" id="f-fullart"><span class="sw" aria-hidden="true"></span>
         <span><b>Full Art</b><small>Carte holographique : la photo prend toute la carte</small></span></label>
+      <label class="toggle gold" for="f-sig"><input type="checkbox" id="f-sig"><span class="sw" aria-hidden="true"></span>
+        <span><b>Signature</b><small>Full Art signée, 10 fois plus rare qu'une carte normale</small></span></label>
       <label class="label" for="f-name">Nom</label>
       <input class="text-in" type="text" id="f-name" maxlength="18" placeholder="Prénom ou surnom" autocomplete="off" enterkeyhint="done">
       <div class="stack" id="f-poste-wrap"><span class="label">Poste</span>
@@ -765,7 +812,8 @@ function idTime(id){const m=/^p([0-9a-z]{8})/.exec(id);if(!m)return 0;const t=pa
 function normalize(p){
   const base={id:String(p.id),name:String(p.name||'').slice(0,18)||'Sans nom',
     photo:typeof p.photo==='string'&&p.photo.startsWith('data:image/')?p.photo:null,updatedAt:p.updatedAt||Date.now()};
-  base.fullart=!!p.fullart&&!!base.photo;
+  base.signature=!!p.signature&&!!base.photo;
+  base.fullart=(!!p.fullart||base.signature)&&!!base.photo;
   base.createdAt=+p.createdAt||idTime(base.id)||base.updatedAt;
   if(p.kind==='divers'){ // une carte divers n'a qu'une note : on la recopie partout pour que tri, rareté et boosters marchent pareil
     const note=clampN(p.note!=null?p.note:(p.s?ovr(p.s):50));
@@ -774,7 +822,7 @@ function normalize(p){
   const s={};SKILLS.forEach(x=>s[x.k]=clampN(p.s&&p.s[x.k]));
   return{...base,kind:'joueur',poste:POSTES.some(q=>q.v===p.poste)?p.poste:'POL',s};
 }
-const body=p=>({...bodyBase(p),fullart:!!p.fullart,createdAt:p.createdAt||Date.now()});
+const body=p=>({...bodyBase(p),fullart:!!p.fullart,signature:!!p.signature,createdAt:p.createdAt||Date.now()});
 const bodyBase=p=>isDiv(p)?{kind:'divers',name:p.name,poste:'DIV',photo:p.photo,note:p.note,desc:p.desc||'',s:p.s,updatedAt:p.updatedAt}
   :{kind:'joueur',name:p.name,poste:p.poste,photo:p.photo,s:p.s,updatedAt:p.updatedAt};
 const shown=()=>players.length?players:EXAMPLES;
@@ -869,11 +917,11 @@ function hexIcon(s){
 }
 const STAR=`<svg class="c-star" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l2.9 6.6 7.1.6-5.4 4.7 1.6 7L12 17.3 5.8 20.9l1.6-7L2 9.2l7.1-.6z" fill="currentColor" fill-opacity=".75"/></svg>`;
 function cardHTML(p,i=0,tagOk=true){
-  const o=ovr(p.s),dv=isDiv(p),fa=p.fullart&&p.photo;
-  return`<button class="card ${tier(o)}${dv?' divers':''}${fa?' fullart':''}" type="button" data-id="${esc(p.id)}" style="--i:${i}" aria-label="${esc(p.name)}, ${posteL(p.poste)}, note ${o}">
+  const o=ovr(p.s),dv=isDiv(p),fa=p.fullart&&p.photo,sg=p.signature&&p.photo;
+  return`<button class="card ${tier(o)}${dv?' divers':''}${fa?' fullart':''}${sg?' signature':''}" type="button" data-id="${esc(p.id)}" style="--i:${i}" aria-label="${esc(p.name)}, ${posteL(p.poste)}, note ${o}">
     ${p.example&&tagOk?'<span class="tag">Exemple</span>':''}
     <div class="face">
-      ${fa?`<div class="fa-art"><img src="${p.photo}" alt=""><div class="fa-holo"></div><div class="fa-glit"></div></div>`:''}
+      ${sg?'<div class="sig-rim"></div><span class="sig-badge">Signature</span>':''}${fa?`<div class="fa-art"><img src="${p.photo}" alt=""><div class="fa-holo"></div><div class="fa-glit"></div></div>`:''}
       <div class="c-top"><div><div class="c-ovr">${o}</div><span class="c-pos">${esc(p.poste)}</span></div>${dv?STAR:hexIcon(p.s)}</div>
       <div class="c-photo">${p.photo?`<img src="${p.photo}" alt="">`:esc(initials(p.name))}</div>
       <div class="c-name">${esc(p.name)}</div>
@@ -945,7 +993,7 @@ function openDetail(id,keepScroll){
   openId=id;const o=ovr(p.s);
   $('d-title').textContent=p.name;
   $('d-card').innerHTML=cardHTML(p,0,false);
-  $('d-tier').innerHTML=`${TIER_L[tier(o)]} · <b>${posteL(p.poste)}</b>${p.example?' · exemple':''}`;
+  $('d-tier').innerHTML=`${TIER_L[tier(o)]} · <b>${posteL(p.poste)}</b>${p.signature&&p.photo?' · <b style="color:#FFD700">Signature</b>':p.fullart&&p.photo?' · Full Art':''}${p.example?' · exemple':''}`;
   const dv=isDiv(p);
   $('d-div-sec').hidden=!dv;$('d-radar-sec').hidden=dv;$('d-traits').hidden=dv;$('d-bars-sec').hidden=dv;
   if(dv){$('d-desc').textContent=p.desc||'Pas de description.';$('d-note').textContent=p.note;$('d-note-bar').style.width=p.note+'%';}
@@ -1028,6 +1076,8 @@ $('f-photo').addEventListener('change',e=>{const f=e.target.files[0];e.target.va
   im.onerror=()=>{URL.revokeObjectURL(url);toast("Cette image n'a pas pu être lue. Essaie une photo JPG ou PNG.");};
   im.src=url;});
 $('f-fullart').addEventListener('change',()=>{if(draftPhoto){openCropper(draftOrig||draftPhoto,null);}});
+$('f-sig').addEventListener('change',()=>{const on=$('f-sig').checked,was=$('f-fullart').checked;
+  $('f-fullart').disabled=on;if(on&&!was){$('f-fullart').checked=true;if(draftPhoto)openCropper(draftOrig||draftPhoto,null);}});
 $('f-photo-clear').addEventListener('click',()=>{draftPhoto=null;setAvatar();});
 $('f-photo-crop').addEventListener('click',()=>{if(draftPhoto)openCropper(draftOrig||draftPhoto,null);});
 
@@ -1102,7 +1152,7 @@ function openEditor(p){
   $('f-name').value=p?p.name:'';
   const po=p?p.poste:'POL';document.querySelectorAll('#f-postes input').forEach(i=>i.checked=i.value===po);
   SKILLS.forEach(x=>$('f-'+x.k).value=p&&!isDiv(p)?p.s[x.k]:50);
-  draftOrig=null;$('f-fullart').checked=!!(p&&p.fullart);
+  draftOrig=null;$('f-fullart').checked=!!(p&&(p.fullart||p.signature));$('f-sig').checked=!!(p&&p.signature);$('f-fullart').disabled=$('f-sig').checked;
   $('f-k-divers').checked=isDiv(p);$('f-k-joueur').checked=!isDiv(p);
   $('f-note').value=isDiv(p)?p.note:50;$('f-desc').value=isDiv(p)?(p.desc||''):'';
   $('f-err').hidden=true;setAvatar();setKindUI();show('editor');
@@ -1116,10 +1166,10 @@ $('form').addEventListener('submit',async e=>{
   const id=editing.id||('p'+Date.now().toString(36)+Math.random().toString(36).slice(2,6));
   if($('f-fullart').checked&&!draftPhoto){$('f-err').textContent='Ajoute une photo pour faire une carte Full Art.';$('f-err').hidden=false;return;}
   const n=+$('f-note').value;
-  const fullart=$('f-fullart').checked;
+  const signature=$('f-sig').checked,fullart=$('f-fullart').checked||signature;
   const p=formDiv()?{id,fullart,kind:'divers',name,poste:'DIV',note:n,desc:$('f-desc').value.trim().slice(0,60),photo:draftPhoto,s:allS(n)}
     :{id,fullart,kind:'joueur',name,poste,photo:draftPhoto,s:formS()};
-  p.createdAt=(editing&&editing.createdAt)||Date.now();
+  p.signature=signature;p.createdAt=(editing&&editing.createdAt)||Date.now();
   await persist(p);
   toast(isNew?'Carte créée':'Carte mise à jour');
   editing=null;openDetail(id);
@@ -1185,13 +1235,14 @@ const TIER_FX={
   icon:{c:['#FFD6F5','#B8E6FF','#C9FFD9','#FFF3B0','#C9B8FF','#FFFFFF'],glow:'rgba(201,184,255,.95)',n:260}};
 const TIER_RANK={bronze:0,silver:1,gold:2,icon:3};
 const RM=matchMedia('(prefers-reduced-motion: reduce)').matches;
+const SIGNATURE_RARITY=10; // une Signature sort 10 fois moins souvent qu'une carte normale de même note
 const FULLART_RARITY=3; // une Full Art sort 3 fois moins souvent qu'une carte normale de même note
 // Chance de tirage : d'abord la rareté (bronze 1, argent 1/3, or 1/10, icône 1/30),
 // puis un petit écart selon la note dans la même rareté (au plus 1,5 fois entre le bas et le haut de la tranche).
 const TIER_WEIGHT={bronze:1,silver:1/3,gold:1/10,icon:1/30};
 const TIER_RANGE={bronze:[0,64],silver:[65,74],gold:[75,84],icon:[85,100]};
 const weightOf=p=>{const o=ovr(p.s),t=tier(o),[lo,hi]=TIER_RANGE[t],k=(o-lo)/(hi-lo);
-  return TIER_WEIGHT[t]*Math.pow(1/1.5,k)/(p.fullart&&p.photo?FULLART_RARITY:1);};
+  return TIER_WEIGHT[t]*Math.pow(1/1.5,k)/(p.signature&&p.photo?SIGNATURE_RARITY:p.fullart&&p.photo?FULLART_RARITY:1);};
 const PACK_SIZE=5;
 function drawPack(pool){ // tirage pondéré sans remise : 5 joueurs différents
   const left=pool.map(p=>({p,w:weightOf(p)})),out=[];
@@ -1219,7 +1270,7 @@ function packOdds(pool){ // chance d'apparaître, estimée par simulation (le ti
   const map=new Map(pool.map(p=>[p.id,cnt.get(p.id)/N]));oddsCache={key,map};return map;
 }
 function packHTML(){return`<div class="pack-top"></div><div class="pack-bot"><div class="pack-art">${HEX_BIG}<b>BOOSTER</b><span>CARTES VOLLEY</span><i>5 CARTES</i></div></div>`;}
-function miniHTML(p){const o=ovr(p.s);const fa=p.fullart&&p.photo;return`<div class="mini ${tier(o)}${isDiv(p)?' divers':''}${fa?' fullart':''}"><div class="mface">${fa?`<div class="mfa"><img src="${p.photo}" alt=""></div>`:''}<div class="mo">${o}<small>${esc(p.poste)}</small></div>
+function miniHTML(p){const o=ovr(p.s);const fa=p.fullart&&p.photo,sg=p.signature&&p.photo;return`<div class="mini ${tier(o)}${isDiv(p)?' divers':''}${fa?' fullart':''}${sg?' signature':''}"><div class="mface">${sg?'<div class="msr"></div>':''}${fa?`<div class="mfa"><img src="${p.photo}" alt=""></div>`:''}<div class="mo">${o}<small>${esc(p.poste)}</small></div>
   <div class="mp">${p.photo?`<img src="${p.photo}" alt="">`:esc(initials(p.name))}</div><div class="mn">${esc(p.name)}</div></div></div>`;}
 $('pack').innerHTML=packHTML();
 function renderPacks(){
@@ -1230,7 +1281,7 @@ function renderPacks(){
   const od=few?null:packOdds(pool);
   const rows=pool.map(p=>({p,o:ovr(p.s),w:weightOf(p),c:few?0:od.get(p.id)})).sort((a,b)=>a.w-b.w||b.o-a.o); // de la plus rare à la plus courante
   const col={icon:'#C9B8FF',gold:'#FFD23F',silver:'#DCE3EA',bronze:'#E9A877'};
-  $('odds').innerHTML=rows.map(x=>`<div class="odd"><i style="background:${col[tier(x.o)]}"></i><span>${esc(x.p.name)}${x.p.fullart&&x.p.photo?' <em class="fa-tag">FULL ART</em>':''}</span><b>${x.o}</b><span>${few?'–':(x.c*100).toFixed(x.c<.1?1:0)+' %'}</span></div>`).join('');
+  $('odds').innerHTML=rows.map(x=>`<div class="odd"><i style="background:${col[tier(x.o)]}"></i><span>${esc(x.p.name)}${x.p.signature&&x.p.photo?' <em class="sig-tag">Signature</em>':x.p.fullart&&x.p.photo?' <em class="fa-tag">FULL ART</em>':''}</span><b>${x.o}</b><span>${few?'–':(x.c*100).toFixed(x.c<.1?1:0)+' %'}</span></div>`).join('');
 }
 function setTab(t){
   ['cards','packs','binder'].forEach(k=>{$('tab-'+k).hidden=t!==k;$('tab-btn-'+k).setAttribute('aria-selected',t===k);});
@@ -1270,8 +1321,8 @@ const PER_PAGE=9;let binderPage=0;
 const TIER_COL={icon:'#C9B8FF',gold:'#FFD23F',silver:'#DCE3EA',bronze:'#E9A877'};
 const SIL_P='<svg class="sil" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="12" cy="8" r="4.2"/><path d="M3.5 21c.8-4.6 4.2-7 8.5-7s7.7 2.4 8.5 7z"/></svg>';
 const SIL_D='<svg class="sil" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l2.9 6.6 7.1.6-5.4 4.7 1.6 7L12 17.3 5.8 20.9l1.6-7L2 9.2l7.1-.6z"/></svg>';
-// Ordre du classeur : bronze, argent, or, icône, puis les mêmes en Full Art ; dans une rareté, par note puis par nom
-const faOf=p=>p.fullart&&p.photo?1:0;
+// Ordre du classeur : bronze, argent, or, icône, puis les mêmes en Full Art, puis en Signature ; dans une rareté, par note puis par nom
+const faOf=p=>!p.photo?0:p.signature?2:p.fullart?1:0;
 const binderList=()=>[...players].sort((a,b)=>faOf(a)-faOf(b)||TIER_RANK[tier(ovr(a.s))]-TIER_RANK[tier(ovr(b.s))]||ovr(a.s)-ovr(b.s)||a.name.localeCompare(b.name,'fr')||a.id.localeCompare(b.id));
 function renderBinder(dir){
   const list=binderList(),N=list.length,pages=Math.max(1,Math.ceil(N/PER_PAGE)),own=new Set(state.owned);
@@ -1337,6 +1388,8 @@ const sfx={
   prism(){tone('sine',400,2400,1.1,.05);[880,1109,1319,1760,2217,2637,3520].forEach((f,i)=>tone('sine',f,f*1.01,.35,.05,.1+i*.08));hiss(1.2,.1,2000,9000,'highpass',0,.5);},
   crack(){hiss(.4,.5,7000,1500,'highpass');tone('square',2000,300,.15,.05);tone('sine',90,40,.5,.4);},
   chord(){[523,659,784,1047,1319,1568].forEach((f,i)=>tone('triangle',f,f,1.8,.045,i*.03));},
+  bell(){[1568,2093,2637,3136].forEach((f,i)=>tone('sine',f,f,1.6,.07,i*.05));tone('sine',784,784,2,.06);},
+  scratch(){hiss(.07,.14,2500+Math.random()*2500,1500,'bandpass');},
   fanfare(){[[523,659,784],[587,740,880],[784,988,1175,1568]].forEach((ch,k)=>ch.forEach(f=>tone('triangle',f,f,k===2?1.4:.32,.07,k*.3)));setTimeout(()=>sfx.sparkle(),700);}
 };
 function buzz(pat){if(SFX.muted)return;try{if(window.AndroidBridge&&AndroidBridge.vibrate){AndroidBridge.vibrate(String(pat));return;}if(navigator.vibrate)navigator.vibrate(pat);}catch(e){}}
@@ -1384,6 +1437,56 @@ async function faReveal(fl,alive){
   fl.classList.add('wobble');
   await wait(700);
 }
+const GOLD_C=['#FFD700','#FFE97A','#FFF6C8','#E0A800','#FFFFFF','#B8860B'];
+const isSigP=p=>!!(p&&p.signature&&p.photo);
+async function sigReveal(fl,p,t,alive){
+  const O=$('opening'),stage=$('op-stage'),walk=$('walk'),txt=$('walk-txt');
+  const card=fl.querySelector('.front .card');if(card)card.classList.add('fa-intro');
+  // 1. Noir complet, la carte s'efface, le cœur bat
+  O.classList.add('dark','sig-dark');fl.classList.add('hide');stage.querySelectorAll('.stack-back').forEach(e=>e.style.opacity='0');
+  heartbeat(3,700,alive);await wait(2100);if(!alive())return;
+  // 2. Un trait d'encre dorée se dessine sur l'écran, avec le crissement de la plume
+  O.insertAdjacentHTML('beforeend','<svg class="sig-pen" id="op-pen" viewBox="0 0 400 200"><path id="op-pen-path" d="M18,150 C40,60 78,30 96,92 C108,140 70,170 64,138 C58,104 120,70 140,120 C150,146 160,150 170,118 C182,80 196,64 206,104 C214,136 232,146 246,104 C258,70 272,60 284,98 C294,128 300,150 322,112 C338,84 352,74 366,96 C376,112 372,138 352,140 C330,142 340,104 388,86"/></svg>');
+  const path=$('op-pen-path'),svg=$('op-pen'),L=path.getTotalLength();path.style.strokeDasharray=L;path.style.strokeDashoffset=L;
+  const DUR=RM?300:2300,t0=performance.now();let lastS=0;buzz([20,30,20,30,20,30,20,30,20,30,20,30]);
+  await new Promise(res=>{const step=now=>{if(!alive())return res();const k=Math.min(1,(now-t0)/DUR),e=k<.5?2*k*k:1-Math.pow(-2*k+2,2)/2;
+      path.style.strokeDashoffset=L*(1-e);
+      const pt=path.getPointAtLength(L*e),m=svg.getScreenCTM(),o=FX.cv.getBoundingClientRect();
+      if(m){const sp=new DOMPoint(pt.x,pt.y).matrixTransform(m);burst(sp.x-o.left,sp.y-o.top,GOLD_C,5,2.6,{up:.4,spark:1,big:2.2,g:.03});}
+      if(now-lastS>65){sfx.scratch();lastS=now;}
+      if(k<1)requestAnimationFrame(step);else res();};requestAnimationFrame(step);});
+  if(!alive())return;
+  svg.classList.add('flare');sfx.bell();flash('rgba(255,233,122,.55)');
+  // 3. Le mot « Signature » s'écrit, rayons dorés
+  walk.classList.remove('rainbow');walk.style.setProperty('--wc','rgba(255,215,0,.95)');txt.style.setProperty('--wc','rgba(255,215,0,.95)');
+  walk.classList.add('on','gold');
+  txt.innerHTML=`<span class="w sigword">Signature</span><span class="w mid sigsub">${TIER_L[t]} · ${esc(posteL(p.poste))}</span>`;
+  sfx.chord();buzz([40,60,40,60,140]);
+  await wait(2600);if(!alive())return;
+  if(svg.parentNode)svg.remove();txt.innerHTML='';
+  // 4. La carte tombe du ciel en tournoyant dans la lumière
+  fl.classList.remove('hide');fl.classList.add('sig-spin');sfx.riser(2.4);
+  const emit=setInterval(()=>{if(!alive())return;const[x,y]=centerOf(fl);burst(x,y,GOLD_C,10,5,{up:1,spark:1,big:3});},110);
+  await wait(2400);clearInterval(emit);if(!alive())return;
+  // 5. Le dos éclate en or et révèle l'illustration
+  fl.classList.remove('sig-spin');
+  fl.insertAdjacentHTML('beforeend',`<div class="fa-cover gold"><div class="cardback">${HEX_BIG}</div></div>`);
+  fl.classList.add('fa','flipped');fl.querySelector('.fa-cover').classList.add('go');
+  O.classList.remove('sig-dark');
+  sfx.crack();sfx.boom();flash('#FFF6C8');shake();buzz([180,60,260]);
+  burstRect(fl,GOLD_C,340);const[cx,cy]=centerOf(fl);ring(cx,cy,GOLD_C,96,9);setTimeout(()=>{if(alive())ring(cx,cy,GOLD_C,64,5.5);},200);
+  await wait(900);if(!alive())return;
+  const cv=fl.querySelector('.fa-cover');if(cv)cv.remove();
+  // 6. Le liseré s'allume, balayage doré, « Signature » s'écrit au-dessus, feu d'artifice
+  await wait(700);if(!alive())return;
+  if(card)card.classList.add('sig-lit');
+  O.insertAdjacentHTML('beforeend','<div class="prism gold"></div><div class="prism gold b"></div>');
+  setTimeout(()=>O.querySelectorAll('.prism').forEach(e=>e.remove()),1900);
+  stage.insertAdjacentHTML('beforeend','<div class="sig-banner" id="op-fa">Signature</div>');
+  sfx.fanfare();sfx.bell();fireworks(GOLD_C,4200,alive);rain(GOLD_C,240);buzz([200,80,200,80,420]);
+  fl.classList.add('wobble');
+  await wait(1300);
+}
 function fxLoop(){
   const c=FX.ctx;c.clearRect(0,0,FX.w,FX.h);
   FX.parts=FX.parts.filter(p=>p.life>0&&p.y<FX.h+40);
@@ -1405,7 +1508,7 @@ const wait=ms=>new Promise(r=>setTimeout(r,RM?Math.min(ms,250):ms));
 const nextTap=()=>new Promise(r=>{tapResolve=r;});
 $('opening').addEventListener('pointerup',e=>{if(e.target.closest('.op-bar button, .op-actions button'))return;if(tapResolve){const r=tapResolve;tapResolve=null;r();}});
 function hint(t,blink=true){const h=$('op-hint');h.textContent=t;h.classList.toggle('blink',blink&&!!t);}
-function closeOpening(){run++;$('opening').classList.remove('dark');$('opening').querySelectorAll('.prism').forEach(e=>e.remove());if(tapResolve){const r=tapResolve;tapResolve=null;r();}$('opening').hidden=true;FX.parts=[];document.body.style.overflow='';}
+function closeOpening(){run++;$('opening').classList.remove('dark','sig-dark');$('opening').querySelectorAll('.prism,.sig-pen').forEach(e=>e.remove());if(tapResolve){const r=tapResolve;tapResolve=null;r();}$('opening').hidden=true;FX.parts=[];document.body.style.overflow='';}
 $('op-close').addEventListener('click',closeOpening);
 $('open-btn').addEventListener('click',()=>{if(packStatus==='offline')refreshPackLock();else openPack();});
 $('pack').addEventListener('click',()=>{if(packStatus==='ready')openPack();});
@@ -1458,6 +1561,7 @@ async function openPack(){
   const setGlow=t=>{pack.style.setProperty('--glow',TIER_FX[t].glow);glow.style.setProperty('--wc',TIER_FX[t].glow);glow.classList.add('on');};
   if(bestR>=1)setTimeout(()=>alive()&&setGlow(bestR>=2?'silver':best),CM*.35);
   if(bestR>=2)setTimeout(()=>alive()&&setGlow('gold'),CM*.6);
+  if(pulled.some(isSigP))setTimeout(()=>{if(!alive())return;pack.style.setProperty('--glow','rgba(255,215,0,.95)');glow.style.setProperty('--wc','rgba(255,215,0,.95)');glow.classList.add('on');O.classList.add('dark');burst(...centerOf(pack),GOLD_C,60,6,{spark:1});},CM*.92);
   if(bestR===3)setTimeout(()=>{if(!alive())return;setGlow('icon');glow.style.animation='pulseGlow .6s ease-in-out infinite, hue 1.2s linear infinite';O.classList.add('dark');heartbeat(2,500,alive);},CM*.82);
   const sparkT=setInterval(()=>{if(!alive()||!FX.w)return;const[x,y]=centerOf(pack);burst(x,y,TIER_FX[best].c,bestR>=2?12:4,4+bestR,{up:1,spark:1,big:3});},140);
   await wait(CM);clearInterval(sparkT);if(!alive())return;
@@ -1484,11 +1588,15 @@ async function openPack(){
     tease.className='tease';tease.style.removeProperty('--tc');
     if(R>=1){tease.style.setProperty('--tc',fx.glow);tease.classList.add('on');if(t==='icon')tease.classList.add('icon');}
     if(R===2)fl.classList.add('trem');if(R===3)fl.classList.add('trem2');
-    const isFA=!!(p.fullart&&p.photo);
-    if(isFA){fl.classList.add('holo-back');if(R<2)tease.classList.add('on','prismatic');}
-    hint(isFA&&R<2?'Un reflet arc-en-ciel… touche pour révéler':['Touche pour révéler','Touche pour révéler','Ça brille… touche pour révéler','Attention… touche pour révéler'][R]);
+    const isFA=!!(p.fullart&&p.photo),isSig=isSigP(p);let sigEmit=0;
+    if(isSig){fl.classList.remove('trem','trem2');fl.classList.add('sig-back','levitate');tease.className='tease on goldaura';
+      sigEmit=setInterval(()=>{if(!alive())return;const[x,y]=centerOf(fl);burst(x,y+40,GOLD_C,3,2,{up:2.5,spark:1,big:2,g:-.02});},120);}
+    else if(isFA){fl.classList.add('holo-back');if(R<2)tease.classList.add('on','prismatic');}
+    hint(isSig?'Une aura dorée… touche pour révéler':isFA&&R<2?'Un reflet arc-en-ciel… touche pour révéler':['Touche pour révéler','Touche pour révéler','Ça brille… touche pour révéler','Attention… touche pour révéler'][R]);
     await nextTap();if(!alive())return;hint('',false);
-    fl.classList.remove('trem','trem2');
+    fl.classList.remove('trem','trem2','levitate');clearInterval(sigEmit);
+    if(isSig){fl.querySelector('.front').innerHTML=cardHTML(p,0,false);tease.className='tease';await sigReveal(fl,p,t,alive);if(!alive())return;}
+    else{
     if(R===1){ // Argent : la carte tremble et s'illumine
       fl.classList.add('trem');sfx.whoosh();buzz(50);await wait(650);if(!alive())return;fl.classList.remove('trem');
     }
@@ -1524,6 +1632,7 @@ async function openPack(){
       fl.classList.add('flipped');sfx.flip();if(R===3)sfx.whoosh();
       await wait([380,420,700,1100][R]);if(!alive())return;
     }
+    }
     const[fx0,fy0]=centerOf(fl);
     sfx.ding(t);burst(fx0,fy0,fx.c,[25,70,180,260][R],[7,10,13,17][R],{up:R>=2?3:1});
     if(R===1){flash('rgba(232,238,245,.5)');sfx.sparkle();}
@@ -1533,7 +1642,7 @@ async function openPack(){
     tease.className='tease';
     hint((fresh.has(p.id)?'Nouvelle carte ! ':'Déjà dans ton classeur. ')+(i<4?'Touche pour la suivante':'Touche pour voir ton booster'));
     await nextTap();if(!alive())return;hint('',false);
-    walk.classList.remove('on','rainbow');O.classList.remove('dark');const fab=$('op-fa');if(fab)fab.remove();
+    walk.classList.remove('on','rainbow','gold');O.classList.remove('dark','sig-dark');O.querySelectorAll('.prism,.sig-pen').forEach(e=>e.remove());const fab=$('op-fa');if(fab)fab.remove();
     fl.classList.add('leave');await wait(300);if(!alive())return;fl.remove();
     tray.children[i].innerHTML=miniHTML(p);sfx.whoosh();
   }
