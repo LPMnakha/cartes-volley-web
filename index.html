@@ -1270,7 +1270,9 @@ const PER_PAGE=9;let binderPage=0;
 const TIER_COL={icon:'#C9B8FF',gold:'#FFD23F',silver:'#DCE3EA',bronze:'#E9A877'};
 const SIL_P='<svg class="sil" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><circle cx="12" cy="8" r="4.2"/><path d="M3.5 21c.8-4.6 4.2-7 8.5-7s7.7 2.4 8.5 7z"/></svg>';
 const SIL_D='<svg class="sil" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l2.9 6.6 7.1.6-5.4 4.7 1.6 7L12 17.3 5.8 20.9l1.6-7L2 9.2l7.1-.6z"/></svg>';
-const binderList=()=>[...players].sort((a,b)=>(a.createdAt||0)-(b.createdAt||0)||a.id.localeCompare(b.id));
+// Ordre du classeur : bronze, argent, or, icône, puis les mêmes en Full Art ; dans une rareté, par note puis par nom
+const faOf=p=>p.fullart&&p.photo?1:0;
+const binderList=()=>[...players].sort((a,b)=>faOf(a)-faOf(b)||TIER_RANK[tier(ovr(a.s))]-TIER_RANK[tier(ovr(b.s))]||ovr(a.s)-ovr(b.s)||a.name.localeCompare(b.name,'fr')||a.id.localeCompare(b.id));
 function renderBinder(dir){
   const list=binderList(),N=list.length,pages=Math.max(1,Math.ceil(N/PER_PAGE)),own=new Set(state.owned);
   binderPage=Math.max(0,Math.min(binderPage,pages-1));
