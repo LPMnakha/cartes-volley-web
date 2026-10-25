@@ -1058,7 +1058,12 @@ const TIER_FX={
 const TIER_RANK={bronze:0,silver:1,gold:2,icon:3};
 const RM=matchMedia('(prefers-reduced-motion: reduce)').matches;
 const FULLART_RARITY=3; // une Full Art sort 3 fois moins souvent qu'une carte normale de même note
-const weightOf=p=>Math.pow(0.94,ovr(p.s)-40)/(p.fullart&&p.photo?FULLART_RARITY:1);
+// Chance de tirage : d'abord la rareté (bronze 1, argent 1/3, or 1/10, icône 1/30),
+// puis un petit écart selon la note dans la même rareté (au plus 1,5 fois entre le bas et le haut de la tranche).
+const TIER_WEIGHT={bronze:1,silver:1/3,gold:1/10,icon:1/30};
+const TIER_RANGE={bronze:[0,64],silver:[65,74],gold:[75,84],icon:[85,100]};
+const weightOf=p=>{const o=ovr(p.s),t=tier(o),[lo,hi]=TIER_RANGE[t],k=(o-lo)/(hi-lo);
+  return TIER_WEIGHT[t]*Math.pow(1/1.5,k)/(p.fullart&&p.photo?FULLART_RARITY:1);};
 const PACK_SIZE=5;
 function drawPack(pool){ // tirage pondéré sans remise : 5 joueurs différents
   const left=pool.map(p=>({p,w:weightOf(p)})),out=[];
