@@ -255,6 +255,8 @@ input[type=range]::-moz-range-thumb{width:20px;height:20px;border-radius:50%;bac
 .pack-art span{font-family:var(--data);font-weight:700;font-size:.7rem;letter-spacing:.18em}
 .pack-art i{font-style:normal;font-family:var(--data);font-weight:700;font-size:.72rem;letter-spacing:.1em;background:#2A0E00;color:#FFD23F;border-radius:99px;padding:3px 10px;margin-top:4px}
 .open-btn{width:min(100%,360px);align-self:center;padding:16px}
+.open-btn:disabled{opacity:.4;cursor:not-allowed}
+.pack-zone.off .pack{filter:grayscale(.8) brightness(.6);animation:none}.pack-zone.off .rays{display:none}
 .odds{display:grid;gap:6px;font-variant-numeric:tabular-nums}
 .odd{display:grid;grid-template-columns:12px 1fr auto auto;gap:10px;align-items:center;font-size:.92rem}
 .odd i{width:12px;height:12px;border-radius:3px}
@@ -273,6 +275,7 @@ input[type=range]::-moz-range-thumb{width:20px;height:20px;border-radius:50%;bac
 .op-count{font-family:var(--data);font-weight:700;letter-spacing:.16em;color:var(--muted)}
 .op-stage{position:relative;flex:1;min-height:0;display:grid;place-items:center}
 .op-stage>.pack{animation:none}
+.op-stage .card,.op-stage .pack{pointer-events:none}
 .pack.charge{animation:charge 1.7s cubic-bezier(.5,0,.9,.6) forwards}
 .pack.tear{animation:none}
 .pack.tear .pack-top{animation:tearTop .75s cubic-bezier(.2,.7,.3,1) forwards}
@@ -425,7 +428,8 @@ input[type=range]::-moz-range-thumb{width:20px;height:20px;border-radius:50%;bac
       <button class="icon-btn mute-btn" type="button" id="mute-btn" aria-label="Couper le son"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5L6 9H3v6h3l5 4z"/><path class="w1" d="M15.5 8.5a5 5 0 010 7"/><path class="w2" d="M18.5 5.5a9 9 0 010 13"/><path class="x" d="M16 9l6 6M22 9l-6 6"/></svg></button>
     </div>
     <div class="banner" id="pack-ex" hidden><span>Tirage parmi les <b>exemples</b> tant que tu n'as pas créé de cartes.</span></div>
-    <div class="pack-zone"><div class="rays"></div><button class="pack" id="pack" type="button" aria-label="Ouvrir le booster"></button></div>
+    <div class="banner" id="pack-few" hidden><span>Il faut au moins <b>5 cartes</b> pour ouvrir un booster : tu en as <b id="pack-few-n">0</b>. Crée-en d'autres dans l'onglet Cartes.</span></div>
+    <div class="pack-zone" id="pack-zone"><div class="rays"></div><button class="pack" id="pack" type="button" aria-label="Ouvrir le booster"></button></div>
     <button class="btn primary open-btn" type="button" id="open-btn">Ouvrir le booster</button>
     <div class="section"><span class="label">Chances d'apparaître dans un booster</span><div class="odds" id="odds"></div></div>
   </div>
@@ -931,10 +935,29 @@ const TIER_FX={
 const TIER_RANK={bronze:0,silver:1,gold:2,icon:3};
 const RM=matchMedia('(prefers-reduced-motion: reduce)').matches;
 const weightOf=p=>Math.pow(0.94,ovr(p.s)-40);
-function drawPack(pool){
-  const ws=pool.map(weightOf),T=ws.reduce((a,b)=>a+b,0),out=[];
-  for(let k=0;k<5;k++){let x=Math.random()*T,i=0;while(i<ws.length-1&&x>=ws[i]){x-=ws[i];i++;}out.push(pool[i]);}
+const PACK_SIZE=5;
+function drawPack(pool){ // tirage pondéré sans remise : 5 joueurs différents
+  const left=pool.map(p=>({p,w:weightOf(p)})),out=[];
+  for(let k=0;k<PACK_SIZE&&left.length;k++){
+    const T=left.reduce((a,b)=>a+b.w,0);let x=Math.random()*T,i=0;
+    while(i<left.length-1&&x>=left[i].w){x-=left[i].w;i++;}
+    out.push(left.splice(i,1)[0].p);
+  }
   return out;
+}
+function revealOrder(cards){ // ordre au hasard, sauf la plus forte qui sort en dernier
+  const a=cards.slice();let bi=0;a.forEach((p,i)=>{if(ovr(p.s)>ovr(a[bi].s))bi=i;});
+  const best=a.splice(bi,1)[0];
+  for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]];}
+  return a.concat([best]);
+}
+let oddsCache={key:'',map:null};
+function packOdds(pool){ // chance d'apparaître, estimée par simulation (le tirage sans remise n'a pas de formule simple)
+  const key=pool.map(p=>p.id+':'+ovr(p.s)).join('|');
+  if(oddsCache.key===key)return oddsCache.map;
+  const N=pool.length<=PACK_SIZE?1:4000,cnt=new Map(pool.map(p=>[p.id,0]));
+  for(let n=0;n<N;n++)drawPack(pool).forEach(p=>cnt.set(p.id,cnt.get(p.id)+1));
+  const map=new Map(pool.map(p=>[p.id,cnt.get(p.id)/N]));oddsCache={key,map};return map;
 }
 function packHTML(){return`<div class="pack-top"></div><div class="pack-bot"><div class="pack-art">${HEX_BIG}<b>BOOSTER</b><span>CARTES VOLLEY</span><i>5 CARTES</i></div></div>`;}
 function miniHTML(p){const o=ovr(p.s);return`<div class="mini ${tier(o)}"><div class="mface"><div class="mo">${o}<small>${esc(p.poste)}</small></div>
@@ -942,10 +965,13 @@ function miniHTML(p){const o=ovr(p.s);return`<div class="mini ${tier(o)}"><div c
 $('pack').innerHTML=packHTML();
 function renderPacks(){
   const pool=shown();$('pack-ex').hidden=players.length>0;
-  const ws=pool.map(weightOf),T=ws.reduce((a,b)=>a+b,0)||1;
-  const rows=pool.map((p,i)=>({p,o:ovr(p.s),c:1-Math.pow(1-ws[i]/T,5)})).sort((a,b)=>b.o-a.o);
+  const few=pool.length<PACK_SIZE;
+  $('pack-few').hidden=!few;$('pack-few-n').textContent=pool.length;
+  $('open-btn').disabled=few;$('pack').disabled=few;$('pack-zone').classList.toggle('off',few);
+  const od=few?null:packOdds(pool);
+  const rows=pool.map(p=>({p,o:ovr(p.s),c:few?0:od.get(p.id)})).sort((a,b)=>b.o-a.o);
   const col={icon:'#C9B8FF',gold:'#FFD23F',silver:'#DCE3EA',bronze:'#E9A877'};
-  $('odds').innerHTML=rows.map(x=>`<div class="odd"><i style="background:${col[tier(x.o)]}"></i><span>${esc(x.p.name)}</span><b>${x.o}</b><span>${(x.c*100).toFixed(x.c<.1?1:0)} %</span></div>`).join('');
+  $('odds').innerHTML=rows.map(x=>`<div class="odd"><i style="background:${col[tier(x.o)]}"></i><span>${esc(x.p.name)}</span><b>${x.o}</b><span>${few?'–':(x.c*100).toFixed(x.c<.1?1:0)+' %'}</span></div>`).join('');
 }
 function setTab(t){
   $('tab-cards').hidden=t!=='cards';$('tab-packs').hidden=t!=='packs';
@@ -1020,7 +1046,7 @@ function centerOf(el){const r=el.getBoundingClientRect(),o=FX.cv.getBoundingClie
 let run=0,tapResolve=null;
 const wait=ms=>new Promise(r=>setTimeout(r,RM?Math.min(ms,250):ms));
 const nextTap=()=>new Promise(r=>{tapResolve=r;});
-$('opening').addEventListener('pointerup',e=>{if(e.target.closest('button'))return;if(tapResolve){const r=tapResolve;tapResolve=null;r();}});
+$('opening').addEventListener('pointerup',e=>{if(e.target.closest('.op-bar button, .op-actions button'))return;if(tapResolve){const r=tapResolve;tapResolve=null;r();}});
 function hint(t,blink=true){const h=$('op-hint');h.textContent=t;h.classList.toggle('blink',blink&&!!t);}
 function closeOpening(){run++;$('opening').classList.remove('dark');if(tapResolve){const r=tapResolve;tapResolve=null;r();}$('opening').hidden=true;FX.parts=[];document.body.style.overflow='';}
 $('op-close').addEventListener('click',closeOpening);
@@ -1045,10 +1071,10 @@ async function countUp(el,to,ms,alive){
 }
 
 async function openPack(){
-  const pool=shown();if(!pool.length)return;
+  const pool=shown();if(pool.length<PACK_SIZE){renderPacks();setTab('packs');toast('Il faut au moins 5 cartes pour ouvrir un booster.');return;}
   ac();
   const my=++run,alive=()=>my===run;
-  const pulled=drawPack(pool).sort((a,b)=>ovr(a.s)-ovr(b.s));
+  const pulled=revealOrder(drawPack(pool));
   const best=tier(ovr(pulled[4].s)),bestR=TIER_RANK[best];
   const O=$('opening'),stage=$('op-stage'),tray=$('op-tray');
   O.hidden=false;O.classList.remove('dark');document.body.style.overflow='hidden';fxSize();FX.parts=[];
