@@ -1240,7 +1240,7 @@ input[type=range]::-moz-range-thumb{width:20px;height:20px;border-radius:50%;bac
     </div>
     <div class="section" id="m-reset-sec">
       <span class="label">Réinitialiser mon compte</span>
-      <p class="note" style="margin:0">Remet tout à zéro sur cet appareil : toutes les cartes, le classeur, l'équipe, les succès, l'historique, les matchs et l'élo (retour à 400).</p>
+      <p class="note" style="margin:0">Remet tout à zéro sur cet appareil : toutes les cartes, le classeur, l'équipe, les succès, l'historique, les matchs, tes amis en ligne et l'élo (retour à 400).</p>
       <button class="btn b-clear" type="button" id="r-btn">Réinitialiser mon compte</button>
       <div class="b-confirm" id="r-confirm" hidden role="alertdialog" aria-labelledby="r-confirm-t">
         <b id="r-confirm-t">Tout effacer ?</b>
@@ -1413,7 +1413,7 @@ function fixState(j){
   if(j.bonus&&typeof j.bonus==='object')for(const k in o.bonus)o.bonus[k]=Math.max(0,Math.floor(+j.bonus[k]||0));
   if(j.streak&&typeof j.streak==='object')o.streak={cur:+j.streak.cur||0,best:+j.streak.best||0,lastDay:String(j.streak.lastDay||'')};
   o.history=Array.isArray(j.history)?j.history.filter(h=>h&&Array.isArray(h.ids)).slice(0,30):[];
-  o.pid=String(j.pid||'');o.key=/^[A-Za-z0-9_-]{16,64}$/.test(j.key||'')?j.key:'';o.pseudo=String(j.pseudo||'').slice(0,16);o.elo=Number.isFinite(+j.elo)&&j.elo!==''&&j.elo!=null?Math.round(+j.elo):ELO_START;
+  o.pid=String(j.pid||'');o.resetPending=!!j.resetPending;o.key=/^[A-Za-z0-9_-]{16,64}$/.test(j.key||'')?j.key:'';o.pseudo=Array.from(String(j.pseudo||'').replace(/[\u0000-\u001f\u007f|]/g,'')).slice(0,16).join('').trim();o.elo=Number.isFinite(+j.elo)&&j.elo!==''&&j.elo!=null?Math.round(+j.elo):ELO_START;
   o.eloBase=ELO_START;
   o.matches=Array.isArray(j.matches)?j.matches.slice(0,40):[];o.opps=j.opps&&typeof j.opps==='object'?{...j.opps}:{};o.played=Array.isArray(j.played)?j.played.slice(-300):[];
   // départ passé de 500 à 400 : les anciens comptes sont décalés une seule fois de -100, avec l'élo des potes, pour garder les écarts
@@ -1873,8 +1873,9 @@ $('r-sure').addEventListener('change',()=>{$('r-ok').disabled=!$('r-sure').check
 $('r-ok').addEventListener('click',async()=>{
   if(!$('r-sure').checked)return;$('r-ok').disabled=true;
   for(const p of players.slice())await remove(p.id);
-  const keep={lastDay:state.lastDay,lastTs:state.lastTs,pkT:state.pkT,rev:state.rev,played:state.played,cday:state.camp.day,cts:state.camp.ts};
-  state=blankState();state.lastDay=keep.lastDay;state.lastTs=keep.lastTs;state.pkT=keep.pkT;state.rev=keep.rev;state.played=keep.played;state.camp.day=keep.cday;state.camp.ts=keep.cts; // les QR déjà joués et la tentative du jour restent bloqués
+  const keep={lastDay:state.lastDay,lastTs:state.lastTs,pkT:state.pkT,rev:state.rev,played:state.played,cday:state.camp.day,cts:state.camp.ts,pid:state.pid,key:state.key};
+  let resetOk=!keep.pid||!keep.key||!SERVER;if(!resetOk){try{await api('reset',{pseudo:''});resetOk=true;}catch(e){}} // élo, victoires et amis remis à zéro en ligne aussi
+  state=blankState();state.pid=keep.pid;state.key=keep.key;state.resetPending=!resetOk; // sans internet : fait à la prochaine connexionstate.lastDay=keep.lastDay;state.lastTs=keep.lastTs;state.pkT=keep.pkT;state.rev=keep.rev;state.played=keep.played;state.camp.day=keep.cday;state.camp.ts=keep.cts; // les QR déjà joués et la tentative du jour restent bloqués
   await saveState();
   try{sessionStorage.setItem('cartes-volley-reset','1');}catch(e){}
   location.reload();
@@ -2783,6 +2784,8 @@ function simulateMatch(A,B,seed,opts){
 /* =================== En ligne : serveur des potes (amis, élo, matchs) =================== */
 const SERVER='https://cartes-volley.cottereau-nati.workers.dev'; // serveur Cloudflare (amis, élo, matchs)
 const net={on:false,me:null,rank:null,err:'',polling:false,timer:null,rankTs:0,queue:[],acks:new Set()};
+// pseudo : même nettoyage que sur le serveur (16 caractères, un emoji compte pour un)
+const cleanPseudo=v=>Array.from(String(v||'').replace(/[\u0000-\u001f\u007f|]/g,'').replace(/\s+/g,' ').trim()).slice(0,16).join('').trim();
 let rankView='friends';try{const v=localStorage.getItem('cartes-volley-rank');if(v==='all'||v==='friends')rankView=v;}catch(e){}
 async function api(path,body){
   if(!SERVER)throw Object.assign(new Error('off'),{code:'off'});
@@ -2799,12 +2802,17 @@ function netMsg(e,who){const c=e&&e.code;who=who?esc(who):'ton pote';
   if(c==='self')return"C'est ton propre code.";
   if(c==='bad_key'||c==='unknown_player')return"Ton compte en ligne n'est pas reconnu. Réessaie dans un instant.";
   return"Le serveur a refusé la demande. Réessaie dans un instant.";}
-function netApplyMe(me){if(!me)return;net.me=me;if(state.elo!==me.elo){state.elo=me.elo;saveState();}}
+function netApplyMe(me){if(!me)return;net.me=me;if(state.elo!==me.elo){state.elo=me.elo;saveState();}if(me.pseudo!==state.pseudo)netSyncPseudo();}
+let pseudoBusy=false;
+async function netSyncPseudo(){ // le pseudo de ce téléphone fait foi : on le renvoie au serveur tant qu'il n'y est pas
+  if(!net.on||pseudoBusy||!state.pseudo||(net.me&&net.me.pseudo===state.pseudo))return;pseudoBusy=true;
+  try{const j=await api('hello',{pseudo:state.pseudo});net.me=j.me;if(j.me.elo!==state.elo){state.elo=j.me.elo;saveState();}netRank(true);}catch(e){}finally{pseudoBusy=false;}}
 let helloP=null;
 function netHello(){if(!helloP)helloP=netHello1().finally(()=>{helloP=null;});return helloP;}
 async function netHello1(){
   if(!SERVER){net.on=false;net.err='off';renderNet();return;}
   ensureProfile();
+  if(state.resetPending){try{await api('reset',{pseudo:state.pseudo});state.resetPending=false;await saveState();}catch(e){}}
   try{const w=state.matches.filter(m=>m.win).length,j=await api('hello',{pseudo:state.pseudo,elo:state.elo,w,l:state.matches.length-w});
     net.on=true;net.err='';netApplyMe(j.me);netStartPoll();if(j.inbox)netPoll();netRank(true);}
   catch(e){net.on=false;net.err=e.code;if(e.code==='net'||e.code==='server'||e.code==='http'){clearTimeout(net.retry);net.retry=setTimeout(netHello,15000);}}
@@ -2891,7 +2899,7 @@ function parsePayload(str){
       const s2={};['ser','rec','pas','att','blo','def'].forEach((k,i)=>s2[k]=Math.max(0,Math.min(100,Math.round(+f[i+1]||0))));
       return{name:decodeURIComponent(f[0]).slice(0,18)||'?',s:s2,poste:POSTES.some(q=>q.v===f[7])?f[7]:'POL'};});
     if(cards.length!==7||cards.some(c=>!c)||!pid||!nonce)return null;
-    return{pid,pseudo:decodeURIComponent(ps).slice(0,16)||'Pote',elo:Math.round(+elo)||ELO_START,nonce,cards,ver};
+    return{pid,pseudo:Array.from(decodeURIComponent(ps)).slice(0,16).join('')||'Pote',elo:Math.round(+elo)||ELO_START,nonce,cards,ver};
   }catch(e){return null;}
 }
 function payloadTeamScore(d){return Math.round(d.cards.reduce((t,c,i)=>{const sl=TEAM_SLOTS.find(x=>x.k===SLOT_ORDER[i]);return t+Math.round(Object.entries(POSTE_W[sl.p]).reduce((u,[k,v])=>u+c.s[k]*v,0));},0)/7);}
@@ -2906,7 +2914,7 @@ function renderMatchTab(){
   renderNet();document.querySelectorAll('#r-seg button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.r===rankView));$('r-seg').hidden=!net.rank;
   const RR=rankRows();
   $('m-rank').innerHTML=RR.rows.map((x,i)=>{const meRow=x.pid===state.pid,pos=x.pos||i+1,sep=x.pos&&x.pos>RR.rows.length?'<div class="rank-sep">…</div>':'';
-    return`${sep}<div class="rank-row${meRow?' me':''}${pos<=3?' top':''}"><b>${pos}</b><span>${esc(x.pseudo)}${meRow?' (toi)':''}</span><small>${x.w}V ${x.l}D</small><b>${x.elo}</b></div>`;}).join('')+
+    return`${sep}<div class="rank-row${meRow?' me':''}${pos<=3?' top':''}"><b>${pos}</b><span>${esc(meRow?state.pseudo:x.pseudo)}${meRow?' (toi)':''}</span><small>${x.w}V ${x.l}D</small><b>${x.elo}</b></div>`;}).join('')+
     (RR.note?`<p class="note" style="margin:4px 0 0">${RR.note}</p>`:'');
   if(mMode==='pvp')netRank();
   const fmt=new Intl.DateTimeFormat('fr-FR',{day:'numeric',month:'short'});
@@ -2914,7 +2922,8 @@ function renderMatchTab(){
   $('m-hist').innerHTML=state.matches.slice(0,10).map((m,i)=>`<div class="mh-row${m.sh?' has':''}" data-i="${i}"${m.sh?' role="button" tabindex="0" aria-label="Voir la feuille de match"':''}><i class="${m.win?'w':'l'}">${m.win?'V':'D'}</i><span>contre ${esc(m.opp)}</span><b>${m.my}-${m.op}</b><small>${m.d>=0?'+':''}${m.d} · ${fmt.format(new Date(m.ts))}</small></div>`).join('');
 }
 $('m-hist').addEventListener('click',e=>{const r=e.target.closest('.mh-row.has');if(r)openSheet(state.matches[+r.dataset.i]);});
-$('m-pseudo').addEventListener('change',async()=>{const v=$('m-pseudo').value.trim().slice(0,16);if(!v)return;state.pseudo=v;await saveState();renderMatchTab();if(net.on)api('hello',{pseudo:v}).then(()=>netRank(true)).catch(()=>{});if(myNonce&&$('m-played').hidden){myCode=null;showMyQR();}});
+$('m-pseudo').addEventListener('change',async()=>{const v=cleanPseudo($('m-pseudo').value);if(!v){$('m-pseudo').value=state.pseudo;return;}if(v===state.pseudo){$('m-pseudo').value=v;return;}state.pseudo=v;$('m-pseudo').value=v;await saveState();renderMatchTab();netSyncPseudo();if(myNonce&&$('m-played').hidden){myCode=null;showMyQR();}});
+$('m-pseudo').setAttribute('maxlength','40'); // la vraie limite (16 caractères, emojis compris) est appliquée à la validation
 $('m-pseudo').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();e.target.blur();}});
 function mErr(t){const e=$('m-err');e.textContent=t||'';e.hidden=!t;}
 async function showMyQR(){
@@ -3325,7 +3334,7 @@ async function launchMatch(){
   if(!oppData||!oppRaw)return;ac();
   if(!myCode){if(!myNonce)myNonce=rid(8);myCode=teamPayload(myNonce);}
   const go=$('m-go');go.disabled=true;go.textContent='Connexion au serveur…';mErr('');
-  let j;try{j=await api('match',{mine:myCode,theirs:oppRaw});}
+  let j;try{j=await api('match',{mine:myCode,theirs:oppRaw,pseudo:state.pseudo});}
   catch(e){go.disabled=false;go.textContent='Lancer le match';mErr(netMsg(e,oppData.pseudo));$('m-vs').scrollIntoView({block:'center',behavior:'smooth'});return;}
   oppData=null;oppRaw=null;$('m-vs').hidden=true;
   await playOnline(j.match,false);
@@ -3336,6 +3345,7 @@ async function playOnline(m,incoming){
   if(!A||!B||!A.cards||!B.cards){netAck(m.id);return;}
   const myIdx=A.pid===state.pid?0:1,me=myIdx?B:A,op=myIdx?A:B,e=m.elo&&m.elo[state.pid];
   const sim=simulateMatch(A,B,hashStr(m.id+'|cartes-volley')),win=m.winner===myIdx;
+  if(m.names&&m.names[op.pid])op.pseudo=m.names[op.pid]; // pseudo à jour côté serveur
   const names=myIdx===0?[state.pseudo,op.pseudo]:[op.pseudo,state.pseudo];
   let na=[];
   if(!state.played.includes(m.id)&&e){
