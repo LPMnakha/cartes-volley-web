@@ -859,7 +859,7 @@ input[type=range]::-moz-range-thumb{width:20px;height:20px;border-radius:50%;bac
     <div class="b-dots" id="b-dots"></div>
     <p class="empty-filter" id="b-empty" hidden>Crée des cartes dans l'onglet Cartes : chacune aura sa place dans le classeur.</p>
     <div class="section"><span class="label">Doublons</span>
-      <p class="note" style="margin:0">10 doublons d'une rareté = 1 booster bonus de la même rareté. Les Full Art comptent dans leur rareté, les Signature comme icône.</p>
+      <p class="note" style="margin:0">25 doublons d'une rareté = 1 booster bonus de la même rareté. Les Full Art comptent dans leur rareté, les Signature comme icône.</p>
       <div class="dups" id="dups"></div></div>
     <div class="section"><span class="label">Succès <span id="ach-count"></span></span><div class="achs" id="achs"></div></div>
     <button class="btn b-clear" type="button" id="b-clear">Vider le classeur</button>
@@ -2157,24 +2157,25 @@ window.addEventListener('resize',()=>{if(!$('opening').hidden)fxSize();});
 
 
 /* =================== Doublons et boosters bonus =================== */
+const DUP_COST=25; // doublons à échanger contre un booster bonus
 const DUP_TIERS=[{t:'bronze',l:'Bronze',pack:'classic',c:'#E9A877'},{t:'silver',l:'Argent',pack:'silver',c:'#DCE3EA'},{t:'gold',l:'Or',pack:'gold',c:'#FFD23F'},{t:'icon',l:'Icône',pack:'icon',c:'#C9B8FF'}];
 const dupTier=p=>isSigP(p)?'icon':tier(ovr(p.s));
 function dupStock(t){return players.filter(p=>dupTier(p)===t).reduce((n,p)=>n+Math.max(0,(state.counts[p.id]||0)-1),0);}
 function renderDups(){
   $('dups').innerHTML=DUP_TIERS.map(d=>{const n=dupStock(d.t);return`<div class="dup-row"><i style="background:${d.c}"></i>
-    <div class="dmeta"><span>${d.l}</span><span class="track"><i style="width:${Math.min(100,n*10)}%"></i></span><small>${n} doublon${n>1?'s':''}${n>=10?` · ${Math.floor(n/10)} échange${n>=20?'s':''} possible${n>=20?'s':''}`:` · encore ${10-n}`}</small></div>
-    <button class="btn primary" type="button" data-ex="${d.t}" ${n>=10?'':'disabled'}>Échanger</button></div>`;}).join('');
+    <div class="dmeta"><span>${d.l}</span><span class="track"><i style="width:${Math.min(100,n/DUP_COST*100)}%"></i></span><small>${n} doublon${n>1?'s':''}${n>=DUP_COST?` · ${Math.floor(n/DUP_COST)} échange${n>=2*DUP_COST?'s':''} possible${n>=2*DUP_COST?'s':''}`:` · encore ${DUP_COST-n}`}</small></div>
+    <button class="btn primary" type="button" data-ex="${d.t}" ${n>=DUP_COST?'':'disabled'}>Échanger</button></div>`;}).join('');
 }
 $('dups').addEventListener('click',async e=>{
   const b=e.target.closest('[data-ex]');if(!b||b.disabled)return;const d=DUP_TIERS.find(x=>x.t===b.dataset.ex);
-  if(dupStock(d.t)<10)return;
-  for(let k=0;k<10;k++){ // on retire un exemplaire en trop aux cartes qui en ont le plus
+  if(dupStock(d.t)<DUP_COST)return;
+  for(let k=0;k<DUP_COST;k++){ // on retire un exemplaire en trop aux cartes qui en ont le plus
     const c=players.filter(p=>dupTier(p)===d.t&&(state.counts[p.id]||0)>1).sort((a,b)=>state.counts[b.id]-state.counts[a.id])[0];
     if(!c)break;state.counts[c.id]--;
   }
   state.bonus[d.pack]=(state.bonus[d.pack]||0)+1;state.exchanges=(state.exchanges||0)+1;
   await saveState();renderBinder();renderPacks();sfx.sparkle();buzz([30,40,60]);
-  toast(`10 doublons ${d.l.toLowerCase()} échangés : 1 ${PACK_TYPES[d.pack].l.toLowerCase()} bonus dans l'onglet Packs`);
+  toast(`${DUP_COST} doublons ${d.l.toLowerCase()} échangés : 1 ${PACK_TYPES[d.pack].l.toLowerCase()} bonus dans l'onglet Packs`);
   const na=checkAch(true);if(na.length)showAch(na);
 });
 function renderExtras(){
@@ -2229,7 +2230,7 @@ const ACH=[
   {k:'s7',t:"7 jours d'affilée",d:'Une série de 7 jours',ok:()=>state.streak.best>=7},
   {k:'s30',t:"30 jours d'affilée",d:'Une série de 30 jours',ok:()=>state.streak.best>=30},
   {k:'pIcon',t:'Booster Icône',d:'Ouvre ton premier booster Icône du jour',ok:()=>realHist().some(h=>h.type==='icon'&&h.how==='jour')},
-  {k:'ex1',t:'Premier échange',d:'Échange 10 doublons contre un booster',ok:()=>state.exchanges>0},
+  {k:'ex1',t:'Premier échange',d:'Échange 25 doublons contre un booster',ok:()=>state.exchanges>0},
   {k:'team',t:'Équipe au complet',d:'Place 7 cartes dans ton équipe',ok:()=>teamFull()},
   {k:'team80',t:'Équipe de choc',d:'Une équipe complète notée 80 ou plus',ok:()=>teamFull()&&teamScore()>=80},
   {k:'m1',t:'Premier match',d:'Joue un match contre un pote',ok:()=>state.matches.length>0},
