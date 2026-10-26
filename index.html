@@ -1387,8 +1387,8 @@ const PACK_SIZE=5;
 const PACK_TYPES={
   classic:{l:'Booster',sub:'CARTES VOLLEY',mult:{bronze:1,silver:1,gold:1,icon:1},sig:1},
   silver:{l:'Booster Argent',sub:'ARGENT',mult:{bronze:1,silver:2,gold:2,icon:2},sig:2},
-  gold:{l:'Booster Or',sub:'OR',mult:{bronze:1,silver:2,gold:4,icon:4},sig:4},
-  icon:{l:'Booster Icône',sub:'ICÔNE',mult:{bronze:1,silver:2,gold:4,icon:8},sig:8}};
+  gold:{l:'Booster Or',sub:'OR',mult:{bronze:1,silver:2,gold:8,icon:8},sig:8},
+  icon:{l:'Booster Icône',sub:'ICÔNE',mult:{bronze:1,silver:2,gold:8,icon:16},sig:16}};
 const typeForN=n=>n%28===0?'icon':n%14===0?'gold':n%7===0?'silver':'classic';
 let adminType='classic';
 const nextType=()=>isAdmin?adminType:typeForN((+state.count||0)+1);
