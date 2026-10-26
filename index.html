@@ -495,7 +495,7 @@ input[type=range]::-moz-range-thumb{width:20px;height:20px;border-radius:50%;bac
   text-shadow:0 0 24px var(--wc,#FFD23F),0 0 60px var(--wc,#FFD23F);line-height:.95;padding:0 20px;max-width:100vw}
 .walk-txt .w{display:block;animation:slam .55s cubic-bezier(.2,.9,.3,1.35) both}
 .walk-txt .w.big{font-size:clamp(3rem,17vw,6rem)}
-.walk-txt .w.mid{font-size:clamp(1.6rem,9vw,3rem);letter-spacing:.06em}
+.walk-txt .w.mid{font-size:clamp(1.3rem,7.5vw,3rem);letter-spacing:.05em;max-width:92vw;margin:0 auto;overflow-wrap:anywhere}
 .walk-txt .w.ph{width:min(46vw,200px);aspect-ratio:1;border-radius:50%;overflow:hidden;margin:0 auto;border:4px solid var(--wc,#FFD23F);
   box-shadow:0 0 40px var(--wc,#FFD23F);display:grid;place-items:center;background:#0A1430;font-size:clamp(3rem,16vw,5rem)}
 .walk-txt .w.ph img{width:100%;height:100%;object-fit:cover}
@@ -568,6 +568,13 @@ input[type=range]::-moz-range-thumb{width:20px;height:20px;border-radius:50%;bac
   animation:prism 1.3s cubic-bezier(.4,0,.2,1) forwards}
 .prism.b{animation-delay:.35s;opacity:.7}
 .flipper.wobble .inner3d{animation:wobble 2.6s ease-in-out}
+.fa-cracks{position:absolute;inset:0;width:100%;height:100%;z-index:6;pointer-events:none;overflow:visible;clip-path:polygon(0 7%,9% 0,91% 0,100% 7%,100% 87%,50% 100%,0 87%)}
+.fa-cracks path{fill:none;stroke:#fff;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round;transition:stroke-dashoffset .35s ease-out;
+  filter:drop-shadow(0 0 1.5px #fff) drop-shadow(0 0 3px #FF8BE0) drop-shadow(0 0 5px #7AD8FF)}
+.shock{position:absolute;z-index:4;width:120px;height:120px;border-radius:50%;pointer-events:none;
+  border:5px solid #fff;box-shadow:0 0 18px #FF8BE0,0 0 30px #7AD8FF,inset 0 0 18px #8CFFB0;animation:shockwave .9s cubic-bezier(.2,.7,.3,1) forwards}
+.shock.s2{animation-delay:.15s;border-width:3px}
+@keyframes shockwave{from{transform:scale(.1);opacity:1}to{transform:scale(6);opacity:0}}
 .fa-banner.letters{background:none;animation:none;color:#fff;filter:drop-shadow(0 0 16px rgba(255,255,255,.6))}
 .fa-banner.letters span{display:inline-block;background:linear-gradient(90deg,#FF8BE0,#7AD8FF,#8CFFB0,#FFF07A,#FF8BE0);background-size:300% 100%;
   -webkit-background-clip:text;background-clip:text;color:transparent;animation:slamL .5s cubic-bezier(.2,.9,.3,1.5) both,slide 1.4s linear infinite}
@@ -1590,24 +1597,48 @@ function ring(x,y,colors,n,v){for(let i=0;i<n;i++){const a=i/n*Math.PI*2;
   if(!FX.raf)FX.raf=requestAnimationFrame(fxLoop);}
 const PRISM_C=['#FF8BE0','#7AD8FF','#8CFFB0','#FFF07A','#C9B8FF','#FFFFFF'];
 async function faReveal(fl,alive){
-  const O=$('opening'),stage=$('op-stage');
+  const O=$('opening'),stage=$('op-stage'),tease=$('op-tease');
   const card=fl.querySelector('.front .card');if(card)card.classList.add('fa-intro');
-  fl.insertAdjacentHTML('beforeend',`<div class="fa-cover"><div class="cardback">${HEX_BIG}</div></div>`);
-  fl.classList.remove('holo-back');
+  // 1. Montée en pression : noir, la carte tremble de plus en plus dans un halo arc-en-ciel
+  O.classList.add('dark');tease.className='tease on prismatic';fl.classList.add('holo-back','trem');
+  sfx.riser(2.2);heartbeat(3,650,alive);buzz([30,90,30,80,40,60,50,40,60,30,80,20,100]);
+  const emit=setInterval(()=>{if(!alive())return;burstRect(fl,PRISM_C,10);},90);
+  // 2. Le dos se fissure en trois temps, la lumière passe par les fissures
+  fl.insertAdjacentHTML('beforeend',`<svg class="fa-cracks" viewBox="0 0 100 140" preserveAspectRatio="none" aria-hidden="true">
+    <path d="M50 70 L38 52 L41 38 L30 20 L33 4"/><path d="M50 70 L66 58 L72 40 L88 30 L97 14"/><path d="M50 70 L60 88 L55 104 L68 122 L66 138"/>
+    <path d="M50 70 L34 84 L22 82 L10 98 L3 112"/><path d="M50 70 L74 76 L90 92 L98 90"/><path d="M50 70 L45 92 L30 108 L28 128"/></svg>`);
+  const paths=[...fl.querySelectorAll('.fa-cracks path')];paths.forEach(pa=>{const L=pa.getTotalLength();pa.style.strokeDasharray=L;pa.style.strokeDashoffset=L;});
+  for(let k=0;k<3;k++){
+    await wait(620);if(!alive()){clearInterval(emit);return;}
+    paths.slice(k*2,k*2+2).forEach(pa=>pa.style.strokeDashoffset='0');
+    sfx.crack();flash('rgba(255,255,255,'+(0.25+k*0.2)+')');shake();buzz(60+k*40);
+    if(k===1)fl.classList.replace('trem','trem2');
+  }
+  await wait(500);clearInterval(emit);if(!alive())return;
+  // 3. Onde de choc arc-en-ciel et double balayage prismatique
+  fl.classList.remove('trem','trem2');tease.className='tease';
+  stage.insertAdjacentHTML('beforeend','<div class="shock"></div><div class="shock s2"></div>');
   O.insertAdjacentHTML('beforeend','<div class="prism"></div><div class="prism b"></div>');
-  sfx.prism();buzz([20,40,20,40,30,40,60]);
-  await wait(650);if(!alive())return;
-  fl.classList.add('fa','flipped'); // la face est prête sous le dos qui éclate
-  fl.querySelector('.fa-cover').classList.add('go');sfx.crack();flash('rgba(255,255,255,.9)');shake();burstRect(fl,PRISM_C,260);
+  sfx.prism();sfx.boom();buzz([120,40,200]);
+  await wait(420);if(!alive())return;
+  // 4. Le dos éclate et révèle l'illustration
+  fl.insertAdjacentHTML('beforeend',`<div class="fa-cover"><div class="cardback">${HEX_BIG}</div></div>`);
+  const cr=fl.querySelector('.fa-cracks');if(cr)cr.remove();
+  fl.classList.remove('holo-back');fl.classList.add('fa','flipped');
+  fl.querySelector('.fa-cover').classList.add('go');O.classList.remove('dark');
+  sfx.crack();flash('rgba(255,255,255,.95)');shake();burstRect(fl,PRISM_C,380);
+  {const[x,y]=centerOf(fl);ring(x,y,PRISM_C,96,9);setTimeout(()=>{if(alive())ring(x,y,PRISM_C,64,5);},160);}
   await wait(800);if(!alive())return;
-  O.querySelectorAll('.prism').forEach(e=>e.remove());const cv=fl.querySelector('.fa-cover');if(cv)cv.remove();
+  O.querySelectorAll('.prism').forEach(e=>e.remove());stage.querySelectorAll('.shock').forEach(e=>e.remove());
+  const cv=fl.querySelector('.fa-cover');if(cv)cv.remove();
   await wait(900);if(!alive())return;
+  // 5. « FULL ART » lettre par lettre, feu d'artifice arc-en-ciel, la carte se montre sous tous les angles
   stage.insertAdjacentHTML('beforeend',`<div class="fa-banner letters" id="op-fa">${'FULL ART'.split('').map((c,i)=>`<span style="animation-delay:${i*70}ms,${i*70}ms">${c===' '?'&nbsp;':c}</span>`).join('')}</div>`);
-  sfx.chord();sfx.sparkle();buzz([60,40,90]);
-  const[x,y]=centerOf(fl);ring(x,y,PRISM_C,72,7);setTimeout(()=>{if(alive())ring(x,y,PRISM_C,48,4.5);},180);
-  flash('rgba(255,214,245,.6)');rain(PRISM_C,90);
+  sfx.chord();sfx.sparkle();setTimeout(()=>alive()&&sfx.sparkle(),500);buzz([60,40,90,40,160]);
+  {const[x,y]=centerOf(fl);ring(x,y,PRISM_C,80,7);setTimeout(()=>{if(alive())ring(x,y,PRISM_C,56,4.5);},180);}
+  flash('rgba(255,214,245,.6)');rain(PRISM_C,160);fireworks(PRISM_C,2800,alive);
   fl.classList.add('wobble');
-  await wait(700);
+  await wait(900);
 }
 const GOLD_C=['#FFD700','#FFE97A','#FFF6C8','#E0A800','#FFFFFF','#B8860B'];
 async function sigReveal(fl,p,t,alive){
@@ -1679,7 +1710,7 @@ const wait=ms=>new Promise(r=>setTimeout(r,RM?Math.min(ms,250):ms));
 const nextTap=()=>new Promise(r=>{tapResolve=r;});
 $('opening').addEventListener('pointerup',e=>{if(e.target.closest('.op-bar button, .op-actions button'))return;if(tapResolve){const r=tapResolve;tapResolve=null;r();}});
 function hint(t,blink=true){const h=$('op-hint');h.textContent=t;h.classList.toggle('blink',blink&&!!t);}
-function closeOpening(){run++;$('opening').classList.remove('dark','sig-dark');$('opening').querySelectorAll('.prism,.sig-pen').forEach(e=>e.remove());if(tapResolve){const r=tapResolve;tapResolve=null;r();}$('opening').hidden=true;FX.parts=[];document.body.style.overflow='';}
+function closeOpening(){run++;$('opening').classList.remove('dark','sig-dark');$('opening').querySelectorAll('.prism,.sig-pen,.shock').forEach(e=>e.remove());if(tapResolve){const r=tapResolve;tapResolve=null;r();}$('opening').hidden=true;FX.parts=[];document.body.style.overflow='';}
 $('op-close').addEventListener('click',closeOpening);
 $('open-btn').addEventListener('click',()=>{if(packStatus==='offline')refreshPackLock();else openPack();});
 $('pack').addEventListener('click',()=>{if(packStatus==='ready')openPack();});
@@ -1792,14 +1823,14 @@ async function openPack(){
         const[x,y]=centerOf(txt);burst(x,y,fx.c,200,15,{up:2});
         txt.innerHTML='<span class="w huge rb">ICÔNE</span>';sfx.sparkle();await wait(1400);if(!alive())return;
       }
-      const steps=[`<span class="w mid">${esc(posteL(p.poste))}</span>`];
-      if(R===2)steps.push(`<span class="w mid">${TIER_L[t]}</span>`);
-      steps.push(`<span class="w ph">${p.photo?`<img src="${p.photo}" alt="">`:esc(initials(p.name))}</span>`);
-      for(const st of steps){txt.innerHTML=st;sfx.thump();buzz(40);const[x,y]=centerOf(txt);burst(x,y,fx.c,R===3?70:40,7,{spark:.8});await wait(R===3?1000:900);if(!alive())return;}
-      if(R===3){ // la note défile jusqu'à la vraie valeur
-        txt.innerHTML='<span class="w cnt" id="op-cnt">0</span>';await countUp($('op-cnt'),o,1800,alive);if(!alive())return;
-        sfx.boom();shake();flash('#F3E8FF');const[x,y]=centerOf(txt);burst(x,y,fx.c,160,12,{up:2});await wait(900);if(!alive())return;
-      }
+      const show=async st=>{txt.innerHTML=st;sfx.thump();buzz(40);const[x,y]=centerOf(txt);burst(x,y,fx.c,R===3?70:40,7,{spark:.8});await wait(R===3?1000:900);};
+      await show(`<span class="w mid">${esc(posteL(p.poste))}</span>`);if(!alive())return;
+      if(R===2){await show(`<span class="w mid">${TIER_L[t]}</span>`);if(!alive())return;}
+      // la note défile jusqu'à la vraie valeur, avant l'image
+      txt.innerHTML='<span class="w cnt" id="op-cnt">0</span>';await countUp($('op-cnt'),o,R===3?1800:1300,alive);if(!alive())return;
+      sfx.boom();shake();flash(R===3?'#F3E8FF':'#FFF6D0');{const[x,y]=centerOf(txt);burst(x,y,fx.c,R===3?160:110,12,{up:2});}
+      await wait(900);if(!alive())return;
+      await show(`<span class="w ph">${p.photo?`<img src="${p.photo}" alt="">`:esc(initials(p.name))}</span>`);if(!alive())return;
       txt.innerHTML='';fl.classList.remove('hide');
     }
     fl.querySelector('.front').innerHTML=cardHTML(p,0,false);
