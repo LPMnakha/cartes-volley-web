@@ -1123,7 +1123,7 @@ body.player .tabs{grid-template-columns:repeat(4,minmax(0,1fr))} /* sans l'ongle
     <div class="mseg" id="m-seg" role="group" aria-label="Mode de jeu"><button type="button" data-m="camp" aria-pressed="true">Campagne</button><button type="button" data-m="pvp" aria-pressed="false">Contre un pote</button></div>
     <div class="cp-root" id="m-camp"><div class="cp-root" id="cp-root"></div></div>
     <div class="stack" id="m-pvp" hidden style="gap:16px">
-    <p class="note" style="margin:0">Défie tes amis à distance : le match se joue avec vos équipes enregistrées et s'affiche chez ton ami à sa prochaine ouverture. Le premier match du jour contre chaque ami compte pour l'élo, les suivants sont amicaux.</p>
+    <p class="note" style="margin:0">Défie tes amis à distance : le match se joue avec vos équipes enregistrées et s'affiche chez ton ami à sa prochaine ouverture. Un set de 25 points avec 2 points d'écart. Le premier match du jour contre chaque ami compte pour l'élo, les suivants sont amicaux.</p>
     <div class="section prof">
       <div class="prof-row">
         <div class="prof-name"><label class="label" for="m-pseudo">Ton pseudo</label><input class="text-in" type="text" id="m-pseudo" maxlength="16" autocomplete="off" enterkeyhint="done"></div>
@@ -3080,7 +3080,7 @@ const RANKS=[[0,'Débutant'],[450,'Amateur'],[500,'Régional'],[560,'National'],
 const rankName=e=>RANKS.filter(r2=>e>=r2[0]).pop()[1];
 const eloExp=(a,b)=>1/(1+Math.pow(10,(b-a)/400));
 const ELO_K=32;
-const ENGINE_VER=10; // à augmenter à chaque changement du moteur : le serveur et les téléphones doivent avoir le même
+const ENGINE_VER=11; // à augmenter à chaque changement du moteur : le serveur et les téléphones doivent avoir le même
 /* complicité : le passeur (place PAS) et chaque attaquant (places 1 à 5) ; +1 en passe tous les 5 matchs ensemble, jusqu'à +5 */
 const CHEM_STEP=5,CHEM_MAX=5;
 const teamIds=()=>SLOT_ORDER.slice(0,activeSlots().length).map(k=>{const c=teamCard(TEAM_SLOTS.find(x=>x.k===k));return c?c.id:null;});
@@ -3483,7 +3483,7 @@ async function playOnline(m,incoming){
   if(!m||!m.ta||!m.tb){if(m)netAck(m.id);return;}
   const A=m.ta,B=m.tb,myIdx=A.pid===state.pid?0:1,me=myIdx?B:A,op=myIdx?A:B,e=m.elo&&m.elo[state.pid];
   if(m.names&&m.names[op.pid])op.pseudo=m.names[op.pid];
-  const sameVer=m.ver===ENGINE_VER,sim=sameVer?simulateMatch(A,B,m.seed):null,win=m.winner===myIdx;
+  const fmt=m.fmt||null,sameVer=m.ver===ENGINE_VER,sim=sameVer?simulateMatch(A,B,m.seed,fmt||undefined):null,win=m.winner===myIdx; // défi : un set de 25 points
   const names=myIdx===0?[state.pseudo,op.pseudo]:[op.pseudo,state.pseudo];
   let na=[];
   if(!state.played.includes(m.id)){
@@ -3496,7 +3496,7 @@ async function playOnline(m,incoming){
   netAck(m.id);renderMatchTab();
   if(!sim){toast(`Match contre ${op.pseudo} : ${win?'victoire':'défaite'} ${m.score[myIdx]}-${m.score[1-myIdx]}. Mets l'appli à jour pour voir les prochains matchs.`);return;}
   if(incoming)await challengeIntro(op.pseudo,m.ranked);
-  await playMatch(sim,myIdx===0?[dispCards(A),dispCards(B)]:[dispCards(A),dispCards(B)],names,myIdx,{win,d:e?e.d:0,before:e?e.before:state.elo,after:e?e.after:state.elo,ts:m.ts,online:true,incoming,opName:op.pseudo,friendly:!m.ranked});
+  await playMatch(sim,myIdx===0?[dispCards(A),dispCards(B)]:[dispCards(A),dispCards(B)],names,myIdx,{win,d:e?e.d:0,before:e?e.before:state.elo,after:e?e.after:state.elo,ts:m.ts,online:true,incoming,opName:op.pseudo,friendly:!m.ranked,fmt,title:m.ranked?'Défi classé · 1 set de 25 points':'Match amical · 1 set de 25 points'});
   if(na.length)showAch(na);
   netRank(true);
 }
@@ -3631,7 +3631,7 @@ async function playMatch(sim,disp,names,myIdx,res){
   if(res.camp){com(res.camp.win?`Victoire de <b>${esc(names[myIdx])}</b> !`:`Victoire de <b>${esc(names[1-myIdx])}</b>`);cpEnd(M,sim,res);return;}
   com(res.win?`Victoire de <b>${esc(names[myIdx])}</b> !`:`Victoire de <b>${esc(names[1-myIdx])}</b>`);
   const end=document.createElement('div');end.className='mt-end';
-  end.innerHTML=`<div><b class="${res.win?'w':'l'}">${res.win?'Victoire !':'Défaite'}</b><span class="sc">${sim.score[myIdx]} – ${sim.score[1-myIdx]}</span>
+  end.innerHTML=`<div><b class="${res.win?'w':'l'}">${res.win?'Victoire !':'Défaite'}</b><span class="sc">${(sim.sets&&sim.sets.length===1?sim.sets[0]:sim.score)[myIdx]} – ${(sim.sets&&sim.sets.length===1?sim.sets[0]:sim.score)[1-myIdx]}</span>
     ${res.friendly?`<span class="el">Match amical</span><span class="note" style="max-width:30ch">Vous avez déjà joué un match classé aujourd'hui : celui-ci ne change pas l'élo.</span>`:`<span class="el">Élo ${res.before} → ${res.after} <i class="${res.d>=0?'':'n'}">${res.d>=0?'+':''}${res.d}</i></span><span class="note">${rankName(res.after)}</span>`}<span class="note" style="max-width:30ch">${res.online?(res.incoming?`Défi lancé par ${esc(res.opName)}.`:`${esc(res.opName)} verra le match à sa prochaine ouverture de l'appli.`):''}</span>
     <div class="row-actions"><button class="btn" type="button" data-sh>Feuille de match</button><button class="btn primary" type="button" data-end>Terminer</button></div></div>`;
   end.querySelector('[data-end]').addEventListener('click',closeMatch);
