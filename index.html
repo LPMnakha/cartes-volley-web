@@ -435,6 +435,14 @@ body.player #tab-btn-cards,body.player #fab,body.player #m-export-cards,body.pla
 .rank-row .rb:disabled{opacity:.45}
 .rank-row em{font-style:normal;font-family:var(--data);font-size:.66rem;color:var(--muted)}
 .mh-row small.am{color:#7FE0B0}
+.tacs{display:grid;gap:12px}
+.tac b{display:block;font-family:var(--data);font-size:.72rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);margin-bottom:5px}
+.tac .mseg{grid-template-columns:repeat(3,1fr)}.tac .mseg button{padding:8px 4px;font-size:.82rem}
+.tac small{display:block;margin-top:5px;color:var(--muted);font-size:.8rem;line-height:1.35}
+#lib-slot.off{opacity:.3;pointer-events:none;filter:grayscale(1)}
+.cp-tac{display:grid;gap:4px;font-size:.84rem;background:rgba(0,0,0,.2);border-radius:12px;padding:8px 12px}
+.cp-tac span{color:var(--muted)}.cp-tac b{color:var(--ink);font-weight:600}.cp-tac a{color:var(--cyan);font-weight:700;cursor:pointer}
+.sh-tac{margin:0;padding:6px 12px 0;color:var(--muted);font-size:.78rem}
 .chem{display:grid;gap:6px}.chem-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;align-items:center;font-size:.88rem}
 .chem-row span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.chem-row b{font-family:var(--data);font-size:.8rem}
 .chem-pips{display:inline-flex;gap:3px;margin-left:6px;vertical-align:middle}.chem-pips i{width:8px;height:8px;border-radius:2px;background:rgba(255,255,255,.12)}.chem-pips i.on{background:#7FE0B0;box-shadow:0 0 5px #7FE0B0}
@@ -1100,8 +1108,12 @@ body.player .tabs{grid-template-columns:repeat(4,minmax(0,1fr))} /* sans l'ongle
     <div class="pack-head"><div><h2 class="pane-title">Mon équipe</h2><p class="note">Aligne les cartes de ton classeur. Tout le monde peut jouer à tous les postes : chaque joueur est noté selon le poste où tu le places.</p></div></div>
     <div class="team-score"><b id="t-score">–</b><span id="t-sub">Touche un poste pour y placer une carte.</span></div>
     <div class="court"><span class="court-row-label" style="top:8px">AVANT</span><span class="court-row-label" style="bottom:6px">ARRIÈRE</span><div class="court-grid" id="court"></div></div>
-    <div class="bench"><div id="lib-slot"></div><p>Le libéro remplace un joueur en défense. Il est noté sur sa réception et sa défense.</p></div>
+    <label class="toggle"><input type="checkbox" id="t-lib" checked><span class="sw"></span><span><b>Jouer avec un libéro</b><small>Décoche pour jouer à 6, sans libéro</small></span></label>
+    <div class="bench"><div id="lib-slot"></div><p id="t-lib-txt">Le libéro remplace un central en défense. Il est noté sur sa réception et sa défense.</p></div>
     <div class="row-actions"><button class="btn" type="button" id="t-clear">Vider l'équipe</button><button class="btn primary" type="button" id="t-auto">Composer au mieux</button></div>
+    <div class="section" id="t-tac-sec"><span class="label">Consignes de jeu</span>
+      <p class="note" style="margin:0">Elles servent en campagne et dans tes défis. Bien choisies, elles font basculer un match serré ; mal choisies, elles te coûtent cher.</p>
+      <div class="tacs" id="t-tac"></div></div>
     <div class="section" id="t-chem-sec"><span class="label">Complicité du passeur</span>
       <p class="note" style="margin:0">Plus ton passeur joue avec un attaquant, meilleures sont ses passes pour lui : +1 tous les 5 matchs ensemble (campagne et défis), jusqu'à +5.</p>
       <div class="chem" id="t-chem"></div></div>
@@ -1120,7 +1132,7 @@ body.player .tabs{grid-template-columns:repeat(4,minmax(0,1fr))} /* sans l'ongle
       <p class="note" id="m-record" style="margin:0"></p>
     </div>
     <div class="net" id="m-net"><i></i><span id="m-net-txt">Connexion au serveur…</span><button class="btn" type="button" id="m-net-retry" hidden>Réessayer</button></div>
-    <div class="banner" id="m-noteam" hidden><span>Complète ton équipe (7 cartes) dans l'onglet <b>Équipe</b> : c'est elle qui joue tes défis.</span></div>
+    <div class="banner" id="m-noteam" hidden><span>Complète ton équipe dans l'onglet <b>Équipe</b> : c'est elle qui joue tes défis.</span></div>
     <div class="section" id="f-sec">
       <span class="label">Ajouter un ami</span>
       <div class="fcode"><span>Ton code ami</span><b id="f-mycode"></b><button class="btn" type="button" id="f-copy">Copier</button></div>
@@ -1427,7 +1439,7 @@ const shown=()=>players.length?players:EXAMPLES;
 const LS_STATE='cartes-volley-etat';
 const ELO_START=400; // élo de départ de tout le monde
 let state=loadState(),timeOffset=null,lockTimer=null,packStatus='checking',openBusy=false;
-function blankState(){return{owned:[],counts:{},lastDay:'',lastTs:0,pkT:0,count:0,rev:0,bonus:{classic:0,silver:0,gold:0,icon:0},streak:{cur:0,best:0,lastDay:''},history:[],ach:{},team:{},exchanges:0,pid:'',key:'',pseudo:'',elo:ELO_START,eloBase:ELO_START,matches:[],opps:{},played:[],chem:{},chemPend:[],camp:{st:1,day:'',ts:0,res:{},last:null,tries:0}};}
+function blankState(){return{owned:[],counts:{},lastDay:'',lastTs:0,pkT:0,count:0,rev:0,bonus:{classic:0,silver:0,gold:0,icon:0},streak:{cur:0,best:0,lastDay:''},history:[],ach:{},team:{},exchanges:0,pid:'',key:'',pseudo:'',elo:ELO_START,eloBase:ELO_START,matches:[],opps:{},played:[],noLib:false,tac:{},chem:{},chemPend:[],camp:{st:1,day:'',ts:0,res:{},last:null,tries:0}};}
 function fixState(j){
   const o=blankState();if(!j||typeof j!=='object')return o;
   if(j.counts&&typeof j.counts==='object')for(const k in j.counts){const n=Math.max(0,Math.floor(+j.counts[k]||0));if(n)o.counts[String(k)]=n;}
@@ -1445,6 +1457,7 @@ function fixState(j){
   if(j.eloBase!==ELO_START&&j.elo!=null&&j.elo!==''){const sh=ELO_START-500;o.elo+=sh;for(const k in o.opps)if(o.opps[k]&&Number.isFinite(+o.opps[k].e))o.opps[k]={...o.opps[k],e:Math.round(+o.opps[k].e)+sh};}
   {const c=j.camp&&typeof j.camp==='object'?j.camp:{};o.camp={st:Math.max(1,Math.min(31,Math.floor(+c.st||1))),day:String(c.day||''),ts:+c.ts||0,
     res:c.res&&typeof c.res==='object'?{...c.res}:{},last:c.last&&c.last.sh?c.last:null,tries:Math.max(0,Math.floor(+c.tries||0))};}
+  o.noLib=!!j.noLib;o.tac=j.tac&&typeof j.tac==='object'?{...j.tac}:{};
   o.chem=j.chem&&typeof j.chem==='object'?{...j.chem}:{};o.chemPend=Array.isArray(j.chemPend)?j.chemPend.filter(k=>typeof k==='string').slice(-500):[];
   o.ach=j.ach&&typeof j.ach==='object'?{...j.ach}:{};o.team=j.team&&typeof j.team==='object'?{...j.team}:{};
   return o;
@@ -2517,7 +2530,7 @@ const ACH=[
   {k:'s30',t:"30 jours d'affilée",d:'Une série de 30 jours',ok:()=>state.streak.best>=30},
   {k:'pIcon',t:'Booster Icône',d:'Ouvre ton premier booster Icône (hors bonus)',ok:()=>realHist().some(h=>h.type==='icon'&&h.how==='jour')},
   {k:'ex1',t:'Premier échange',d:'Échange 25 doublons contre un booster',ok:()=>state.exchanges>0},
-  {k:'team',t:'Équipe au complet',d:'Place 7 cartes dans ton équipe',ok:()=>teamFull()},
+  {k:'team',t:'Équipe au complet',d:'Complète ton équipe (6 ou 7 joueurs)',ok:()=>teamFull()},
   {k:'team80',t:'Équipe de choc',d:'Une équipe complète notée 80 ou plus',ok:()=>teamFull()&&teamScore()>=80},
   {k:'m1',t:'Premier match',d:'Joue un match contre un pote',ok:()=>state.matches.length>0},
   {k:'w1',t:'Première victoire',d:'Gagne un match',ok:()=>state.matches.some(m=>m.win)},
@@ -2559,19 +2572,33 @@ const POSTE_W={PAS:{pas:.5,def:.15,ser:.15,rec:.1,blo:.05,att:.05},PTU:{att:.45,
 const fitsSlot=(p,sl)=>!!p&&owns(p.id)&&!isDiv(p)&&!isSigP(p); // tout le monde peut jouer partout
 const slotScore=(p,sl)=>Math.round(Object.entries(POSTE_W[sl.p]).reduce((t,[k,v])=>t+(+p.s[k]||0)*v,0));
 const teamCard=sl=>{const p=players.find(x=>x.id===state.team[sl.k]);return fitsSlot(p,sl)?p:null;};
-const teamFull=()=>TEAM_SLOTS.every(sl=>teamCard(sl));
-function teamScore(){const v=TEAM_SLOTS.map(sl=>{const p=teamCard(sl);return p?slotScore(p,sl):null;}).filter(x=>x!=null);return v.length?Math.round(v.reduce((a,b)=>a+b,0)/v.length):0;}
+const activeSlots=()=>state.noLib?TEAM_SLOTS.slice(0,6):TEAM_SLOTS; // sans libéro : 6 joueurs
+const teamFull=()=>activeSlots().every(sl=>teamCard(sl));
+function teamScore(){const v=activeSlots().map(sl=>{const p=teamCard(sl);return p?slotScore(p,sl):null;}).filter(x=>x!=null);return v.length?Math.round(v.reduce((a,b)=>a+b,0)/v.length):0;}
 function slotHTML(sl){
   const p=teamCard(sl);
   return`<button class="tslot" type="button" data-slot="${sl.k}" aria-label="${sl.l}${p?', '+esc(p.name):', vide'}"><span class="tpos">${sl.l}</span>${p?miniHTML(p):'<span class="tempty">+</span>'}<span class="tval">${p?slotScore(p,sl):'–'}</span></button>`;
 }
 function renderTeam(){
   $('court').innerHTML=TEAM_SLOTS.filter(sl=>sl.row<2).map(slotHTML).join('');
-  $('lib-slot').innerHTML=slotHTML(TEAM_SLOTS[6]);
-  const n=TEAM_SLOTS.filter(sl=>teamCard(sl)).length,sc=teamScore();
+  $('lib-slot').innerHTML=slotHTML(TEAM_SLOTS[6]);$('lib-slot').classList.toggle('off',!!state.noLib);$('t-lib').checked=!state.noLib;$('t-lib-txt').textContent=state.noLib?'Sans libéro : tes centraux restent sur le terrain en défense et en réception.':'Le libéro remplace un central en défense. Il est noté sur sa réception et sa défense.';
+  const need=activeSlots().length,n=activeSlots().filter(sl=>teamCard(sl)).length,sc=teamScore();renderTac();
   $('t-score').textContent=n?sc:'–';$('t-score').style.color=n?TIER_COL[tier(sc)]:'';
   renderChem();if(typeof netTeamSoon==='function')netTeamSoon(); // l'équipe enregistrée en ligne sert pour les défis
-  $('t-sub').textContent=n===7?`Équipe complète · ${TIER_L[tier(sc)].replace('Carte','Niveau')}`:n?`${n} / 7 postes remplis. La note compte les postes remplis.`:'Touche un poste pour y placer une carte de ton classeur.';
+  $('t-sub').textContent=n===need?`Équipe complète${state.noLib?' à 6':''} · ${TIER_L[tier(sc)].replace('Carte','Niveau')}`:n?`${n} / ${need} postes remplis. La note compte les postes remplis.`:'Touche un poste pour y placer une carte de ton classeur.';
+}
+/* consignes de jeu */
+const TAC_DEF=[
+  {k:'ser',l:'Service',o:[['sur','Sûr','Moins de fautes, mais presque plus d\'aces. Utile si tes serveurs sont faibles.'],['','Normal','Le service habituel de tes joueurs.'],['fort','Fort','Plus d\'aces, mais plus de fautes. Utile avec de bons serveurs face à une réception faible.']]},
+  {k:'zone',l:'Attaque',o:[['centre','Centre','Plus de ballons pour tes centraux : redoutable s\'ils attaquent bien, risqué sur une mauvaise réception.'],['','Variée','Les ballons vont à tes meilleurs attaquants, un peu partout.'],['ailes','Ailes','Plus de ballons pour tes réceptionneurs-attaquants et ton pointu.']]},
+  {k:'feinte',l:'Feintes',o:[['peu','Peu','Presque toujours frapper fort.'],['','Normal','Des feintes de temps en temps, surtout sur les passes difficiles.'],['beaucoup','Beaucoup','Évite les grands contres, mais une bonne défense les ramasse.']]},
+  {k:'bloc',l:'Contre',o:[['place','Défense placée','Moins de contres gagnants, mais tes défenseurs ramassent plus de ballons. D\'autant mieux qu\'ils sont bons.'],['','Normal','Un contre classique.'],['agressif','Agressif','Plus de contres gagnants avec de bons contreurs, mais la défense est moins couverte.']]},
+  {k:'rec',l:'Réception',o:[['partage','Partagée','Tes trois réceptionneurs prennent autant de services.'],['','Normale','Le libéro prend un peu plus de services.'],['libero','Libéro partout','Ton libéro prend presque tous les services : idéal s\'il est très bon.']]}];
+const tacTxt=t=>TAC_DEF.map(d=>{const o=d.o.find(x=>x[0]&&x[0]===(t||{})[d.k]);return o?`${d.l.toLowerCase()} ${o[1].toLowerCase()}`:null;}).filter(Boolean).join(' · ')||'jeu normal';
+function renderTac(){
+  const box=$('t-tac');if(!box)return;const t=state.tac||{};
+  box.innerHTML=TAC_DEF.filter(d=>!(d.k==='rec'&&state.noLib)).map(d=>{const cur=d.o.find(x=>x[0]===(t[d.k]||''))||d.o[1];
+    return`<div class="tac"><b>${d.l}</b><div class="mseg small" role="group" aria-label="${d.l}">${d.o.map(o=>`<button type="button" data-tk="${d.k}" data-tv="${o[0]}" aria-pressed="${o===cur}">${o[1]}</button>`).join('')}</div><small>${cur[2]}</small></div>`;}).join('');
 }
 function renderChem(){
   const setter=teamCard(TEAM_SLOTS.find(x=>x.k==='PAS')),box=$('t-chem');
@@ -2599,10 +2626,12 @@ $('court').addEventListener('click',e=>{const b=e.target.closest('.tslot');if(b)
 $('lib-slot').addEventListener('click',e=>{const b=e.target.closest('.tslot');if(b)openPicker(b.dataset.slot);});
 $('pk-grid').addEventListener('click',async e=>{const b=e.target.closest('.pk-card');if(!b||!pickSlot)return;await setSlot(pickSlot.k,b.dataset.id);closeAll();sfx.whoosh();});
 $('pk-remove').addEventListener('click',async()=>{if(!pickSlot)return;await setSlot(pickSlot.k,null);closeAll();});
+$('t-tac').addEventListener('click',async e=>{const b=e.target.closest('[data-tk]');if(!b)return;state.tac={...(state.tac||{})};if(b.dataset.tv)state.tac[b.dataset.tk]=b.dataset.tv;else delete state.tac[b.dataset.tk];await saveState();renderTac();netTeamSoon();});
+$('t-lib').addEventListener('change',async()=>{state.noLib=!$('t-lib').checked;if(state.noLib&&state.tac&&state.tac.rec){state.tac={...state.tac};delete state.tac.rec;}await saveState();renderTeam();});
 $('t-clear').addEventListener('click',async()=>{state.team={};await saveState();renderTeam();});
 $('t-auto').addEventListener('click',async()=>{ // les postes les plus exigeants d'abord, puis la meilleure carte disponible
   const used=new Set(),team={};
-  for(const k of ['PAS','LIB','CEN1','CEN2','PTU','R4a','R4b']){const sl=TEAM_SLOTS.find(x=>x.k===k);
+  for(const k of ['PAS','LIB','CEN1','CEN2','PTU','R4a','R4b']){if(k==='LIB'&&state.noLib)continue;const sl=TEAM_SLOTS.find(x=>x.k===k);
     const best=players.filter(p=>fitsSlot(p,sl)&&!used.has(p.id)).sort((a,b)=>slotScore(b,sl)-slotScore(a,sl))[0];
     if(best){team[k]=best.id;used.add(best.id);}}
   if(!Object.keys(team).length){toast("Aucune carte de ton classeur ne peut encore jouer. Ouvre des boosters !");return;}
@@ -2710,7 +2739,9 @@ const M_START=[5,0,1,2,3,4]; // positions 1..6 : PAS, R4a, CEN1, PTU, R4b, CEN2
 const ME_CLOSE=6;
 const ME_PW=[{rec:.3,att:.3,def:.2,ser:.15,blo:.05},{blo:.45,att:.3,ser:.15,pas:.05,def:.05},{att:.45,blo:.2,ser:.2,def:.1,rec:.05},
   {rec:.3,att:.3,def:.2,ser:.15,blo:.05},{blo:.45,att:.3,ser:.15,pas:.05,def:.05},{pas:.5,def:.15,ser:.15,rec:.1,blo:.05,att:.05},{rec:.45,def:.45,pas:.1}]; // R4, CEN, PTU, R4, CEN, PAS, LIB
-const teamNoteE=T=>T.cards.reduce((t,c,i)=>t+Object.entries(ME_PW[i]).reduce((u,[k,v])=>u+(+c.s[k]||0)*v,0),0)/7;
+const teamNoteE=T=>T.cards.reduce((t,c,i)=>t+Object.entries(ME_PW[i]).reduce((u,[k,v])=>u+(+c.s[k]||0)*v,0),0)/T.cards.length;
+// réglages des consignes (chaque consigne : un avantage et un défaut)
+const ME_T={sF:1.3,sA:.7,sG:.07,uF:.75,uA:-.9,uG:-.12,pred:.03,fM:2.2,fP:.35,tipPen:1.1,tipD:14,tipE:.08,aM:1.4,aK:.25,pM:.6,pK:-.15,cW:2,wW:1.6,wC:.35};
 // taux de ratés selon la stat (0 à 100) : même à 100, on rate de temps en temps
 const ME_SFT=[[0,.40],[20,.30],[30,.25],[60,.15],[87,.11],[100,.07]]; // fautes de service
 const ME_AFT=[[0,.40],[20,.30],[30,.25],[60,.12],[87,.08],[100,.05]]; // attaques dehors ou dans le filet
@@ -2724,6 +2755,7 @@ function simulateMatch(A,B,seed,opts){
   // stat brute 0 à 1 : 30 = débutant, 60 = amateur qui se débrouille, 85 = joueur compétitif pré-régional
   const g0=teamNoteE(B)-teamNoteE(A),ga=Math.abs(g0),eff=ga*ga/(ga+ME_CLOSE),sh=(ga-eff)/2*Math.sign(g0); // écart réel → écart effectif
   const adj=[sh,-sh]; // l'équipe la plus faible remonte un peu, la plus forte descend un peu
+  const tac=[A.tac||{},B.tac||{}],hasLib=[!!A.cards[6],!!B.cards[6]];
   const st=(t,i,k)=>Math.max(0,Math.min(1,((+teams[t].cards[i].s[k]||0)+adj[t])/100));
   const cl=(x,a,b)=>Math.max(a,Math.min(b,x));
   const sg=x=>1/(1+Math.exp(-x)); // courbe de duel : 0 à 1 selon l'écart
@@ -2732,8 +2764,8 @@ function simulateMatch(A,B,seed,opts){
   const gp=g=>Math.sign(g)*Math.pow(Math.abs(g),1.5)/.775;
   let rot=[M_START.slice(),M_START.slice()],score=[0,0];const rallies=[],won=[0,0],sets=[];
   let serve=R()<.5?0:1;const first=serve;let si=0,target=O.sets===1?O.pts:O.pts,setStart=0;
-  // sur le terrain : le libéro remplace le central en défense, sauf quand ce central sert
-  const onCourt=(t,serving)=>{const r=rot[t].slice();for(const p of [0,4,5])if((r[p]===1||r[p]===4)&&!(p===0&&serving))r[p]=6;return r;};
+  // sur le terrain : le libéro remplace le central en défense, sauf quand ce central sert (sans libéro, le central reste)
+  const onCourt=(t,serving)=>{const r=rot[t].slice();if(hasLib[t])for(const p of [0,4,5])if((r[p]===1||r[p]===4)&&!(p===0&&serving))r[p]=6;return r;};
   const front=oc=>[oc[1],oc[2],oc[3]],back=oc=>[oc[0],oc[4],oc[5]];
   const pick=(arr,wf)=>{const ws=arr.map(wf),T=ws.reduce((a,b)=>a+b,0);let x=R()*T;for(let i=0;i<arr.length;i++){x-=ws[i];if(x<=0)return arr[i];}return arr[arr.length-1];};
   const done=()=>(score[0]>=target||score[1]>=target)&&Math.abs(score[0]-score[1])>=2;
@@ -2744,14 +2776,18 @@ function simulateMatch(A,B,seed,opts){
     const srv=serve,rcv=1-serve,oc=[onCourt(0,srv===0),onCourt(1,srv===1)],acts=[];let winner=null;
     const server=oc[srv][0],sv=st(srv,server,'ser');
     // service : un mauvais serveur rate souvent
-    if(R()<serveFaultP(sv)){winner=rcv;acts.push({k:'serveFault',t:srv,p:server,net:R()<.55});}
+    const tS=tac[srv].ser,sF=tS==='fort'?ME_T.sF:tS==='sur'?ME_T.uF:1,sA=tS==='fort'?ME_T.sA:tS==='sur'?ME_T.uA:0,sG=tS==='fort'?ME_T.sG:tS==='sur'?ME_T.uG:0;
+    if(R()<serveFaultP(sv)*sF){winner=rcv;acts.push({k:'serveFault',t:srv,p:server,net:R()<.55});}
     else{
-      const recvs=oc[rcv].filter(i=>i===6||i===0||i===3),rc=pick(recvs.length?recvs:back(oc[rcv]),i=>i===6?1.4:1);
+      // réception : libéro et réceptionneurs-attaquants ; sans libéro, les joueurs de la ligne arrière aident (sauf le passeur)
+      const tR=tac[rcv].rec,wL=tR==='libero'?3.5:tR==='partage'?1:1.4;
+      const recvs=hasLib[rcv]?oc[rcv].filter(i=>i===6||i===0||i===3):oc[rcv].filter(i=>i===0||i===3||(back(oc[rcv]).includes(i)&&i!==5));
+      const rc=pick(recvs.length?recvs:back(oc[rcv]),i=>i===6?wL:1);
       const rs=st(rcv,rc,'rec'),gap=gp(sv-rs),lvl=(sv+rs)/2;
       // duel service contre réception
-      if(R()<Math.max(.02,Math.min(.85,sg(-2.75+7*gap-1.5*(lvl-.6))))){winner=srv;acts.push({k:'ace',t:srv,p:server,r:rc});}
+      if(R()<Math.max(.02,Math.min(.85,sg(-2.75+7*gap-1.5*(lvl-.6)+sA)))){winner=srv;acts.push({k:'ace',t:srv,p:server,r:rc});}
       else{
-        const rq=cl(.55-gap*.9+(rs-.6)*.3+nz(.6),0,1);
+        const rq=cl(.55-(gap+sG)*.9+(rs-.6)*.3+nz(.6),0,1);
         acts.push({k:'serve',t:srv,p:server,r:rc,q:cl(.5+gap*.6+nz(.3),0,1)});
         acts.push({k:rq<.3?'recBad':rq<.6?'rec':'recGood',t:rcv,p:rc,q:rq});
         let atk=rcv,qual=rq,touch=rc,ex=0;
@@ -2769,22 +2805,30 @@ function simulateMatch(A,B,seed,opts){
           acts.push({k:sq<.4?'setBad':'set',t:T,p:setter,q:sq});
           const fr=front(ocT).filter(i=>i!==setter&&i!==6),bk=back(ocT).filter(i=>i!==setter&&i!==6&&(i===0||i===2||i===3));
           let cands=fr.slice();if(sq>.5&&bk.length&&R()<.18)cands=bk;if(!cands.length)cands=ocT.filter(i=>i!==setter&&i!==6);
-          const at=pick(cands,i=>{let w=Math.pow(st(T,i,'att')+.15,2.5);if((i===1||i===4)&&sq<.4)w*=.2;return w;});
+          const tZ=tac[T].zone,cen=i=>i===1||i===4;
+          const at=pick(cands,i=>{let w=Math.pow(st(T,i,'att')+.15,2.5);if(cen(i)&&sq<.4)w*=tZ==='centre'?.5:.2;
+            if(tZ==='centre'&&cen(i))w*=ME_T.cW;if(tZ==='ailes')w*=cen(i)?ME_T.wC:ME_T.wW;return w;});
           // complicité : le passeur titulaire (carte 5) connaît bien cet attaquant → passe un peu meilleure (bonus = points de passe, 0 à 5)
           const ch=setter===5&&teams[T].chem?+teams[T].chem[at]||0:0;if(ch)sq=cl(sq+Math.min(5,ch)/100*.8,0,1);
-          const isBack=!fr.includes(at),as=st(T,at,'att'),tip=sq<.45?R()<.25:R()<.08;
+          const tF=tac[T].feinte,fM=tF==='beaucoup'?ME_T.fM:tF==='peu'?ME_T.fP:1;
+          const isBack=!fr.includes(at),as=st(T,at,'att'),tip=R()<(sq<.45?.25:.08)*fM;
           // faute d'attaque : stat attaque + passe pourrie
-          if(!tip&&R()<cl(lerpT(ME_AFT,as)+Math.max(0,.45-sq)*.35+(isBack?.03:0),.03,.6)){winner=O;acts.push({k:'attErr',t:T,p:at,net:R()<.6,back:isBack});break;}
+          if(tip&&R()<ME_T.tipE){winner=O;acts.push({k:'attErr',t:T,p:at,net:true,back:isBack});break;}
+          if(!tip&&R()<cl(lerpT(ME_AFT,as)+Math.max(0,.45-sq)*.35+(isBack?.03:0)+(tZ==='centre'&&cen(at)&&sq<.45?.04:0),.03,.6)){winner=O;acts.push({k:'attErr',t:T,p:at,net:R()<.6,back:isBack});break;}
           const pw=as-(isBack?.08:0)+(sq-.5)*.3; // force réelle de l'attaque
           // duel attaque contre contre
-          const bl=front(ocO).filter(i=>i!==6),b1=pick(bl,i=>Math.pow(st(O,i,'blo')+.1,2)),bs=st(O,b1,'blo');
-          if(!tip&&R()<Math.max(.02,Math.min(.6,sg(-2.6+5*gp(bs-pw))))){winner=O;acts.push({k:'stuff',t:T,p:at,b:b1,back:isBack});break;}
-          const touchB=!tip&&R()<sg(-.8+4*gp(bs-pw));
+          // le contreur le plus probable est celui en face de l'attaquant (aile contre aile, centre contre centre)
+          const ap=ocT.indexOf(at),col=ap===1||ap===0?'R':ap===2||ap===5?'M':'L',face=col==='R'?ocO[3]:col==='M'?ocO[2]:ocO[1];
+          const bl=front(ocO).filter(i=>i!==6),b1=pick(bl,i=>Math.pow(st(O,i,'blo')+.1,2)*(i===face?3:i===ocO[2]?1.6:1)),bs=st(O,b1,'blo');
+          const tB=tac[O].bloc,pred=tZ==='centre'||tZ==='ailes'?ME_T.pred:0; // une attaque concentrée est plus facile à lire
+          const bM=tB==='agressif'?ME_T.aM:tB==='place'?ME_T.pM:1,bS=pred,bT=(tB==='place'?ME_T.pT:0)+pred*.7,bK=tB==='agressif'?ME_T.aK:tB==='place'?ME_T.pK:0;
+          if(!tip&&R()<Math.max(.02,Math.min(.65,sg(-2.6+5*gp(bs-pw)+bS)*bM))){winner=O;acts.push({k:'stuff',t:T,p:at,b:b1,back:isBack});break;}
+          const touchB=!tip&&R()<sg(-.8+4*gp(bs-pw)+bT);
           // duel attaque contre défense
           const dfs=back(ocO).concat(tip?front(ocO):[]),d=pick(dfs,i=>i===6?2:i===5?.6:1),ds=st(O,d,'def');
           const aq=cl(.5+(pw-.6)*.8+nz(.3)-(tip?.3:0),0,1);
           acts.push({k:tip?'tip':'attack',t:T,p:at,b:touchB?b1:null,d,q:aq,back:isBack});
-          if(R()<Math.max(.04,Math.min(.88,sg(-.6+5.5*gp(pw-ds)-(touchB?1:0)-(tip?1.3:0))))){winner=T;acts.push({k:'kill',t:T,p:at,d,tip});break;}
+          if(R()<Math.max(.04,Math.min(.88,tip?sg(-.6-ME_T.tipPen+ME_T.tipD*gp(.6-ds)):sg(-.6+5.5*gp(pw-ds)-(touchB?1:0)+(tB==='place'?bK*Math.pow(ds/.6,3):bK))))){winner=T;acts.push({k:'kill',t:T,p:at,d,tip});break;}
           const dq=cl(.5+gp(ds-pw)*.8+(touchB?.15:0)+(tip?.15:0)+nz(.4),0,.95);
           acts.push({k:dq>.55?'digGood':'dig',t:O,p:d,q:dq,save:aq>.75});
           atk=O;qual=dq;touch=d;
@@ -3001,8 +3045,8 @@ async function addFriend(code,btn){
 /* défis : le serveur joue le match avec les équipes enregistrées */
 let teamSent='',teamTimer=null;
 function netTeamSoon(){clearTimeout(teamTimer);teamTimer=setTimeout(netTeam,1200);}
-async function netTeam(){if(!net.on)return;const ids=teamFull()?teamIds():null,k=JSON.stringify(ids);if(k===teamSent)return;
-  try{await api('team',{ids});teamSent=k;}catch(e){if(e.code==='cards')netCards();}}
+async function netTeam(){if(!net.on)return;const ids=teamFull()?teamIds():null,tac=state.tac||{},k=JSON.stringify([ids,tac]);if(k===teamSent)return;
+  try{await api('team',{ids,tac});teamSent=k;}catch(e){if(e.code==='cards')netCards();}}
 let defiBusy=false;
 async function challenge(pid,btn){
   if(defiBusy)return;if(!teamFull()){toast("Complète ton équipe dans l'onglet Équipe pour défier tes amis.");return;}
@@ -3036,14 +3080,14 @@ const RANKS=[[0,'Débutant'],[450,'Amateur'],[500,'Régional'],[560,'National'],
 const rankName=e=>RANKS.filter(r2=>e>=r2[0]).pop()[1];
 const eloExp=(a,b)=>1/(1+Math.pow(10,(b-a)/400));
 const ELO_K=32;
-const ENGINE_VER=9; // à augmenter à chaque changement du moteur : le serveur et les téléphones doivent avoir le même
+const ENGINE_VER=10; // à augmenter à chaque changement du moteur : le serveur et les téléphones doivent avoir le même
 /* complicité : le passeur (place PAS) et chaque attaquant (places 1 à 5) ; +1 en passe tous les 5 matchs ensemble, jusqu'à +5 */
 const CHEM_STEP=5,CHEM_MAX=5;
-const teamIds=()=>SLOT_ORDER.map(k=>{const c=teamCard(TEAM_SLOTS.find(x=>x.k===k));return c?c.id:null;});
+const teamIds=()=>SLOT_ORDER.slice(0,activeSlots().length).map(k=>{const c=teamCard(TEAM_SLOTS.find(x=>x.k===k));return c?c.id:null;});
 const duosOf=ids=>ids.slice(0,5).map(a=>ids[5]+'>'+a);
 const chemArr=ids=>ids.map((id,i)=>i<5?Math.min(CHEM_MAX,Math.floor(((state.chem||{})[ids[5]+'>'+id]||0)/CHEM_STEP)):0);
 // mon équipe, telle qu'elle joue (campagne et défis)
-function myTeam(){if(!teamFull())return null;const ids=teamIds();return{ids,chem:chemArr(ids),cards:ids.map(id=>{const p=players.find(x=>x.id===id);return{id,name:p.name,s:{...p.s},poste:p.poste};})};}
+function myTeam(){if(!teamFull())return null;const ids=teamIds();return{ids,tac:{...(state.tac||{})},chem:chemArr(ids),cards:ids.map(id=>{const p=players.find(x=>x.id===id);return{id,name:p.name,s:{...p.s},poste:p.poste};})};}
 function payloadTeamScore(d){return Math.round(d.cards.reduce((t,c,i)=>{const sl=TEAM_SLOTS.find(x=>x.k===SLOT_ORDER[i]);return t+Math.round(Object.entries(POSTE_W[sl.p]).reduce((u,[k,v])=>u+c.s[k]*v,0));},0)/7);}
 function renderMatchTab(){
   ensureProfile();setMMode(mMode);
@@ -3075,7 +3119,7 @@ $('f-res').addEventListener('click',e=>{const a=e.target.closest('[data-add]'),d
 // colonnes : points, aces, attaques gagnantes, contres gagnants, défenses, fautes
 const SH_COLS=[['PTS','Points'],['ACE','Aces'],['ATT','Attaques gagnantes'],['CTR','Contres gagnants'],['DÉF','Défenses'],['FT','Fautes']];
 function sheetFrom(sim,A,B,names,myIdx){
-  const st=[0,1].map(()=>Array.from({length:7},()=>[0,0,0,0,0,0])),good=[0,1].map(()=>Array(7).fill(0));
+  const L=[A.cards.length,B.cards.length],st=[0,1].map(t=>Array.from({length:L[t]},()=>[0,0,0,0,0,0])),good=[0,1].map(t=>Array(L[t]).fill(0));
   const add=(t,i,c)=>{if(i!=null&&st[t]&&st[t][i])st[t][i][c]++;};
   for(const r of sim.rallies)for(const a of r.acts){const o=1-a.t;
     if(a.k==='ace'){add(a.t,a.p,1);add(a.t,a.p,0);add(o,a.r,5);} // l'ace subi compte comme une faute de réception
@@ -3086,9 +3130,9 @@ function sheetFrom(sim,A,B,names,myIdx){
     else if(a.k==='recGood'&&good[a.t][a.p]!=null)good[a.t][a.p]++;}
   // MVP : dans l'équipe gagnante, celui qui a le plus pesé (points, défenses, bonnes réceptions, moins les fautes)
   const w=sim.winner,val=i=>st[w][i][0]+st[w][i][4]*.5+good[w][i]*.3-st[w][i][5]*.7;
-  let mvp=0;for(let i=1;i<7;i++)if(val(i)>val(mvp)||(val(i)===val(mvp)&&st[w][i][0]>st[w][mvp][0]))mvp=i;
+  let mvp=0;for(let i=1;i<L[w];i++)if(val(i)>val(mvp)||(val(i)===val(mvp)&&st[w][i][0]>st[w][mvp][0]))mvp=i;
   const slotP=SLOT_ORDER.map(k=>TEAM_SLOTS.find(x=>x.k===k).p);
-  return{pt:[0,1].map(t=>sim.rallies.filter(r=>r.winner===t).length),sets:sim.sets&&sim.sets.length>1?sim.sets:null,n:[A,B].map(T=>T.cards.map(c=>c.name)),c:[A,B].map(T=>T.cards.map(c=>({s:c.s,poste:c.poste}))),pos:slotP,s:st,mvp:[w,mvp],me:myIdx,tn:names.slice(),sc:(sim.sets&&sim.sets.length===1?sim.sets[0]:sim.score).slice()};
+  return{tac:[A.tac||{},B.tac||{}],pt:[0,1].map(t=>sim.rallies.filter(r=>r.winner===t).length),sets:sim.sets&&sim.sets.length>1?sim.sets:null,n:[A,B].map(T=>T.cards.map(c=>c.name)),c:[A,B].map(T=>T.cards.map(c=>({s:c.s,poste:c.poste}))),pos:slotP,s:st,mvp:[w,mvp],me:myIdx,tn:names.slice(),sc:(sim.sets&&sim.sets.length===1?sim.sets[0]:sim.score).slice()};
 }
 let curSheet=null;
 const sheetFree=(sh,t)=>Math.max(0,(sh.pt?sh.pt[t]:sh.sc[t])-sh.s[t].reduce((u,r)=>u+r[0],0)); // points donnés par les fautes de l'adversaire
@@ -3102,9 +3146,9 @@ function sheetLine(r){const parts=[];const L=[[0,'pt','pts'],[1,'ace','aces'],[2
 function openSheet(m){
   if(!m||!m.sh)return;const sh=m.sh;curSheet=m;const me=sh.me,op=1-me,[mt,mi]=sh.mvp;
   const teamHTML=t=>{const best=[0,1,2,3,4].map(c=>Math.max(...sh.s[t].map(r=>r[c])));
-    const order=[...Array(7).keys()].sort((a,b)=>sh.s[t][b][0]-sh.s[t][a][0]||a-b),fa=sheetFree(sh,t);
+    const order=[...Array(sh.s[t].length).keys()].sort((a,b)=>sh.s[t][b][0]-sh.s[t][a][0]||a-b),fa=sheetFree(sh,t);
     return`<div class="sh-team"><h3>${esc(sh.tn[t])}<small class="${sh.sc[t]>sh.sc[1-t]?'w':''}">${sh.sc[t]>sh.sc[1-t]?'Victoire':'Défaite'}</small></h3>
-    <table class="sh-t"><thead><tr><th>Joueur</th>${SH_COLS.map(c=>`<th title="${c[1]}">${c[0]}</th>`).join('')}</tr></thead><tbody>
+    ${sh.tac&&Object.keys(sh.tac[t]||{}).length?`<p class="sh-tac">Consignes : ${esc(tacTxt(sh.tac[t]))}</p>`:''}<table class="sh-t"><thead><tr><th>Joueur</th>${SH_COLS.map(c=>`<th title="${c[1]}">${c[0]}</th>`).join('')}</tr></thead><tbody>
     ${order.map(i=>{const r=sh.s[t][i];return`<tr class="${t===mt&&i===mi?'mvp':''}"><td>${esc(sh.n[t][i])}<small>${sh.pos[i]}</small></td>${r.map((v,c)=>`<td class="${c===0?'pts ':''}${!v?'z':c<5&&v===best[c]?'top':c===5&&v>=3?'bad':''}">${v||'·'}</td>`).join('')}</tr>`;}).join('')}
     </tbody></table>${fa?`<p class="sh-free">+ ${fa} point${fa>1?'s':''} sur fautes adverses</p>`:''}</div>`;};
   const d=new Intl.DateTimeFormat('fr-FR',{day:'numeric',month:'long'}).format(new Date(m.ts));
@@ -3121,7 +3165,7 @@ $('sh-share').addEventListener('click',async()=>{const m=curSheet;if(!m)return;t
   await shareCanvas(cv,`feuille-de-match-${new Date(m.ts).toISOString().slice(0,10)}.png`,'Feuille de match','Feuille de match');});
 async function drawSheetImage(m){
   try{await document.fonts.ready;}catch(e){}
-  const sh=m.sh,me=sh.me,op=1-me,[mt,mi]=sh.mvp,W=1080,rowH=64,teamH=120+7*rowH+56,H=450+250+2*(teamH+40)+150+(m.sh.sets?50:0);
+  const sh=m.sh,me=sh.me,op=1-me,[mt,mi]=sh.mvp,W=1080,rowH=64,teamH=120+Math.max(sh.s[0].length,sh.s[1].length)*rowH+56,H=450+250+2*(teamH+40)+150+(m.sh.sets?50:0);
   const cv=document.createElement('canvas');cv.width=W;cv.height=H;const g=cv.getContext('2d');
   const D='"Big Shoulders Display","Arial Narrow",Impact,sans-serif',C='"Chakra Petch",monospace',B='Barlow,system-ui,sans-serif';
   let bg=g.createRadialGradient(W/2,0,50,W/2,0,H);bg.addColorStop(0,'#1F3C8C');bg.addColorStop(1,'#060C1F');g.fillStyle=bg;g.fillRect(0,0,W,H);
@@ -3149,7 +3193,7 @@ async function drawSheetImage(m){
     const won=sh.sc[t]>sh.sc[1-t];T(won?'VICTOIRE':'DÉFAITE',W-70,y+58,`700 28px ${C}`,won?'#3EE08F':'#9FB0DA','right');
     SH_COLS.forEach((c,k)=>T(c[0],colX[k],y+112,`700 26px ${C}`,'#9FB0DA','center'));
     const best=[0,1,2,3,4].map(c=>Math.max(...sh.s[t].map(r=>r[c])));
-    const order=[...Array(7).keys()].sort((a,b)=>sh.s[t][b][0]-sh.s[t][a][0]||a-b);
+    const order=[...Array(sh.s[t].length).keys()].sort((a,b)=>sh.s[t][b][0]-sh.s[t][a][0]||a-b);
     order.forEach((i,j)=>{const yy=y+120+j*rowH+44,r=sh.s[t][i],isM=t===mt&&i===mi;
       g.fillStyle='rgba(190,205,255,.08)';g.fillRect(60,yy-44,W-120,2);
       T((isM?'★ ':'')+fit(sh.n[t][i],`600 36px ${B}`,370),70,yy,`600 36px ${B}`,isM?'#FFD23F':'#F3F5FF');
@@ -3220,14 +3264,20 @@ function cpTeam(n){
   const cards=SLOT_ORDER.map(k=>{const base=lv+(R()-.5)*8,s={};SKILLS.forEach((x,j)=>s[x.k]=base+CP_PROF[k][j]*sc+(R()-.5)*10);return{name:nm(),poste:CP_POSTE[k],s};});
   for(let it=0;it<8;it++){const d=lv-teamNote({cards});cards.forEach(c=>SKILLS.forEach(x=>c.s[x.k]=Math.max(1,Math.min(99,c.s[x.k]+d))));}
   cards.forEach(c=>SKILLS.forEach(x=>c.s[x.k]=Math.round(c.s[x.k])));
-  return cpCache[n]={name:t.teams[n-t.a],cards,lv:payloadTeamScore({cards})};
+  // leur tactique dépend de leurs points forts (visible sur l'affiche : à toi de t'adapter)
+  const avg=(idx,k)=>idx.reduce((u,i)=>u+cards[i].s[k],0)/idx.length,ref=lv,tac={};
+  if(avg([0,1,2,3,4,5],'ser')>ref+4)tac.ser='fort';else if(avg([0,1,2,3,4,5],'ser')<ref-6)tac.ser='sur';
+  if(avg([1,4],'att')>avg([0,2,3],'att')+4)tac.zone='centre';else if(avg([0,2,3],'att')>avg([1,4],'att')+10)tac.zone='ailes';
+  if(avg([1,2,4],'blo')>ref+10)tac.bloc='agressif';else if(avg([0,3,6],'def')>ref+8)tac.bloc='place';
+  if(cards[6].s.rec>ref+14)tac.rec='libero';if(R()<.25)tac.feinte='beaucoup';
+  return cpCache[n]={name:t.teams[n-t.a],cards,tac,lv:payloadTeamScore({cards})};
 }
 // note d'équipe (comme dans l'onglet Équipe) : chaque joueur noté selon son poste
 const teamNote=T=>T.cards.reduce((t,c,i)=>{const sl=TEAM_SLOTS.find(x=>x.k===SLOT_ORDER[i]);return t+Object.entries(POSTE_W[sl.p]).reduce((u,[k,v])=>u+c.s[k]*v,0);},0)/7;
 const teamAvg=T=>payloadTeamScore(T);
 const cpChCache={};
 function cpChance(me,n){
-  const key=n+'|'+me.cards.map(c=>SKILLS.map(x=>c.s[x.k]).join(',')).join(';')+'|'+(me.chem||[]).join('');if(cpChCache[key]!=null)return cpChCache[key];
+  const key=n+'|'+me.cards.map(c=>SKILLS.map(x=>c.s[x.k]).join(',')).join(';')+'|'+(me.chem||[]).join('')+'|'+JSON.stringify(me.tac||{});if(cpChCache[key]!=null)return cpChCache[key];
   const op=cpTeam(n),f=cpTier(n).fmt;let w=0;const N=100;
   for(let i=0;i<N;i++)if(simulateMatch(me,op,hashStr('prono|'+n+'|'+i),f).winner===0)w++;
   return cpChCache[key]=Math.round(w/N*100);
@@ -3271,7 +3321,7 @@ function renderCamp(){
     const op=cpTeam(st),me=myTeam(),myLv=me?teamAvg(me):null,ch=me?cpChance(me,st):null,rew=CP_REW[st],ko=rd.ko;
     const prev=c.res[st],tryN=prev&&!prev.w?prev.tries+1:1;
     let btn='',note='';
-    if(!me){btn=`<button class="btn primary big" type="button" disabled>Jouer le match</button>`;note=`Complète ton équipe (7 cartes) dans l'onglet <b>Équipe</b> pour jouer.`;}
+    if(!me){btn=`<button class="btn primary big" type="button" disabled>Jouer le match</button>`;note=`Complète ton équipe dans l'onglet <b>Équipe</b> pour jouer.`;}
     else if(cpStatus==='checking'){btn=`<button class="btn primary big" type="button" disabled>Vérification de l'heure…</button>`;}
     else if(cpStatus==='offline'){btn=`<button class="btn primary big" type="button" id="cp-retry">Réessayer</button>`;note="Connecte-toi à internet : l'heure est vérifiée en ligne avant chaque tentative.";}
     else if(cpStatus==='locked'){btn=`<button class="btn primary big" type="button" disabled>Tentative du jour jouée</button>`;note=`<span id="cp-left">Prochaine tentative demain</span>`;}
@@ -3281,6 +3331,7 @@ function renderCamp(){
       <div class="cp-p-top"><small>${esc(T.venue)} · ${esc(T.n)}</small><b class="cp-round">${esc(rd.r)}</b></div>
       <div class="cp-p-vs"><div><span>${esc(state.pseudo||'Ton équipe')}</span><b>${myLv??'–'}</b><small>note d'équipe</small></div><i>VS</i><div><span>${esc(op.name)}</span><b>${op.lv}</b><small>note d'équipe</small></div></div>
       ${ch!=null?`<div class="cp-prono"><div><span>Pronostic</span><b>${fav}</b></div><div class="cp-gauge"><i style="width:${Math.max(3,ch)}%"></i></div><b class="cp-pct">${ch} %</b></div>`:''}
+      <div class="cp-tac"><div><span>Leur jeu :</span> <b>${esc(tacTxt(op.tac))}</b></div><div><span>Tes consignes :</span> <b>${esc(tacTxt(state.tac))}</b> · <a data-go-team>modifier</a></div></div>
       <div class="cp-chips"><span>${cpFmtL(T.fmt)}</span>${rew?cpReward(rew):''}</div>
       <p class="cp-stake">${esc(cpStake(st))}</p>
       <div class="cp-opp">${op.cards.map((x,i)=>miniHTML({...x,id:'cpo'+i,kind:'joueur',photo:null})).join('')}</div>
@@ -3300,6 +3351,7 @@ function renderCamp(){
   document.querySelectorAll('#cr-seg button').forEach(b=>b.addEventListener('click',()=>{campView=b.dataset.r;try{localStorage.setItem('cartes-volley-rank-camp',campView);}catch(e){}renderCampRank();}));
   renderCampRank();if(net.on)netRank();
   const pb=$('cp-play');if(pb)pb.addEventListener('click',cpPlay);
+  root.querySelectorAll('[data-go-team]').forEach(a=>a.addEventListener('click',()=>{setTab('team');$('t-tac-sec').scrollIntoView({block:'start',behavior:'smooth'});}));
   const rb=$('cp-retry');if(rb)rb.addEventListener('click',cpRefresh);
   const sb=$('cp-sheet');if(sb)sb.addEventListener('click',()=>openSheet(state.camp.last));
   if(cpStatus==='locked'&&!done){const l=$('cp-left');const tick=()=>{const n=estNow();if(n==null||!l)return;const ms=msToMidnight(n);
@@ -3481,7 +3533,7 @@ async function playMatch(sim,disp,names,myIdx,res){
   box('mt-floor',0,0,9,18);const lw=2/ppm;box('mt-line',0,9-lw/2,9,9+lw/2);box('mt-line att',0,6-lw/2,9,6+lw/2);box('mt-line att',0,12-lw/2,9,12+lw/2);
   const net=document.createElement('div');net.className='mt-net';net.style.left=X(-.5)+'px';net.style.width=(X(9.5)-X(-.5))+'px';net.style.top=Y(9)+'px';court.appendChild(net);
   const tw=1.75*ppm,toks=[[],[]];
-  for(const t of [0,1])for(let i=0;i<7;i++){const e=document.createElement('div');e.className='mt-tok';e.style.width=tw+'px';e.innerHTML=miniHTML(disp[t][i]);court.appendChild(e);toks[t].push(e);}
+  for(const t of [0,1])for(let i=0;i<disp[t].length;i++){const e=document.createElement('div');e.className='mt-tok';e.style.width=tw+'px';e.innerHTML=miniHTML(disp[t][i]);court.appendChild(e);toks[t].push(e);}
   const shadow=document.createElement('div');shadow.className='mt-shadow';court.appendChild(shadow);
   const ball=document.createElement('div');ball.className='mt-ball';court.appendChild(ball);
   const B0=.42*ppm;let bp=[4.5,9],bh=0;
@@ -3519,7 +3571,7 @@ async function playMatch(sim,disp,names,myIdx,res){
     }
     sc[0]=r.score[0];sc[1]=r.score[1];setScore(srv);
     // placement : rotation de chaque équipe, serveur derrière sa ligne, remplaçant sur le banc
-    for(const t of [0,1])for(let i=0;i<7;i++){const e=toks[t][i],p=posOf(r,t,i);e.classList.toggle('bench',!p);e.classList.remove('act','jump');
+    for(const t of [0,1])for(let i=0;i<toks[t].length;i++){const e=toks[t][i],p=posOf(r,t,i);e.classList.toggle('bench',!p);e.classList.remove('act','jump');
       place(e,p===1&&t===srv?mir(side(t),SERVE_SPOT):spot(r,t,i));}
     const server=r.oc[srv][0];bp=mir(side(srv),[SERVE_SPOT[0]-.5,SERVE_SPOT[1]-.3]);bh=0;drawBall();
     if(fmt&&!(mSkip||mFF)){const tg=(fmt.sets>1&&r.set===fmt.sets*2-2)?fmt.tie:fmt.pts;
