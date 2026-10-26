@@ -1396,7 +1396,7 @@ const PACK_TYPES={
   classic:{l:'Booster',sub:'CARTES VOLLEY',mult:{bronze:1,silver:1,gold:1,icon:1},sig:1},
   silver:{l:'Booster Argent',sub:'ARGENT',mult:{bronze:0.5,silver:2,gold:2,icon:2},sig:2},
   gold:{l:'Booster Or',sub:'OR',mult:{bronze:0.25,silver:2,gold:8,icon:8},sig:8},
-  icon:{l:'Booster Icône',sub:'ICÔNE',mult:{bronze:0.1,silver:2,gold:8,icon:16},sig:16,faDiv:2}}; // faDiv : réduction des Full Art (3 par défaut)
+  icon:{l:'Booster Icône',sub:'ICÔNE',mult:{bronze:0.1,silver:2,gold:8,icon:16},sig:16}};
 const typeForN=n=>n%28===0?'icon':n%14===0?'gold':n%7===0?'silver':'classic';
 let adminType='classic';
 const nextType=()=>isAdmin?adminType:typeForN((+state.count||0)+1);
@@ -1404,8 +1404,9 @@ function drawPack(pool,type='classic'){ // 0,5 % de chance d'une Signature (au h
   const sigs=pool.filter(isSigP),out=[];
   const T_=PACK_TYPES[type]||PACK_TYPES.classic;
   if(sigs.length&&Math.random()<SIG_CHANCE*T_.sig)out.push(sigs[Math.floor(Math.random()*sigs.length)]);
-  const faFix=T_.faDiv?FULLART_RARITY/T_.faDiv:1; // booster Icône : une Full Art n'est que 2 fois plus rare
-  const left=pool.filter(p=>!isSigP(p)).map(p=>({p,w:weightOf(p)*T_.mult[tier(ovr(p.s))]*(p.fullart&&p.photo?faFix:1)}));
+  // la réduction des bronzes dans les gros boosters ne touche pas les bronzes Full Art
+  const mOf=p=>{const t=tier(ovr(p.s));return t==='bronze'&&p.fullart&&p.photo?1:T_.mult[t];};
+  const left=pool.filter(p=>!isSigP(p)).map(p=>({p,w:weightOf(p)*mOf(p)}));
   while(out.length<PACK_SIZE&&left.length){
     const T=left.reduce((a,b)=>a+b.w,0);let x=Math.random()*T,i=0;
     while(i<left.length-1&&x>=left[i].w){x-=left[i].w;i++;}
