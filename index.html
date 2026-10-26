@@ -258,6 +258,10 @@ textarea.text-in{font-size:1rem;font-weight:500;resize:none;line-height:1.35}
 @keyframes writeOn{from{clip-path:inset(0 100% 0 0)}to{clip-path:inset(0 -10% 0 0)}}
 @keyframes sigSpin{0%{transform:translateY(-60vh) rotateY(0) scale(.5);opacity:0}20%{opacity:1}100%{transform:translateY(0) rotateY(1080deg) scale(1)}}
 @keyframes rimLit{0%{filter:brightness(1)}35%{filter:brightness(3.2)}100%{filter:brightness(1)}}
+.b-clear{align-self:center;background:transparent;color:var(--danger);border-color:rgba(255,90,90,.4);padding:10px 18px}
+.b-confirm{display:flex;flex-direction:column;gap:10px;border:1px solid rgba(255,90,90,.5);background:rgba(255,90,90,.08);border-radius:16px;padding:16px}
+.b-confirm b{font-family:var(--display);font-weight:900;font-size:1.3rem;text-transform:uppercase}
+.b-confirm p{margin:0;color:var(--muted)}
 .empty-filter{color:var(--muted);text-align:center;padding:30px 10px;border:1px dashed var(--line);border-radius:14px}
 
 .fab{position:fixed;right:calc(18px + env(safe-area-inset-right,0px));bottom:calc(20px + env(safe-area-inset-bottom,0px));z-index:8;
@@ -624,6 +628,12 @@ input[type=range]::-moz-range-thumb{width:20px;height:20px;border-radius:50%;bac
     </div>
     <div class="b-dots" id="b-dots"></div>
     <p class="empty-filter" id="b-empty" hidden>Crée des cartes dans l'onglet Cartes : chacune aura sa place dans le classeur.</p>
+    <button class="btn b-clear" type="button" id="b-clear">Vider le classeur</button>
+    <div class="b-confirm" id="b-confirm" hidden role="alertdialog" aria-labelledby="b-confirm-t">
+      <b id="b-confirm-t">Vider le classeur ?</b>
+      <p>Toutes les cartes obtenues seront retirées du classeur. Tes cartes créées restent, et le booster du jour n'est pas rendu.</p>
+      <div class="row-actions"><button class="btn" type="button" id="b-cancel">Annuler</button><button class="btn danger" type="button" id="b-ok">Oui, vider</button></div>
+    </div>
   </div>
 </main>
 
@@ -1346,7 +1356,7 @@ function renderBinder(dir){
   binderPage=Math.max(0,Math.min(binderPage,pages-1));
   const got=list.filter(p=>own.has(p.id)).length;
   $('b-count').textContent=`${got} / ${N}`;$('b-bar').style.width=(N?got/N*100:0)+'%';
-  $('b-empty').hidden=N>0;$('binder').hidden=N===0;
+  $('b-empty').hidden=N>0;$('binder').hidden=N===0;if($('b-confirm').hidden)$('b-clear').hidden=got===0;
   $('b-sub').textContent=N===0?'Chaque carte que tu crées aura sa place ici.':got===N?'Classeur complet, bravo !':`Il te manque ${N-got} carte${N-got>1?'s':''}. Ouvre ton booster du jour pour le remplir.`;
   const start=binderPage*PER_PAGE,slots=[];
   for(let k=0;k<PER_PAGE;k++){
@@ -1364,6 +1374,10 @@ function renderBinder(dir){
   $('b-dots').innerHTML=pages>1?Array.from({length:pages},(_,k)=>`<button type="button" data-p="${k}" aria-label="Page ${k+1}" aria-current="${k===binderPage}"></button>`).join(''):'';
 }
 function turnPage(d){const pages=Math.max(1,Math.ceil(players.length/PER_PAGE)),np=binderPage+d;if(np<0||np>=pages)return;binderPage=np;renderBinder(d>0?'next':'prev');sfx.whoosh();}
+$('b-clear').addEventListener('click',()=>{$('b-confirm').hidden=false;$('b-clear').hidden=true;$('b-confirm').scrollIntoView({block:'center',behavior:'smooth'});});
+$('b-cancel').addEventListener('click',()=>{$('b-confirm').hidden=true;$('b-clear').hidden=false;});
+$('b-ok').addEventListener('click',async()=>{ // on garde la date du dernier booster : vider ne rend pas le booster du jour
+  state.owned=[];await saveState();$('b-confirm').hidden=true;$('b-clear').hidden=false;binderPage=0;renderBinder();toast('Classeur vidé');});
 $('b-prev').addEventListener('click',()=>turnPage(-1));$('b-next').addEventListener('click',()=>turnPage(1));
 $('b-dots').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;const k=+b.dataset.p;if(k===binderPage)return;const d=k>binderPage?'next':'prev';binderPage=k;renderBinder(d);});
 $('b-page').addEventListener('click',e=>{const c=e.target.closest('.bslot.own');if(c&&!swiped)openDetail(c.dataset.id);});
