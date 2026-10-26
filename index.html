@@ -2661,7 +2661,10 @@ async function shareCanvas(cv,name,title,alt){
 function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};}
 function hashStr(s){let h=1779033703^s.length;for(let i=0;i<s.length;i++){h=Math.imul(h^s.charCodeAt(i),3432918353);h=h<<13|h>>>19;}h=Math.imul(h^h>>>16,2246822507);h=Math.imul(h^h>>>13,3266489909);return(h^h>>>16)>>>0;}
 const M_START=[5,0,1,2,3,4]; // positions 1..6 : PAS, R4a, CEN1, PTU, R4b, CEN2
-const ME_SF=.4,ME_PF=.07,ME_AE=.2; // réglages du moteur
+const ME_PF=.07,ME_AE=.2; // réglages du moteur
+// fautes de service selon la stat : même un serveur à 100 rate de temps en temps
+const ME_SFT=[[0,.40],[20,.30],[30,.25],[60,.15],[87,.11],[100,.07]];
+function serveFaultP(v){v=Math.max(0,Math.min(100,v*100));for(let i=1;i<ME_SFT.length;i++){const[a,pa]=ME_SFT[i-1],[b,pb]=ME_SFT[i];if(v<=b)return pa+(pb-pa)*(v-a)/(b-a);}return ME_SFT[ME_SFT.length-1][1];}
 // opts (campagne) : {sets:nombre de sets gagnants, pts:points par set, tie:points du set décisif}. Sans opts : un set de 10 points (match entre potes)
 function simulateMatch(A,B,seed,opts){
   const O=opts||{sets:1,pts:10,tie:10},multi=!!opts;
@@ -2687,12 +2690,12 @@ function simulateMatch(A,B,seed,opts){
     const srv=serve,rcv=1-serve,oc=[onCourt(0,srv===0),onCourt(1,srv===1)],acts=[];let winner=null;
     const server=oc[srv][0],sv=st(srv,server,'ser');
     // service : un mauvais serveur rate souvent
-    if(R()<cl(ME_SF*Math.pow(1-sv,1.6),.02,.45)){winner=rcv;acts.push({k:'serveFault',t:srv,p:server,net:R()<.55});}
+    if(R()<serveFaultP(sv)){winner=rcv;acts.push({k:'serveFault',t:srv,p:server,net:R()<.55});}
     else{
       const recvs=oc[rcv].filter(i=>i===6||i===0||i===3),rc=pick(recvs.length?recvs:back(oc[rcv]),i=>i===6?1.4:1);
       const rs=st(rcv,rc,'rec'),gap=gp(sv-rs),lvl=(sv+rs)/2;
       // duel service contre réception
-      if(R()<sg(-2.75+7*gap-1.5*(lvl-.6))){winner=srv;acts.push({k:'ace',t:srv,p:server,r:rc});}
+      if(R()<Math.min(.85,sg(-2.75+7*gap-1.5*(lvl-.6)))){winner=srv;acts.push({k:'ace',t:srv,p:server,r:rc});}
       else{
         const rq=cl(.55-gap*.9+(rs-.6)*.3+nz(.6),0,1);
         acts.push({k:'serve',t:srv,p:server,r:rc,q:cl(.5+gap*.6+nz(.3),0,1)});
@@ -2757,7 +2760,7 @@ const RANKS=[[0,'Débutant'],[450,'Amateur'],[500,'Régional'],[560,'National'],
 const rankName=e=>RANKS.filter(r2=>e>=r2[0]).pop()[1];
 const eloExp=(a,b)=>1/(1+Math.pow(10,(b-a)/400));
 const ELO_K=32;
-const ENGINE_VER=4; // à augmenter à chaque changement du moteur : deux versions différentes ne donnent pas le même match
+const ENGINE_VER=5; // à augmenter à chaque changement du moteur : deux versions différentes ne donnent pas le même match
 let myCode=null,myNonce=null,oppData=null;
 function teamPayload(nonce){
   const cards=SLOT_ORDER.map(k=>{const sl=TEAM_SLOTS.find(x=>x.k===k),c=teamCard(sl);return[encodeURIComponent(c.name),c.s.ser,c.s.rec,c.s.pas,c.s.att,c.s.blo,c.s.def,c.poste].join(',');});
