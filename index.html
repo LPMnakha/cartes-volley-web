@@ -176,6 +176,8 @@ textarea.text-in{font-size:1rem;font-weight:500;resize:none;line-height:1.35}
 @keyframes glit{50%{opacity:.2}}
 
 /* Booster du jour */
+.pk-pips{display:inline-flex;gap:5px;vertical-align:middle;margin-right:8px}.pk-pips i{width:14px;height:19px;border-radius:3px;border:1.5px solid rgba(255,255,255,.3)}
+.pk-pips i.on{border-color:#FFD23F;background:linear-gradient(160deg,#FFF3B0,#FFD23F 50%,#FF7A2F);box-shadow:0 0 8px rgba(255,210,63,.6)}
 .lock-txt{margin:-6px 0 0;text-align:center;color:var(--muted);font-weight:600}
 .lock-txt b{font-family:var(--data);color:var(--ink);font-variant-numeric:tabular-nums;font-size:1.15rem;letter-spacing:.04em}
 .newtag{position:absolute;top:-7px;left:50%;transform:translateX(-50%);z-index:3;white-space:nowrap;font-family:var(--data);font-weight:700;font-size:.56rem;letter-spacing:.12em;
@@ -1025,7 +1027,7 @@ input[type=range]::-moz-range-thumb{width:20px;height:20px;border-radius:50%;bac
   <div class="tabpane" id="tab-packs" role="tabpanel" aria-labelledby="tab-btn-packs" hidden>
     <div class="pack-head">
       <div><h2 class="pane-title">Ouvre un booster</h2>
-        <p class="note">Un booster par jour, 5 cartes tirées au sort parmi tes cartes. Plus une carte est forte, plus elle est rare. Nouveau booster chaque jour à minuit.</p></div>
+        <p class="note">Un nouveau booster toutes les 12 heures, jusqu'à 2 en réserve : quand la réserve est pleine, le compteur s'arrête. 5 cartes tirées au sort parmi tes cartes, et plus une carte est forte, plus elle est rare.</p></div>
       <button class="icon-btn mute-btn" type="button" id="mute-btn" aria-label="Couper le son et les vibrations"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5L6 9H3v6h3l5 4z"/><path class="w1" d="M15.5 8.5a5 5 0 010 7"/><path class="w2" d="M18.5 5.5a9 9 0 010 13"/><path class="x" d="M16 9l6 6M22 9l-6 6"/></svg></button>
     </div>
     <div class="banner" id="pack-ex" hidden><span>Tirage parmi les <b>exemples</b> tant que tu n'as pas créé de cartes.</span></div>
@@ -1045,7 +1047,7 @@ input[type=range]::-moz-range-thumb{width:20px;height:20px;border-radius:50%;bac
     <div class="section" id="hist-sec"><span class="label">Historique des boosters</span><div class="hist" id="hist"></div></div>
   </div>
   <div class="tabpane" id="tab-binder" role="tabpanel" aria-labelledby="tab-btn-binder" hidden>
-    <div class="pack-head"><div><h2 class="pane-title">Mon classeur</h2><p class="note" id="b-sub">Chaque carte a sa place. Ouvre ton booster du jour pour le remplir.</p></div></div>
+    <div class="pack-head"><div><h2 class="pane-title">Mon classeur</h2><p class="note" id="b-sub">Chaque carte a sa place. Ouvre tes boosters pour le remplir.</p></div></div>
     <div class="b-progress"><span class="track"><i id="b-bar" style="width:0%"></i></span><b id="b-count">0 / 0</b></div>
     <div class="binder" id="binder"><div class="b-rings"></div><div class="b-page" id="b-page"></div></div>
     <div class="b-nav">
@@ -1199,7 +1201,7 @@ input[type=range]::-moz-range-thumb{width:20px;height:20px;border-radius:50%;bac
       </button>
       <button class="menu-item" type="button" id="m-export-cards">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3" width="10" height="14" rx="1.5"/><path d="M17 8v13m0 0l-3.5-3.5M17 21l3.5-3.5"/></svg>
-        <span><b>Exporter les cartes seulement</b><small>Pour les partager à tes potes : sans ton classeur ni ton booster du jour</small></span>
+        <span><b>Exporter les cartes seulement</b><small>Pour les partager à tes potes : sans ton classeur ni tes boosters</small></span>
       </button>
       <label class="menu-item" for="m-import" style="cursor:pointer">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21V9m0 0l-5 5m5-5l5 5M4 3h16"/></svg>
@@ -1223,7 +1225,7 @@ input[type=range]::-moz-range-thumb{width:20px;height:20px;border-radius:50%;bac
       <button class="btn b-clear" type="button" id="r-btn">Réinitialiser mon compte</button>
       <div class="b-confirm" id="r-confirm" hidden role="alertdialog" aria-labelledby="r-confirm-t">
         <b id="r-confirm-t">Tout effacer ?</b>
-        <p>Impossible de revenir en arrière. Si tu veux pouvoir récupérer ton compte plus tard, enregistre d'abord une sauvegarde. Le booster du jour n'est pas rendu.</p>
+        <p>Impossible de revenir en arrière. Si tu veux pouvoir récupérer ton compte plus tard, enregistre d'abord une sauvegarde. Ta réserve de boosters et la tentative de campagne du jour ne sont pas rendues.</p>
         <label class="r-check"><input type="checkbox" id="r-sure"> Je veux vraiment tout effacer</label>
         <div class="row-actions"><button class="btn" type="button" id="r-cancel">Annuler</button><button class="btn danger" type="button" id="r-ok" disabled>Tout effacer</button></div>
       </div>
@@ -1380,13 +1382,14 @@ const shown=()=>players.length?players:EXAMPLES;
 const LS_STATE='cartes-volley-etat';
 const ELO_START=400; // élo de départ de tout le monde
 let state=loadState(),timeOffset=null,lockTimer=null,packStatus='checking',openBusy=false;
-function blankState(){return{owned:[],counts:{},lastDay:'',lastTs:0,count:0,rev:0,bonus:{classic:0,silver:0,gold:0,icon:0},streak:{cur:0,best:0,lastDay:''},history:[],ach:{},team:{},exchanges:0,pid:'',pseudo:'',elo:ELO_START,eloBase:ELO_START,matches:[],opps:{},played:[],camp:{st:1,day:'',ts:0,res:{},last:null,tries:0}};}
+function blankState(){return{owned:[],counts:{},lastDay:'',lastTs:0,pkT:0,count:0,rev:0,bonus:{classic:0,silver:0,gold:0,icon:0},streak:{cur:0,best:0,lastDay:''},history:[],ach:{},team:{},exchanges:0,pid:'',pseudo:'',elo:ELO_START,eloBase:ELO_START,matches:[],opps:{},played:[],camp:{st:1,day:'',ts:0,res:{},last:null,tries:0}};}
 function fixState(j){
   const o=blankState();if(!j||typeof j!=='object')return o;
   if(j.counts&&typeof j.counts==='object')for(const k in j.counts){const n=Math.max(0,Math.floor(+j.counts[k]||0));if(n)o.counts[String(k)]=n;}
   (Array.isArray(j.owned)?j.owned:[]).forEach(id=>{id=String(id);if(!o.counts[id])o.counts[id]=1;});
   o.owned=Object.keys(o.counts);
-  o.lastDay=String(j.lastDay||'');o.lastTs=+j.lastTs||0;o.count=+j.count||0;o.rev=+j.rev||0;o.exchanges=+j.exchanges||0;
+  o.lastDay=String(j.lastDay||'');o.lastTs=+j.lastTs||0;o.pkT=j.pkT!=null&&Number.isFinite(+j.pkT)?+j.pkT:o.lastTs; // ancien système : la recharge part du dernier booster ouvert
+  o.count=+j.count||0;o.rev=+j.rev||0;o.exchanges=+j.exchanges||0;
   if(j.bonus&&typeof j.bonus==='object')for(const k in o.bonus)o.bonus[k]=Math.max(0,Math.floor(+j.bonus[k]||0));
   if(j.streak&&typeof j.streak==='object')o.streak={cur:+j.streak.cur||0,best:+j.streak.best||0,lastDay:String(j.streak.lastDay||'')};
   o.history=Array.isArray(j.history)?j.history.filter(h=>h&&Array.isArray(h.ids)).slice(0,30):[];
@@ -1402,12 +1405,12 @@ function fixState(j){
 }
 function loadState(){try{return fixState(JSON.parse(localStorage.getItem(LS_STATE)||'null'));}catch(e){return blankState();}}
 function mergeState(o){
-  if(!o)return false;const before=JSON.stringify(state);const keep={lastDay:state.lastDay,lastTs:state.lastTs,count:state.count,cday:state.camp.day,cts:state.camp.ts};
+  if(!o)return false;const before=JSON.stringify(state);const keep={lastDay:state.lastDay,lastTs:state.lastTs,pkT:state.pkT,count:state.count,cday:state.camp.day,cts:state.camp.ts};
   const f=fixState(o);
   if(f.rev>(state.rev||0))state=f; // version plus récente : on la prend en entier
   else if(!o.rev){for(const k in f.counts)state.counts[k]=Math.max(state.counts[k]||0,f.counts[k]);state.owned=Object.keys(state.counts);} // ancienne sauvegarde : on ajoute ses cartes
   // anti-triche : on garde toujours le booster du jour le plus récent
-  if(keep.lastDay>state.lastDay)state.lastDay=keep.lastDay;state.lastTs=Math.max(state.lastTs,keep.lastTs);state.count=Math.max(state.count,keep.count);
+  if(keep.lastDay>state.lastDay)state.lastDay=keep.lastDay;state.lastTs=Math.max(state.lastTs,keep.lastTs);state.pkT=Math.max(state.pkT,keep.pkT);state.count=Math.max(state.count,keep.count);
   if(keep.cday>state.camp.day)state.camp.day=keep.cday;state.camp.ts=Math.max(state.camp.ts,keep.cts); // une seule tentative de campagne par jour
   return JSON.stringify(state)!==before;
 }
@@ -1850,8 +1853,8 @@ $('r-sure').addEventListener('change',()=>{$('r-ok').disabled=!$('r-sure').check
 $('r-ok').addEventListener('click',async()=>{
   if(!$('r-sure').checked)return;$('r-ok').disabled=true;
   for(const p of players.slice())await remove(p.id);
-  const keep={lastDay:state.lastDay,lastTs:state.lastTs,rev:state.rev,played:state.played,cday:state.camp.day,cts:state.camp.ts};
-  state=blankState();state.lastDay=keep.lastDay;state.lastTs=keep.lastTs;state.rev=keep.rev;state.played=keep.played;state.camp.day=keep.cday;state.camp.ts=keep.cts; // les QR déjà joués et la tentative du jour restent bloqués
+  const keep={lastDay:state.lastDay,lastTs:state.lastTs,pkT:state.pkT,rev:state.rev,played:state.played,cday:state.camp.day,cts:state.camp.ts};
+  state=blankState();state.lastDay=keep.lastDay;state.lastTs=keep.lastTs;state.pkT=keep.pkT;state.rev=keep.rev;state.played=keep.played;state.camp.day=keep.cday;state.camp.ts=keep.cts; // les QR déjà joués et la tentative du jour restent bloqués
   await saveState();
   try{sessionStorage.setItem('cartes-volley-reset','1');}catch(e){}
   location.reload();
@@ -1968,12 +1971,20 @@ function setTab(t){
 document.querySelectorAll('.tab').forEach(b=>b.addEventListener('click',()=>setTab(b.dataset.tab)));
 document.addEventListener('visibilitychange',()=>{if(!document.hidden&&!$('tab-packs').hidden)refreshPackLock();});
 
+/* Recharge : un booster toutes les 12 h, 2 en réserve au maximum. Réserve pleine = compteur arrêté.
+   pkT ne fait qu'avancer : réserve au moment t = (t - pkT) / 12 h, plafonnée à 2 */
+const PK_P=12*3600e3,PK_MAX=2;
+const pkCharges=now=>Math.max(0,Math.min(PK_MAX,Math.floor((now-state.pkT)/PK_P)));
+const pkNext=now=>pkCharges(now)>=PK_MAX?null:Math.max(0,state.pkT+(pkCharges(now)+1)*PK_P-now);
+const pkUse=now=>{state.pkT=Math.max(state.pkT,now-PK_MAX*PK_P)+PK_P;};
+const hms=ms=>{const h=Math.floor(ms/3.6e6),m=Math.floor(ms%3.6e6/6e4),sec=Math.floor(ms%6e4/1e3),z=v=>String(v).padStart(2,'0');return`${z(h)}:${z(m)}:${z(sec)}`;};
+const pkPips=n=>`<span class="pk-pips" aria-label="${n} booster${n>1?'s':''} en réserve sur ${PK_MAX}">${Array.from({length:PK_MAX},(_,i)=>`<i class="${i<n?'on':''}"></i>`).join('')}</span>`;
 async function refreshPackLock(){
   if(openBusy)return;
   if(isAdmin){packStatus='ready';renderLock();return;}
   packStatus='checking';renderLock();
   const n=await trustedNow();
-  packStatus=n==null?'offline':(state.lastDay===parisDay(n)||n<state.lastTs)?'locked':'ready';
+  packStatus=n==null?'offline':pkCharges(n)>0?'ready':'locked';
   renderLock();
 }
 function renderLock(){
@@ -1982,15 +1993,18 @@ function renderLock(){
   if(few){b.disabled=true;b.textContent='Ouvrir le booster';l.hidden=true;}
   else if(packStatus==='checking'){b.disabled=true;b.textContent="Vérification de l'heure…";l.hidden=true;}
   else if(packStatus==='offline'){b.disabled=false;b.textContent='Réessayer';l.hidden=false;
-    l.textContent="Connecte-toi à internet : l'heure est vérifiée en ligne avant d'ouvrir le booster du jour.";}
-  else if(packStatus==='locked'){b.disabled=true;b.textContent='Booster du jour ouvert';l.hidden=false;
-    const tick=()=>{const n=estNow();if(n==null){l.textContent='Reviens demain pour un nouveau booster.';return;}
-      const ms=msToMidnight(n);if(ms<=1000){clearInterval(lockTimer);setTimeout(refreshPackLock,1500);return;}
-      const h=Math.floor(ms/3.6e6),m=Math.floor(ms%3.6e6/6e4),sec=Math.floor(ms%6e4/1e3),z=v=>String(v).padStart(2,'0');
-      const nt=nextType();l.innerHTML=`Prochain booster dans <b>${z(h)}:${z(m)}:${z(sec)}</b>${nt!=='classic'?`<br>Demain : <b style="font-size:1rem">${PACK_TYPES[nt].l}</b>`:''}`;};
+    l.textContent="Connecte-toi à internet : l'heure est vérifiée en ligne avant d'ouvrir un booster.";}
+  else if(packStatus==='locked'){b.disabled=true;b.textContent='Plus de booster en réserve';l.hidden=false;
+    const tick=()=>{const n=estNow();if(n==null){l.textContent='Un nouveau booster arrive toutes les 12 heures.';return;}
+      if(pkCharges(n)>0){clearInterval(lockTimer);refreshPackLock();return;}
+      const nt=nextType();l.innerHTML=`${pkPips(0)}Prochain booster dans <b>${hms(pkNext(n))}</b>${nt!=='classic'?`<br>Ce sera un <b style="font-size:1rem">${PACK_TYPES[nt].l}</b>`:''}`;};
     tick();lockTimer=setInterval(tick,1000);}
   else if(isAdmin){b.disabled=false;b.textContent='Ouvrir un booster';l.hidden=false;l.textContent='Mode admin : boosters illimités';}
-  else{b.disabled=false;b.textContent='Ouvrir le booster du jour';l.hidden=true;}
+  else{b.disabled=false;l.hidden=false;
+    const tick=()=>{const n=estNow();if(n==null){b.textContent='Ouvrir un booster';l.hidden=true;return;}const c=pkCharges(n);
+      b.textContent=c>1?`Ouvrir un booster (${c} en réserve)`:'Ouvrir un booster';
+      l.innerHTML=c>=PK_MAX?`${pkPips(c)}Réserve pleine : ${PK_MAX} boosters. Le compteur est en pause jusqu'à ce que tu en ouvres un.`:`${pkPips(c)}${c} booster en réserve · le suivant dans <b>${hms(pkNext(n))}</b>`;};
+    tick();lockTimer=setInterval(tick,1000);}
   $('pack').disabled=packStatus!=='ready'||few;
   $('pack-zone').classList.toggle('off',few||packStatus==='locked');
 }
@@ -2010,7 +2024,7 @@ function renderBinder(dir){
   const got=list.filter(p=>own.has(p.id)).length;
   $('b-count').textContent=`${got} / ${N}`;$('b-bar').style.width=(N?got/N*100:0)+'%';
   $('b-empty').hidden=N>0;$('binder').hidden=N===0;
-  $('b-sub').textContent=N===0?'Chaque carte que tu crées aura sa place ici.':got===N?'Classeur complet, bravo !':`Il te manque ${N-got} carte${N-got>1?'s':''}. Ouvre ton booster du jour pour le remplir.`;
+  $('b-sub').textContent=N===0?'Chaque carte que tu crées aura sa place ici.':got===N?'Classeur complet, bravo !':`Il te manque ${N-got} carte${N-got>1?'s':''}. Ouvre tes boosters pour le remplir.`;
   const start=binderPage*PER_PAGE,slots=[];
   for(let k=0;k<PER_PAGE;k++){
     const i=start+k,p=list[i];
@@ -2245,7 +2259,7 @@ async function openPack(bonusType){
     now=await trustedNow();openBusy=false;
     if(now==null){packStatus='offline';renderLock();toast("Pas de connexion : impossible de vérifier l'heure.");return;}
     today=parisDay(now);
-    if(state.lastDay===today||now<state.lastTs){packStatus='locked';renderLock();toast("Tu as déjà ouvert ton booster aujourd'hui. Reviens après minuit !");return;}
+    if(pkCharges(now)<1){packStatus='locked';renderLock();toast(`Plus de booster en réserve. Le prochain arrive dans ${hms(pkNext(now))}.`);return;}
   }
   const my=++run,alive=()=>my===run;
   const ptype=isBonus?bonusType:nextType();
@@ -2255,8 +2269,8 @@ async function openPack(bonusType){
   const pagesBefore=fullPages(),allBefore=binderComplete();
   if(isBonus)state.bonus[bonusType]--;
   else if(!isAdmin){
-    state.lastDay=today;state.lastTs=now;state.count=(+state.count||0)+1;
-    const yest=parisDay(now-864e5),st=state.streak; // série : jours consécutifs avec le booster du jour
+    pkUse(now);state.lastDay=today;state.lastTs=now;state.count=(+state.count||0)+1;
+    const yest=parisDay(now-864e5),st=state.streak; // série : jours consécutifs avec au moins un booster ouvert
     st.cur=st.lastDay===yest?st.cur+1:st.lastDay===today?st.cur:1;st.lastDay=today;st.best=Math.max(st.best,st.cur);
   }
   pulled.forEach(p=>addCard(p.id));
@@ -2264,7 +2278,7 @@ async function openPack(bonusType){
   state.history=state.history.slice(0,30);
   const newPages=fullPages().filter(k=>!pagesBefore.includes(k)),allNow=!allBefore&&binderComplete();
   const newAch=checkAch(true);
-  saveState();packStatus=isAdmin?'ready':'locked';renderPacks();
+  saveState();if(isAdmin)packStatus='ready';else if(!isBonus)packStatus=pkCharges(now)>0?'ready':'locked';renderPacks();
   if(ptype!=='classic'){sfx.sparkle();buzz([30,40,30]);}
   const best=pulled.map(vt).reduce((m,t)=>TIER_RANK[t]>TIER_RANK[m]?t:m,'bronze'),bestR=TIER_RANK[best]; // la lueur annonce le plus haut niveau du booster
   const O=$('opening'),stage=$('op-stage'),tray=$('op-tray');
@@ -2426,7 +2440,7 @@ function renderExtras(){
   const alive=st.lastDay===today||st.lastDay===yest,cur=alive?st.cur:0;
   const fire='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2c1 4 5 5.5 5 10a5 5 0 01-10 0c0-2 1-3.5 2-4.5 0 2 1 3 2 3 0-3-1-5 1-8.5z" fill="#FF7A2F"/><path d="M12 12c.6 1.8 2.5 2.4 2.5 4.5a2.5 2.5 0 01-5 0c0-1.2.8-2 1.5-2.5.2 1 .6 1.5 1 1.5 0-1.3-.5-2.2 0-3.5z" fill="#FFD23F"/></svg>';
   const el=$('streak');el.classList.toggle('off',!cur);
-  el.innerHTML=`${fire}<div><b>${cur} jour${cur>1?'s':''} d'affilée</b><br><span>${!cur?(st.best?`Série perdue. Record : ${st.best} jours. Ouvre ton booster du jour pour repartir.`:'Ouvre un booster chaque jour pour lancer ta série.'):st.lastDay===today?`Booster du jour ouvert. Record : ${st.best} jour${st.best>1?'s':''}.`:`Ouvre ton booster aujourd'hui pour garder ta série !`}</span></div>`;
+  el.innerHTML=`${fire}<div><b>${cur} jour${cur>1?'s':''} d'affilée</b><br><span>${!cur?(st.best?`Série perdue. Record : ${st.best} jours. Ouvre un booster pour repartir.`:'Ouvre un booster chaque jour pour lancer ta série.'):st.lastDay===today?`Booster du jour ouvert. Record : ${st.best} jour${st.best>1?'s':''}.`:`Ouvre ton booster aujourd'hui pour garder ta série !`}</span></div>`;
   // Historique
   const fmt=new Intl.DateTimeFormat('fr-FR',{timeZone:'Europe/Paris',weekday:'short',day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'});
   $('hist-sec').hidden=!state.history.length;
@@ -2467,7 +2481,7 @@ const ACH=[
   {k:'s3',t:"3 jours d'affilée",d:'Une série de 3 jours',ok:()=>state.streak.best>=3},
   {k:'s7',t:"7 jours d'affilée",d:'Une série de 7 jours',ok:()=>state.streak.best>=7},
   {k:'s30',t:"30 jours d'affilée",d:'Une série de 30 jours',ok:()=>state.streak.best>=30},
-  {k:'pIcon',t:'Booster Icône',d:'Ouvre ton premier booster Icône du jour',ok:()=>realHist().some(h=>h.type==='icon'&&h.how==='jour')},
+  {k:'pIcon',t:'Booster Icône',d:'Ouvre ton premier booster Icône (hors bonus)',ok:()=>realHist().some(h=>h.type==='icon'&&h.how==='jour')},
   {k:'ex1',t:'Premier échange',d:'Échange 25 doublons contre un booster',ok:()=>state.exchanges>0},
   {k:'team',t:'Équipe au complet',d:'Place 7 cartes dans ton équipe',ok:()=>teamFull()},
   {k:'team80',t:'Équipe de choc',d:'Une équipe complète notée 80 ou plus',ok:()=>teamFull()&&teamScore()>=80},
