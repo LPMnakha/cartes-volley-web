@@ -637,6 +637,17 @@ body.player #tab-btn-cards,body.player #fab,body.player #m-export-cards,body.pla
 .cp-next span{font-size:.82rem;color:var(--muted)}
 .cp-next.new{box-shadow:0 0 30px color-mix(in srgb,var(--c) 35%,transparent)}
 
+.upd{position:fixed;inset:0;z-index:80;display:grid;place-items:center;padding:20px;background:rgba(3,7,20,.78);backdrop-filter:blur(6px);-webkit-backdrop-filter:blur(6px);animation:fadeIn .25s both}
+.upd-box{width:min(100%,380px);display:flex;flex-direction:column;align-items:center;gap:10px;text-align:center;padding:22px 18px 18px;border-radius:22px;
+  border:1px solid rgba(255,122,47,.45);background:radial-gradient(120% 70% at 50% 0%,rgba(255,122,47,.22),transparent 70%),linear-gradient(180deg,#17307A,#0A1430);box-shadow:0 30px 60px rgba(0,0,0,.55);animation:cpRise .4s both}
+.upd-ic{width:54px;height:54px;border-radius:16px;display:grid;place-items:center;color:#1A1200;background:linear-gradient(135deg,#FFD23F,#FF7A2F);box-shadow:0 0 24px rgba(255,122,47,.5)}.upd-ic svg{width:28px;height:28px}
+.upd-box>b{font-family:var(--display);font-weight:900;font-size:1.9rem;text-transform:uppercase;line-height:1}
+.upd-v{margin:0;font-family:var(--data);font-weight:700;color:var(--ball)}
+.upd-notes{margin:0;color:var(--ink);font-weight:600}.upd-notes:empty{display:none}
+.upd-bar{width:100%;height:10px;border-radius:99px;background:rgba(255,255,255,.1);overflow:hidden}
+.upd-bar i{display:block;height:100%;width:0;border-radius:99px;background:linear-gradient(90deg,#FFD23F,#FF7A2F);transition:width .3s}
+.upd-msg{margin:0}.upd-msg:empty{display:none}
+.upd-act{display:flex;gap:8px;width:100%;margin-top:4px}.upd-act .btn{flex:1}.upd-act #upd-go{flex:1.4}
 .msheet{position:fixed;inset:0;z-index:60;display:flex;flex-direction:column;background:radial-gradient(90% 50% at 50% 0%,#1C3580,#070E24 75%);overflow:hidden;animation:fadeIn .25s both}
 .sh-bar{display:flex;align-items:center;gap:12px;padding:calc(10px + env(safe-area-inset-top)) 16px 10px;border-bottom:1px solid var(--line);background:rgba(10,20,48,.7)}
 .sh-bar h2{flex:1;margin:0;font-family:var(--display);font-weight:900;font-size:1.5rem;text-transform:uppercase;letter-spacing:.02em}
@@ -1333,6 +1344,17 @@ body.player .tabs{grid-template-columns:repeat(4,minmax(0,1fr))} /* sans l'ongle
 </section>
 <section class="cpi" id="cp-intro" hidden aria-label="Avant le match"><div class="cpi-stage" id="cpi-stage"></div><p class="cpi-skip">Touche pour passer</p></section>
 <section class="cpi k2" id="ch-intro" hidden aria-label="Défi reçu"><div class="cpi-stage" id="chi-stage"></div></section>
+<section class="upd" id="upd" hidden role="dialog" aria-modal="true" aria-labelledby="upd-t">
+  <div class="upd-box">
+    <span class="upd-ic" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12m0 0l-5-5m5 5l5-5M5 21h14"/></svg></span>
+    <b id="upd-t">Nouvelle version</b>
+    <p class="upd-v" id="upd-v"></p>
+    <p class="upd-notes" id="upd-notes"></p>
+    <div class="upd-bar" id="upd-bar" hidden><i id="upd-fill"></i></div>
+    <p class="note upd-msg" id="upd-msg"></p>
+    <div class="upd-act"><button class="btn" type="button" id="upd-later">Plus tard</button><button class="btn primary" type="button" id="upd-go">Mettre à jour</button></div>
+  </div>
+</section>
 <section class="msheet" id="sheet" hidden aria-label="Feuille de match">
   <div class="sh-bar">
     <button class="icon-btn" type="button" id="sh-close" aria-label="Fermer"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
@@ -1874,6 +1896,7 @@ $('r-ok').addEventListener('click',async()=>{
 });
 try{if(sessionStorage.getItem('cartes-volley-reset')){sessionStorage.removeItem('cartes-volley-reset');setTimeout(()=>toast('Compte réinitialisé : tout repart de zéro'),400);}}catch(e){}
 window.__back=function(){
+  if(!$('upd').hidden){if(upd.step!=='dl')$('upd-later').click();return true;}
   if(!$('sheet').hidden){closeSheet();return true;}
   if(!$('cp-intro').hidden){$('cp-intro').click();return true;}
   if(!$('match').hidden){closeMatch();return true;}
@@ -2774,6 +2797,52 @@ function simulateMatch(A,B,seed,opts){
 
 
 
+
+/* =================== Mise à jour de l'appli Android =================== */
+// Au lancement (et au retour dans l'appli), on regarde sur le serveur s'il existe une version plus récente.
+const LS_UPD='cartes-volley-maj-plus-tard';
+let upd={info:null,timer:null,lastCheck:0,step:'ask'};
+const updCan=()=>APP&&window.AndroidBridge&&typeof AndroidBridge.appVersion==='function'&&typeof AndroidBridge.startUpdate==='function';
+const updMy=()=>{try{return+AndroidBridge.appVersion()||0;}catch(e){return 0;}};
+async function checkUpdate(manual){
+  if(!updCan()||!SERVER||!$('upd').hidden)return;upd.lastCheck=Date.now();
+  let j;try{const ctl=new AbortController(),tm=setTimeout(()=>ctl.abort(),8000);const r=await fetch(SERVER+'/app/version?t='+Date.now(),{cache:'no-store',signal:ctl.signal});clearTimeout(tm);j=await r.json();}catch(e){return;}
+  const cur=updMy();if(!j||!(+j.code>cur))return;
+  if(!manual){try{const l=JSON.parse(localStorage.getItem(LS_UPD)||'null');if(l&&l.code===+j.code&&Date.now()-l.ts<12*3600e3)return;}catch(e){}} // « plus tard » : on redemande 12 h après
+  upd.info=j;showUpdate(cur);
+}
+function showUpdate(cur){
+  const j=upd.info;upd.step='ask';$('upd-t').textContent='Nouvelle version';
+  $('upd-v').textContent=`v${j.code} disponible · tu as la v${cur}`;$('upd-notes').textContent=j.notes?`Nouveau : ${j.notes}`:'';
+  $('upd-bar').hidden=true;$('upd-msg').textContent='Tes cartes, ton classeur et ta progression sont gardés.';
+  $('upd-go').disabled=false;$('upd-go').textContent='Mettre à jour';$('upd-later').hidden=false;$('upd').hidden=false;
+  sfx.ding('silver');
+}
+function updClose(){$('upd').hidden=true;clearInterval(upd.timer);upd.timer=null;}
+$('upd-later').addEventListener('click',()=>{try{localStorage.setItem(LS_UPD,JSON.stringify({code:+upd.info.code,ts:Date.now()}));}catch(e){}updClose();});
+$('upd-go').addEventListener('click',()=>{
+  if(upd.step==='install'){try{AndroidBridge.installAgain();}catch(e){}return;}
+  let ok='yes';try{ok=AndroidBridge.canInstall();}catch(e){}
+  if(ok!=='yes'){ // première fois : Android demande d'autoriser l'appli à installer sa mise à jour
+    upd.step='perm';$('upd-msg').innerHTML="Android demande ton accord une seule fois : touche <b>Autoriser</b>, active <b>« Autoriser cette source »</b>, puis reviens ici.";
+    $('upd-go').textContent='Autoriser';try{AndroidBridge.allowInstall();}catch(e){}return;}
+  updStart();
+});
+function updStart(){
+  let r='error';try{r=AndroidBridge.startUpdate(SERVER+'/android/CartesVolley.apk?v='+upd.info.code);}catch(e){}
+  if(r!=='ok'){$('upd-msg').textContent="Le téléchargement n'a pas pu démarrer. Réessaie dans un instant.";return;}
+  upd.step='dl';$('upd-go').disabled=true;$('upd-go').textContent='Téléchargement…';$('upd-later').hidden=true;$('upd-bar').hidden=false;$('upd-fill').style.width='2%';$('upd-msg').textContent='Garde l\'appli ouverte pendant le téléchargement.';
+  clearInterval(upd.timer);upd.timer=setInterval(()=>{let st='failed';try{st=AndroidBridge.updateStatus();}catch(e){}
+    if(st.startsWith('dl:')){$('upd-fill').style.width=Math.max(2,+st.slice(3))+'%';return;}
+    clearInterval(upd.timer);upd.timer=null;
+    if(st==='done'){upd.step='install';$('upd-fill').style.width='100%';$('upd-t').textContent='Prête à installer';$('upd-go').disabled=false;$('upd-go').textContent='Installer';$('upd-later').hidden=false;$('upd-later').textContent='Fermer';
+      $('upd-msg').innerHTML="Touche <b>Installer</b> dans la fenêtre d'Android. L'appli se relance avec tout ce que tu avais.";}
+    else{upd.step='ask';$('upd-go').disabled=false;$('upd-go').textContent='Réessayer';$('upd-later').hidden=false;$('upd-msg').textContent="Le téléchargement a échoué. Vérifie ta connexion et réessaie.";}},500);
+}
+document.addEventListener('visibilitychange',()=>{if(document.hidden||!updCan())return;
+  if(!$('upd').hidden&&upd.step==='perm'){let ok='no';try{ok=AndroidBridge.canInstall();}catch(e){}if(ok==='yes')updStart();return;} // retour des réglages : on lance tout de suite
+  if(Date.now()-upd.lastCheck>3*3600e3)checkUpdate();});
+
 /* =================== Cartes officielles (publiées par l'admin sur le serveur) =================== */
 const LS_OFF='cartes-volley-officiel',LS_ADMTOK='cartes-volley-admin-jeton';
 let off={ver:0,snap:{}};try{const o=JSON.parse(localStorage.getItem(LS_OFF)||'null');if(o&&typeof o==='object')off={ver:+o.ver||0,snap:o.snap||{}};}catch(e){}
@@ -3565,6 +3634,7 @@ setMode('pending');render();renderAch();renderDups();
 setTimeout(()=>{const na=checkAch(true);if(na.length)showAch(na);},1500);
 try{const t=localStorage.getItem('cartes-volley-onglet');if(['packs','binder','team','match'].includes(t))setTab(t);else if(!isAdmin)setTab('packs');}catch(e){}
 appReady=true;applyRole();if(isAdmin)renderOfficial();
+setTimeout(checkUpdate,2500);
 connect();
 setTimeout(netHello,600);
 </script>
