@@ -667,7 +667,7 @@ body.player #tab-btn-cards,body.player #fab,body.player #m-export-cards,body.pla
 .upd-bar i{display:block;height:100%;width:0;border-radius:99px;background:linear-gradient(90deg,#FFD23F,#FF7A2F);transition:width .3s}
 .upd-msg{margin:0}.upd-msg:empty{display:none}
 .upd-act{display:flex;gap:8px;width:100%;margin-top:4px}
-#chp .upd-act .btn{padding:12px 6px;font-size:.92rem}
+#chp .upd-act .btn,#frp .upd-act .btn{padding:12px 6px;font-size:.92rem}
 .ch-row{display:grid;grid-template-columns:minmax(0,1fr) auto auto;gap:8px;align-items:center;padding:8px 10px;border-radius:10px;background:rgba(255,255,255,.04)}
 .ch-row.in{background:rgba(255,122,47,.12);border:1px solid rgba(255,122,47,.4)}.ch-row span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:600}.ch-row small{color:var(--muted);font-weight:500}.upd-act .btn{flex:1}.upd-act #upd-go{flex:1.4}
 .msheet{position:fixed;inset:0;z-index:60;display:flex;flex-direction:column;background:radial-gradient(90% 50% at 50% 0%,#1C3580,#070E24 75%);overflow:hidden;animation:fadeIn .25s both}
@@ -1287,6 +1287,7 @@ body.player .tabs{grid-template-columns:repeat(4,minmax(0,1fr))} /* sans l'ongle
       <div class="rank" id="f-res"></div>
       <p class="err" id="f-err" hidden></p>
     </div>
+    <div class="section" id="fr-sec" hidden><span class="label">Demandes d'ami</span><div class="rank" id="fr-list"></div></div>
     <div class="section" id="ch-sec" hidden><span class="label">Défis</span><div class="rank" id="ch-list"></div></div>
     <div class="section"><div class="rank-head"><span class="label">Classement</span><div class="mseg small" id="r-seg" role="group" aria-label="Classement"><button type="button" data-r="friends" aria-pressed="true">Amis</button><button type="button" data-r="all" aria-pressed="false">Général</button></div></div>
       <div class="rank" id="m-rank"></div></div>
@@ -1510,6 +1511,14 @@ body.player .tabs{grid-template-columns:repeat(4,minmax(0,1fr))} /* sans l'ongle
 </section>
 <section class="cpi" id="cp-intro" hidden aria-label="Avant le match"><div class="cpi-stage" id="cpi-stage"></div><p class="cpi-skip">Touche pour passer</p></section>
 <section class="cpi k2" id="ch-intro" hidden aria-label="Défi"><div class="cpi-stage" id="chi-stage"></div></section>
+<section class="upd" id="frp" hidden role="dialog" aria-modal="true" aria-labelledby="frp-t">
+  <div class="upd-box">
+    <span class="upd-ic" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="8" r="3.5"/><path d="M2.5 20c.8-3.6 3.4-5.5 6.5-5.5s5.7 1.9 6.5 5.5M18 8v6M15 11h6"/></svg></span>
+    <b id="frp-t">Demande d'ami</b>
+    <p class="note upd-msg" id="frp-msg"></p>
+    <div class="upd-act"><button class="btn" type="button" id="frp-no">Refuser</button><button class="btn" type="button" id="frp-later">Plus tard</button><button class="btn primary" type="button" id="frp-go">Accepter</button></div>
+  </div>
+</section>
 <section class="upd" id="chp" hidden role="dialog" aria-modal="true" aria-labelledby="chp-t">
   <div class="upd-box">
     <span class="upd-ic" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M3.5 9.5c3 1 5.5 3.5 6.5 8M20.5 9.5c-3 1-5.5 3.5-6.5 8M8 3.8c1.5 2.5 6.5 2.5 8 0"/></svg></span>
@@ -2074,6 +2083,7 @@ $('r-ok').addEventListener('click',async()=>{
 try{if(sessionStorage.getItem('cartes-volley-reset')){sessionStorage.removeItem('cartes-volley-reset');setTimeout(()=>toast('Compte réinitialisé : tout repart de zéro'),400);}}catch(e){}
 window.__back=function(){
   if(!$('chp').hidden){$('chp-later').click();return true;}
+  if(!$('frp').hidden){$('frp-later').click();return true;}
   if(!$('upd').hidden){if(upd.step!=='dl')$('upd-later').click();return true;}
   if(!$('sheet').hidden){closeSheet();return true;}
   if(!$('arena').hidden){arBack();return true;}
@@ -3174,14 +3184,14 @@ async function netPoll(){
   if(!net.on||net.polling)return;net.polling=true;
   try{const j=await api('inbox');netApplyMe(j.me);
     for(const m of j.matches||[]){if(state.played.includes(m.id)){netAck(m.id);continue;}if(!net.queue.some(x=>x.id===m.id))net.queue.push(m);}
-    onChals(j.chals);}
+    onChals(j.chals);onFreqs(j.freqs);}
   catch(e){if(e.code==='net'){net.on=false;net.err='net';renderNet();clearInterval(net.timer);net.timer=null;setTimeout(netHello,15000);}}
   finally{net.polling=false;}
   netDrain();
 }
 const netBusy=()=>defiBusy||!$('arena').hidden||!$('upd').hidden||!$('match').hidden||!$('opening').hidden||!$('cp-intro').hidden||!$('ch-intro').hidden||openBusy||cpBusy;
 let draining=false;
-async function netDrain(){if(draining||netBusy()||!$('chp').hidden)return;const m=net.queue.shift();if(!m){chPop();return;}draining=true;try{await playOnline(m,true);}finally{draining=false;}if(net.queue.length)setTimeout(netDrain,800);}
+async function netDrain(){if(draining||netBusy()||!$('chp').hidden||!$('frp').hidden)return;const m=net.queue.shift();if(!m){chPop();frPop();return;}draining=true;try{await playOnline(m,true);}finally{draining=false;}if(net.queue.length)setTimeout(netDrain,800);}
 async function netAck(id){net.acks.add(id);if(!net.on)return;const ids=[...net.acks];try{await api('ack',{ids});ids.forEach(x=>net.acks.delete(x));}catch(e){}}
 async function netRank(force){
   if(!net.on)return;if(!force&&Date.now()-net.rankTs<20000)return;net.rankTs=Date.now();
@@ -3201,17 +3211,59 @@ $('f-form').addEventListener('submit',async e=>{e.preventDefault();const q=$('f-
   if(!net.on){fErr("Pas de connexion au serveur : réessaie avec internet.");return;}
   try{const j=await api('search',{q:q.toLowerCase()});
     if(!j.players.length){fErr("Personne ne correspond. Ton pote doit avoir ouvert la dernière version de l'appli avec internet.");return;}
-    $('f-res').innerHTML=j.players.map(x=>`<div class="rank-row act"><b>·</b><span>${esc(x.pseudo)}</span><small>${x.elo} élo</small><b></b>${x.friend?'<button class="btn rb" type="button" disabled>Ami ✓</button>':`<button class="btn rb" type="button" data-add="${esc(x.pid)}">Ajouter</button>`}</div>`).join('');}
+    $('f-res').innerHTML=j.players.map(x=>`<div class="rank-row act"><b>·</b><span>${esc(x.pseudo)}</span><small>${x.elo} élo</small><b></b>${x.friend?'<button class="btn rb" type="button" disabled>Ami ✓</button>':addBtn(x.pid,x.req||frState(x.pid))}</div>`).join('');}
   catch(err){fErr(netMsg(err));}});
 async function addFriend(code,btn){
   code=String(code||'').trim().toLowerCase();if(!code)return;
   if(code===state.pid){fErr("C'est toi !");return;}
   if(!net.on){toast("Pas de connexion au serveur : réessaie avec internet.");return;}
   if(btn)btn.disabled=true;
-  try{const j=await api('friend',{code});toast(j.already?`${j.friend.pseudo} est déjà ton ami`:`${j.friend.pseudo} est maintenant ton ami !`);if(!j.already){sfx.ding('gold');buzz([40,40,80]);}
-    if(btn){btn.textContent='Ami ✓';}netRank(true);}
-  catch(e){if(btn)btn.disabled=false;fErr(e.code==='unknown_friend'?"Ce code ne correspond à aucun joueur.":netMsg(e));}
+  try{const j=await api('friend',{code});
+    if(j.already||j.accepted){toast(j.already?`${j.friend.pseudo} est déjà ton ami`:`${j.friend.pseudo} est maintenant ton ami !`);if(j.accepted){sfx.ding('gold');buzz([40,40,80]);}if(btn)btn.textContent='Ami ✓';}
+    else{toast(j.again?`Ta demande à ${j.friend.pseudo} attend encore sa réponse.`:`Demande envoyée à ${j.friend.pseudo} : vous serez amis quand il l'acceptera.`);if(!j.again){sfx.whoosh();buzz(40);}if(btn)btn.textContent='Demande envoyée';}
+    netRank(true);netPoll();}
+  catch(e){if(btn)btn.disabled=false;const m=e.code==='unknown_friend'?"Ce code ne correspond à aucun joueur.":e.code==='refused_recently'?"Ce joueur a refusé ta demande : tu pourras redemander demain.":e.code==='too_many'?"Tu as déjà 30 demandes en attente : attends leurs réponses ou annules-en.":netMsg(e);fErr(m);toast(m);}
 }
+/* demandes d'ami : on les accepte ou on les refuse, comme les défis */
+let frSig='';
+function onFreqs(f){
+  if(!f)return;net.freqs=f;let acc=false;
+  for(const o of f.outgoing||[]){const k='f'+o.st+o.pid+o.ts;if((o.st==='acc'||o.st==='ref')&&!chSeen[k]){chMark(k);if(o.st==='acc'){toast(`${o.pseudo} a accepté ta demande d'ami !`);sfx.ding('gold');buzz([40,40,80]);acc=true;}else toast(`${o.pseudo} a refusé ta demande d'ami.`);}}
+  if(acc)netRank(true);
+  const sig=JSON.stringify([(f.incoming||[]).map(x=>x.pid),(f.outgoing||[]).filter(o=>o.st==='wait').map(x=>x.pid)]);
+  if(sig!==frSig){frSig=sig;if(!$('tab-match').hidden&&mMode==='pvp')renderMatchTab();else renderFreqs();}
+  frPop();
+}
+function renderFreqs(){
+  const f=net.freqs||{},inc=f.incoming||[],out=(f.outgoing||[]).filter(o=>o.st==='wait');
+  $('fr-sec').hidden=!net.on||(!inc.length&&!out.length);
+  $('fr-list').innerHTML=inc.map(x=>`<div class="ch-row in"><span>${esc(x.pseudo)} <small>veut être ton ami</small></span><button class="btn rb" type="button" data-frno="${esc(x.pid)}">Refuser</button><button class="btn rb def" type="button" data-frok="${esc(x.pid)}">Accepter</button></div>`).join('')+
+    out.map(x=>`<div class="ch-row"><span>${esc(x.pseudo)} <small>· en attente de sa réponse</small></span><span></span><button class="btn rb" type="button" data-frcancel="${esc(x.pid)}">Annuler</button></div>`).join('');
+}
+const frState=pid=>{const f=net.freqs||{};return (f.incoming||[]).some(x=>x.pid===pid)?'got':(f.outgoing||[]).some(x=>x.pid===pid&&x.st==='wait')?'sent':null;};
+const addBtn=(pid,req)=>req==='got'?`<button class="btn rb def" type="button" data-frok="${esc(pid)}">Accepter</button>`:req==='sent'?'<button class="btn rb" type="button" disabled>Demande envoyée</button>':`<button class="btn rb" type="button" data-add="${esc(pid)}">Ajouter</button>`;
+$('fr-list').addEventListener('click',e=>{const a=e.target.closest('[data-frok]'),n=e.target.closest('[data-frno]'),c=e.target.closest('[data-frcancel]');
+  if(a)answerFreq(a.dataset.frok,true,a);else if(n)answerFreq(n.dataset.frno,false,n);else if(c)answerFreq(c.dataset.frcancel,'cancel',c);});
+async function answerFreq(pid,accept,btn){
+  if(!net.on){toast("Pas de connexion au serveur : réessaie avec internet.");return;}
+  if(btn)btn.disabled=true;
+  try{const j=await api('fanswer',accept==='cancel'?{code:pid,cancel:true}:{code:pid,accept:accept===true});
+    if(accept==='cancel')toast('Demande annulée.');else if(j.accepted||j.already){toast(`${j.friend.pseudo} est maintenant ton ami !`);sfx.ding('gold');buzz([40,40,80]);}else toast(`Demande de ${j.friend.pseudo} refusée.`);
+    netRank(true);}
+  catch(e){toast(e.code==='no_request'?"Cette demande n'existe plus.":netMsg(e));if(btn)btn.disabled=false;}
+  finally{frSig='';await netPoll();}
+}
+let frCur=null;
+function frPop(){ // fenêtre pour une demande d'ami pas encore vue (jamais par-dessus un match, un défi ou une ouverture de booster)
+  if(!$('frp').hidden||!$('chp').hidden||netBusy()||!$('upd').hidden)return;
+  const x=((net.freqs||{}).incoming||[]).find(i=>!chSeen['fv'+i.pid+i.ts]);if(!x)return;
+  frCur=x;chMark('fv'+x.pid+x.ts);$('frp-t').textContent=`${x.pseudo} veut être ton ami`;
+  $('frp-msg').textContent=`${x.elo} d'élo. Une fois amis, vous pourrez vous défier et vous apparaîtrez dans le classement Amis de l'autre.`;
+  $('frp').hidden=false;ac();sfx.ding('silver');buzz([50,40,50]);
+}
+$('frp-later').addEventListener('click',()=>{$('frp').hidden=true;frCur=null;setTimeout(()=>{chPop();frPop();},300);});
+$('frp-no').addEventListener('click',()=>{const x=frCur;$('frp').hidden=true;frCur=null;if(x)answerFreq(x.pid,false);});
+$('frp-go').addEventListener('click',()=>{const x=frCur;$('frp').hidden=true;frCur=null;if(x)answerFreq(x.pid,true);});
 /* défis : le serveur joue le match avec les équipes enregistrées */
 let teamSent='',teamTimer=null;
 function netTeamSoon(){clearTimeout(teamTimer);teamTimer=setTimeout(netTeam,1200);}
@@ -3249,7 +3301,7 @@ $('ch-list').addEventListener('click',e=>{const a=e.target.closest('[data-chok]'
   if(a)answerChal(a.dataset.chok,true,a);else if(n)answerChal(n.dataset.chno,false,n);else if(c)answerChal(c.dataset.chcancel,'cancel',c);});
 let chCur=null;
 function chPop(){ // fenêtre pour un défi reçu pas encore vu (jamais par-dessus un match ou une ouverture de booster)
-  if(!$('chp').hidden||netBusy()||!$('upd').hidden)return;
+  if(!$('chp').hidden||!$('frp').hidden||netBusy()||!$('upd').hidden)return;
   const x=((net.chals||{}).incoming||[]).find(i=>!chSeen['v'+i.id]);if(!x)return;
   chCur=x;chMark('v'+x.id);$('chp-t').textContent=`${x.pseudo} te défie !`;
   const done=state.matches.some(m=>!m.friendly&&m.opp===x.pseudo&&parisDay(m.ts)===parisDay(Date.now()));
@@ -3306,14 +3358,14 @@ function renderMatchTab(){
   $('m-elo').textContent=state.elo;$('m-rankname').textContent=rankName(state.elo);
   const rk=state.matches.filter(m=>!m.friendly),w=rk.filter(m=>m.win).length,l=rk.length-w;
   $('m-record').textContent=rk.length?`${w} victoire${w>1?'s':''} · ${l} défaite${l>1?'s':''}`:'Tout le monde commence à '+ELO_START+' d\'élo. Gagner contre plus fort que toi rapporte plus.';
-  $('m-noteam').hidden=teamFull();$('f-mycode').textContent=state.pid;renderChals();
+  $('m-noteam').hidden=teamFull();$('f-mycode').textContent=state.pid;renderChals();renderFreqs();
   // classement : amis ou général, depuis le serveur
   renderNet();document.querySelectorAll('#r-seg button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.r===rankView));$('r-seg').hidden=!net.rank;
   const RR=rankRows();
   const frIds=new Set(net.rank?net.rank.friends.map(f=>f.pid):[]);
   $('m-rank').innerHTML=RR.rows.map((x,i)=>{const meRow=x.pid===state.pid,pos=x.pos||i+1,sep=x.pos&&x.pos>RR.rows.length?'<div class="rank-sep">…</div>':'';
     const cIn=((net.chals||{}).incoming||[]).find(c=>c.pid===x.pid),cOut=((net.chals||{}).outgoing||[]).find(c=>c.pid===x.pid&&c.st==='wait');
-    const act=meRow||!net.on?'':frIds.has(x.pid)?(cIn?`<button class="btn rb def" type="button" data-chok="${esc(cIn.id)}">Accepter</button>`:cOut?'<button class="btn rb" type="button" disabled>En attente</button>':`<button class="btn rb def" type="button" data-defi="${esc(x.pid)}"${x.team?'':' disabled title="Pas encore d\'équipe enregistrée"'}>Défier</button>`):`<button class="btn rb" type="button" data-add="${esc(x.pid)}">Ajouter</button>`;
+    const act=meRow||!net.on?'':frIds.has(x.pid)?(cIn?`<button class="btn rb def" type="button" data-chok="${esc(cIn.id)}">Accepter</button>`:cOut?'<button class="btn rb" type="button" disabled>En attente</button>':`<button class="btn rb def" type="button" data-defi="${esc(x.pid)}"${x.team?'':' disabled title="Pas encore d\'équipe enregistrée"'}>Défier</button>`):addBtn(x.pid,frState(x.pid));
     return`${sep}<div class="rank-row${meRow?' me':''}${pos<=3?' top':''}${act?' act':''}"><b>${pos}</b><span>${esc(meRow?state.pseudo:x.pseudo)}${meRow?' (toi)':''}${!meRow&&frIds.has(x.pid)&&!x.team?' <em>sans équipe</em>':''}</span><small>${x.w}V ${x.l}D</small><b>${x.elo}</b>${act}</div>`;}).join('')+
     (RR.note?`<p class="note" style="margin:4px 0 0">${RR.note}</p>`:'');
   netRank();
@@ -3325,8 +3377,8 @@ $('m-hist').addEventListener('click',e=>{const r=e.target.closest('.mh-row.has')
 $('m-pseudo').addEventListener('change',async()=>{const v=cleanPseudo($('m-pseudo').value);if(!v){$('m-pseudo').value=state.pseudo;return;}if(v===state.pseudo){$('m-pseudo').value=v;return;}state.pseudo=v;$('m-pseudo').value=v;await saveState();renderMatchTab();netSyncPseudo();});
 $('m-pseudo').setAttribute('maxlength','40'); // la vraie limite (16 caractères, emojis compris) est appliquée à la validation
 $('m-pseudo').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();e.target.blur();}});
-$('m-rank').addEventListener('click',e=>{const ok=e.target.closest('[data-chok]');if(ok){answerChal(ok.dataset.chok,true,ok);return;}const d=e.target.closest('[data-defi]'),a=e.target.closest('[data-add]');if(d&&!d.disabled)challenge(d.dataset.defi,d);else if(a)addFriend(a.dataset.add,a);});
-$('f-res').addEventListener('click',e=>{const a=e.target.closest('[data-add]'),d=e.target.closest('[data-defi]');if(a)addFriend(a.dataset.add,a);else if(d&&!d.disabled)challenge(d.dataset.defi,d);});
+$('m-rank').addEventListener('click',e=>{const ok=e.target.closest('[data-chok]');if(ok){answerChal(ok.dataset.chok,true,ok);return;}const fo=e.target.closest('[data-frok]');if(fo){answerFreq(fo.dataset.frok,true,fo);return;}const d=e.target.closest('[data-defi]'),a=e.target.closest('[data-add]');if(d&&!d.disabled)challenge(d.dataset.defi,d);else if(a)addFriend(a.dataset.add,a);});
+$('f-res').addEventListener('click',e=>{const a=e.target.closest('[data-add]'),d=e.target.closest('[data-defi]'),fo=e.target.closest('[data-frok]');if(fo){answerFreq(fo.dataset.frok,true,fo);fo.textContent='Ami ✓';return;}if(a)addFriend(a.dataset.add,a);else if(d&&!d.disabled)challenge(d.dataset.defi,d);});
 /* =================== Feuille de match =================== */
 // colonnes : points, aces, attaques gagnantes, contres gagnants, défenses, fautes
 const SH_COLS=[['PTS','Points'],['ACE','Aces'],['ATT','Attaques gagnantes'],['CTR','Contres gagnants'],['DÉF','Défenses'],['FT','Fautes']];
