@@ -264,6 +264,9 @@ textarea.text-in{font-size:1rem;font-weight:500;resize:none;line-height:1.35}
 .b-confirm{display:flex;flex-direction:column;gap:10px;border:1px solid rgba(255,90,90,.5);background:rgba(255,90,90,.08);border-radius:16px;padding:16px}
 .b-confirm b{font-family:var(--display);font-weight:900;font-size:1.3rem;text-transform:uppercase}
 .b-confirm p{margin:0;color:var(--muted)}
+.off-box{display:flex;flex-direction:column;gap:10px;padding:12px;border-radius:14px;border:1px solid rgba(255,210,63,.35);background:rgba(255,210,63,.06)}
+.off-box .note b{color:var(--ink)}
+body.player #tab-btn-cards,body.player #fab,body.player #m-export-cards,body.player #m-import-cards,body.player .adm-only{display:none!important}
 .r-check{display:flex;align-items:center;gap:10px;font-weight:600;cursor:pointer}.r-check input{width:22px;height:22px;accent-color:var(--danger)}
 .btn.danger:disabled{opacity:.4;pointer-events:none}
 .adm-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px}
@@ -792,6 +795,7 @@ input[type=range]::-moz-range-thumb{width:20px;height:20px;border-radius:50%;bac
 .tab{min-width:0;overflow:hidden;white-space:nowrap}
 @media (max-width:560px){.tab{font-size:.86rem;padding:10px 1px;gap:5px;letter-spacing:.02em}.tab svg{width:15px;height:15px}}
 @media (max-width:480px){.tab svg{display:none}}
+body.player .tabs{grid-template-columns:repeat(4,minmax(0,1fr))} /* sans l'onglet Cartes */
 
 .tabpane{display:flex;flex-direction:column;gap:16px}
 
@@ -1224,7 +1228,7 @@ input[type=range]::-moz-range-thumb{width:20px;height:20px;border-radius:50%;bac
       </button>
       <label class="menu-item" for="m-import" style="cursor:pointer">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21V9m0 0l-5 5m5-5l5 5M4 3h16"/></svg>
-        <span><b>Importer une sauvegarde</b><small>Ajoute les cartes d'un fichier .json, et le classeur s'il y en a un</small></span>
+        <span><b>Importer une sauvegarde</b><small>Restaure ton classeur depuis un fichier .json (et les cartes, en mode admin)</small></span>
         <input type="file" id="m-import" accept=".json,application/json" hidden>
       </label>
       <label class="menu-item" for="m-import-cards" style="cursor:pointer">
@@ -1260,7 +1264,19 @@ input[type=range]::-moz-range-thumb{width:20px;height:20px;border-radius:50%;bac
         <p class="err" id="adm-err" hidden>Mot de passe incorrect.</p>
       </div>
       <div id="adm-on" class="stack" hidden>
-        <p class="note" style="color:var(--ink);margin:0">Mode admin activé : boosters illimités sur cet appareil. Choisis le type de booster dans l'onglet Packs.</p>
+        <p class="note" style="color:var(--ink);margin:0">Mode admin activé : boosters illimités sur cet appareil, et tu peux créer et modifier les cartes (onglet Cartes).</p>
+        <div class="off-box" id="off-box">
+          <span class="label">Cartes officielles</span>
+          <p class="note" id="off-status" style="margin:0"></p>
+          <form class="adm-row" id="off-pwform" hidden novalidate><label class="sr" for="off-pw">Mot de passe admin</label><input class="text-in" type="password" id="off-pw" placeholder="Mot de passe admin" autocomplete="off"><button class="btn primary" type="submit">Valider</button></form>
+          <button class="btn primary" type="button" id="off-pub">Publier les cartes officielles</button>
+          <button class="btn" type="button" id="off-get">Récupérer la liste officielle</button>
+          <div class="b-confirm" id="off-confirm" hidden role="alertdialog" aria-labelledby="off-confirm-t">
+            <b id="off-confirm-t">Publier pour tout le monde ?</b><p id="off-confirm-txt"></p>
+            <div class="row-actions"><button class="btn" type="button" id="off-cancel">Annuler</button><button class="btn primary" type="button" id="off-ok">Publier</button></div>
+          </div>
+          <p class="err" id="off-err" hidden></p>
+        </div>
         <button class="btn" type="button" id="adm-quit">Quitter le mode admin</button>
       </div>
     </div>
@@ -1381,7 +1397,7 @@ function readLocal(){
 function writeLocal(){try{localStorage.setItem(LS,JSON.stringify(players));}catch(e){}}
 function idTime(id){const m=/^p([0-9a-z]{8})/.exec(id);if(!m)return 0;const t=parseInt(m[1],36);return t>1.6e12&&t<4e12?t:0;}
 function normalize(p){
-  const base={id:String(p.id),name:String(p.name||'').slice(0,18)||'Sans nom',
+  const base={id:String(p.id),name:Array.from(String(p.name||'')).slice(0,18).join('')||'Sans nom',
     photo:typeof p.photo==='string'&&p.photo.startsWith('data:image/')?p.photo:null,updatedAt:p.updatedAt||Date.now()};
   base.signature=!!p.signature&&!!base.photo;
   base.fullart=(!!p.fullart||base.signature)&&!!base.photo;
@@ -1445,11 +1461,15 @@ function addCard(id){state.counts[id]=(state.counts[id]||0)+1;state.owned=Object
 const ADMIN_HASH='2637129b8667d6edb4028eb186acdaf42233ce679c61f6ccf9e86bbb6a13110f',LS_ADMIN='cartes-volley-admin';
 let isAdmin=false;try{isAdmin=localStorage.getItem(LS_ADMIN)===ADMIN_HASH;}catch(e){}
 async function sha256(t){const b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(t));return[...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,'0')).join('');}
-function renderAdmin(){$('adm-off').hidden=isAdmin;$('adm-on').hidden=!isAdmin;}
+let appReady=false; // passe à vrai une fois tout le script chargé
+function renderAdmin(){$('adm-off').hidden=isAdmin;$('adm-on').hidden=!isAdmin;applyRole();if(isAdmin&&appReady)renderOfficial();}
+// seul l'admin voit l'onglet Cartes et peut créer ou modifier des cartes
+function applyRole(){document.body.classList.toggle('player',!isAdmin);if(appReady&&!isAdmin&&!$('tab-cards').hidden)setTab('packs');}
 $('adm-form').addEventListener('submit',async e=>{
   e.preventDefault();const pw=$('adm-pw').value.trim();if(!pw)return;
   let h='';try{h=await sha256(pw);}catch(err){toast("Vérification impossible dans cette vue.");return;}
   if(h===ADMIN_HASH){isAdmin=true;try{localStorage.setItem(LS_ADMIN,h);}catch(err){}$('adm-pw').value='';$('adm-err').hidden=true;$('adm-pw').blur();
+    offAdminLogin(pw); // jeton du serveur pour pouvoir publier les cartes
     renderAdmin();packStatus='ready';renderPacks();toast('Mode admin activé : boosters illimités');}
   else{$('adm-err').hidden=false;$('adm-pw').select();}
 });
@@ -1506,7 +1526,7 @@ async function connect(){
 }
 
 async function persist(p){
-  p.updatedAt=Date.now();
+  p.updatedAt=Date.now();setTimeout(()=>{if(isAdmin&&typeof renderOfficial==='function')renderOfficial();},0);
   const i=players.findIndex(x=>x.id===p.id);
   if(i>=0)players[i]=p;else players.push(p);
   writeLocal();render();
@@ -1516,6 +1536,7 @@ async function persist(p){
   }
 }
 async function remove(id){
+  setTimeout(()=>{if(isAdmin&&typeof renderOfficial==='function')renderOfficial();},0);
   players=players.filter(p=>p.id!==id);writeLocal();render();
   if(mode==='cloud'){try{await col.doc(id).delete();}catch(e){toast("Supprimée ici, mais pas en ligne. Réessaie plus tard.");}}
 }
@@ -1625,7 +1646,7 @@ function openDetail(id,keepScroll){
   $('d-bars').innerHTML=SKILLS.map(x=>`<div class="bar"><span>${x.l}</span><span class="track"><i style="width:${p.s[x.k]}%"></i></span><b>${p.s[x.k]}</b></div>`).join('');
   $('d-actions').innerHTML=p.example
     ?`<button class="btn primary full" type="button" id="d-template">Partir de ce modèle</button>`
-    :`<button class="btn full" type="button" id="d-share">Partager en image</button><button class="btn" type="button" id="d-del">Supprimer</button><button class="btn primary" type="button" id="d-edit">Modifier</button>`;
+    :`<button class="btn full" type="button" id="d-share">Partager en image</button>${isAdmin?'<button class="btn" type="button" id="d-del">Supprimer</button><button class="btn primary" type="button" id="d-edit">Modifier</button>':''}`;
   if(!keepScroll)show('detail');
 }
 function drawDetailRadar(anim){
@@ -1834,6 +1855,8 @@ $('m-import').addEventListener('change',async e=>{
     const j=JSON.parse(await f.text());const arr=Array.isArray(j)?j:j.players;
     if(!Array.isArray(arr))throw 0;
     const list=arr.filter(p=>p&&p.id&&!p.example).map(normalize);
+    if(!isAdmin){ // joueur : les cartes viennent de la liste officielle, on ne reprend que le classeur
+      if(j&&j.classeur&&mergeState(j.classeur)){cleanOwned();await saveState();render();toast('Classeur restauré');}else toast("Ce fichier ne contient pas de classeur.");closeAll();return;}
     if(!list.length){toast('Ce fichier ne contient aucune carte.');return;}
     for(const p of list)await persist(p);
     if(j&&j.classeur&&mergeState(j.classeur)){await saveState();render();}
@@ -2781,6 +2804,70 @@ function simulateMatch(A,B,seed,opts){
 
 
 
+
+/* =================== Cartes officielles (publiées par l'admin sur le serveur) =================== */
+const LS_OFF='cartes-volley-officiel',LS_ADMTOK='cartes-volley-admin-jeton';
+let off={ver:0,snap:{}};try{const o=JSON.parse(localStorage.getItem(LS_OFF)||'null');if(o&&typeof o==='object')off={ver:+o.ver||0,snap:o.snap||{}};}catch(e){}
+const saveOff=()=>{try{localStorage.setItem(LS_OFF,JSON.stringify(off));}catch(e){}};
+const admTok=()=>{try{return localStorage.getItem(LS_ADMTOK)||'';}catch(e){return'';}};
+const snapOf=list=>Object.fromEntries(list.map(p=>[p.id,+p.updatedAt||0]));
+// différences entre mes cartes et la dernière liste officielle connue
+function offDiff(){const add=[],upd=[],del=[];players.forEach(p=>{if(!(p.id in off.snap))add.push(p);else if(off.snap[p.id]!==(+p.updatedAt||0))upd.push(p);});
+  Object.keys(off.snap).forEach(id=>{if(!players.some(p=>p.id===id))del.push(id);});return{add,upd,del,n:add.length+upd.length+del.length};}
+// retire du classeur et de l'équipe les cartes qui n'existent plus
+function cleanOwned(){const ids=new Set(players.map(p=>p.id));let ch=false;
+  for(const k of Object.keys(state.counts))if(!ids.has(k)){delete state.counts[k];ch=true;}
+  for(const k of Object.keys(state.team))if(!ids.has(state.team[k])){delete state.team[k];ch=true;}
+  state.owned=Object.keys(state.counts);return ch;}
+async function applyOfficial(list,ver){
+  const norm=list.map(normalize);
+  if(mode==='cloud'){const keep=new Set(norm.map(p=>p.id));for(const p of players.filter(p=>!keep.has(p.id)))await remove(p.id);for(const p of norm){const u=p.updatedAt;await persist(p);p.updatedAt=u;}}
+  players=norm;writeLocal();
+  off={ver,snap:snapOf(norm)};saveOff();
+  if(cleanOwned())await saveState();
+  if(myNonce&&$('m-played').hidden&&!$('m-qrbox').hidden){ // QR refait avec les cartes à jour, ou retiré si l'équipe n'est plus complète
+    if(teamFull()){myCode=null;showMyQR();}else{myNonce=null;myCode=null;oppData=null;$('m-qrbox').hidden=true;$('m-start').hidden=false;$('m-vs').hidden=true;toast("Ton équipe a perdu des cartes retirées de la liste officielle : complète-la dans l'onglet Équipe.");}}
+  if(!$('tab-match').hidden)renderMatchTab();
+  render();renderPacks();if(!$('tab-binder').hidden)renderBinder();if(!$('tab-team').hidden)renderTeam();renderDups();if(isAdmin)renderOfficial();
+}
+let offBusy=false;
+async function netCards(force){
+  if(!net.on||offBusy)return;offBusy=true;
+  try{const j=await api('cards',{ver:force?-1:off.ver});
+    if(j.same||!Array.isArray(j.cards)||!j.cards.length)return; // pas encore de liste officielle : chacun garde ses cartes
+    if(isAdmin&&!force){ // l'admin ne perd jamais ses cartes : ses écarts avec la liste en ligne restent « non publiés »
+      if(!off.ver){off={ver:j.ver,snap:snapOf(j.cards.map(normalize))};saveOff();renderOfficial();return;}
+      if(offDiff().n){toast('Une nouvelle liste officielle existe, mais tu as des modifications non publiées.');return;}}
+    const first=!off.ver;await applyOfficial(j.cards,j.ver);
+    if(!isAdmin)toast(first?`Cartes officielles chargées : ${j.cards.length} cartes`:'Cartes officielles mises à jour');
+  }catch(e){}finally{offBusy=false;if(isAdmin)renderOfficial();}
+}
+function offErr(t){const e=$('off-err');e.textContent=t||'';e.hidden=!t;}
+function renderOfficial(){
+  if(!$('off-box'))return;const d=offDiff(),fmt=new Intl.DateTimeFormat('fr-FR',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'});
+  $('off-status').innerHTML=(off.ver?`Liste en ligne : <b>${Object.keys(off.snap).length} cartes</b>, publiée le ${fmt.format(new Date(off.ver))}.`:'Aucune liste publiée pour l\'instant.')+
+    (d.n?` <b>${d.n} modification${d.n>1?'s':''} non publiée${d.n>1?'s':''}</b> (${d.add.length} nouvelle${d.add.length>1?'s':''}, ${d.upd.length} modifiée${d.upd.length>1?'s':''}, ${d.del.length} supprimée${d.del.length>1?'s':''}).`:off.ver?' Tout est à jour.':'');
+  $('off-pub').disabled=!d.n||!players.length;$('off-get').hidden=!off.ver||!d.n;$('off-pwform').hidden=!!admTok();
+  if(!net.on)$('off-status').innerHTML+=' <br>Hors ligne : connecte-toi pour publier.';
+}
+async function offAdminLogin(pw){if(!net.on||!pw)return false;try{const j=await api('admin',{pw});try{localStorage.setItem(LS_ADMTOK,j.token);}catch(e){}renderOfficial();return true;}catch(e){return false;}}
+$('off-pwform').addEventListener('submit',async e=>{e.preventDefault();const pw=$('off-pw').value.trim();if(!pw)return;offErr('');
+  if(await offAdminLogin(pw)){$('off-pw').value='';toast('Connecté au serveur en admin');}else offErr(net.on?'Mot de passe incorrect.':'Pas de connexion au serveur.');});
+$('off-pub').addEventListener('click',()=>{const d=offDiff();offErr('');if(!admTok()){offErr('Entre le mot de passe admin pour te connecter au serveur.');return;}
+  const pl=(n,a,b)=>`${n} ${n>1?b:a}`;
+  $('off-confirm-txt').textContent=`${pl(players.length,'carte','cartes')} au total : ${pl(d.add.length,'nouvelle','nouvelles')}, ${pl(d.upd.length,'modifiée','modifiées')}, ${pl(d.del.length,'supprimée','supprimées')}. Tous les joueurs recevront cette liste à leur prochaine ouverture de l'appli. Les cartes supprimées disparaîtront de leur classeur.`;
+  $('off-confirm').hidden=false;$('off-confirm').scrollIntoView({block:'center',behavior:'smooth'});});
+$('off-cancel').addEventListener('click',()=>{$('off-confirm').hidden=true;});
+$('off-ok').addEventListener('click',async()=>{const b=$('off-ok');b.disabled=true;b.textContent='Envoi…';offErr('');
+  try{const j=await api('publish',{token:admTok(),cards:players.map(p=>({id:p.id,...body(p),updatedAt:p.updatedAt}))});
+    off={ver:j.ver,snap:snapOf(players)};saveOff();$('off-confirm').hidden=true;toast(`Liste officielle publiée : ${j.n} cartes`);sfx.ding('gold');}
+  catch(e){if(e.code==='not_admin'){try{localStorage.removeItem(LS_ADMTOK);}catch(x){}offErr('Connexion admin expirée : entre à nouveau le mot de passe.');}
+    else offErr(e.code==='too_big'?'Liste trop lourde : retire quelques photos.':netMsg(e));}
+  finally{b.disabled=false;b.textContent='Publier';renderOfficial();}});
+$('off-get').addEventListener('click',async()=>{if(!confirmGet){confirmGet=true;$('off-get').textContent='Toucher encore pour effacer tes modifications';setTimeout(()=>{confirmGet=false;$('off-get').textContent='Récupérer la liste officielle';},4000);return;}
+  confirmGet=false;$('off-get').textContent='Récupérer la liste officielle';await netCards(true);toast('Liste officielle récupérée');});
+let confirmGet=false;
+
 /* =================== En ligne : serveur des potes (amis, élo, matchs) =================== */
 const SERVER='https://cartes-volley.cottereau-nati.workers.dev'; // serveur Cloudflare (amis, élo, matchs)
 const net={on:false,me:null,rank:null,err:'',polling:false,timer:null,rankTs:0,queue:[],acks:new Set()};
@@ -2798,6 +2885,7 @@ function netMsg(e,who){const c=e&&e.code;who=who?esc(who):'ton pote';
   if(c==='net'||c==='off'||c==='http')return"Pas de connexion au serveur : il faut internet pour jouer contre un pote.";
   if(c==='version'){const d=e.data||{};return d.theirs!==d.server?`${who} a une ancienne version de l'appli : il doit la mettre à jour.`:"Ton appli n'est pas à jour : installe la dernière version.";}
   if(c==='used')return"Ce QR a déjà servi pour un match. Demande à ton pote d'en préparer un nouveau.";
+  if(c==='cards'){netCards();return e.data&&e.data.who==='theirs'?`L'équipe de ${who} contient des cartes qui ne sont pas dans la liste officielle : il doit rouvrir l'appli avec internet, refaire son équipe si besoin, puis préparer un nouveau QR.`:"Ton équipe contient des cartes qui ne sont pas (ou plus) dans la liste officielle. Ta liste vient d'être mise à jour : vérifie ton équipe et prépare un nouveau QR.";}
   if(c==='unknown_friend')return`${who} n'est pas encore connecté au serveur : il doit ouvrir la dernière version de l'appli avec internet.`;
   if(c==='self')return"C'est ton propre code.";
   if(c==='bad_key'||c==='unknown_player')return"Ton compte en ligne n'est pas reconnu. Réessaie dans un instant.";
@@ -2814,12 +2902,12 @@ async function netHello1(){
   ensureProfile();
   if(state.resetPending){try{await api('reset',{pseudo:state.pseudo});state.resetPending=false;await saveState();}catch(e){}}
   try{const w=state.matches.filter(m=>m.win).length,j=await api('hello',{pseudo:state.pseudo,elo:state.elo,w,l:state.matches.length-w});
-    net.on=true;net.err='';netApplyMe(j.me);netStartPoll();if(j.inbox)netPoll();netRank(true);}
+    net.on=true;net.err='';netApplyMe(j.me);netStartPoll();if(j.inbox)netPoll();netRank(true);netCards();if(isAdmin&&!admTok())renderOfficial();}
   catch(e){net.on=false;net.err=e.code;if(e.code==='net'||e.code==='server'||e.code==='http'){clearTimeout(net.retry);net.retry=setTimeout(netHello,15000);}}
   renderNet();
 }
 function netStartPoll(){if(net.timer)return;net.timer=setInterval(()=>{if(!document.hidden)netPoll();},5000);}
-document.addEventListener('visibilitychange',()=>{if(!document.hidden){if(net.on)netPoll();else if(SERVER)netHello();}});
+document.addEventListener('visibilitychange',()=>{if(!document.hidden){if(net.on){netPoll();netCards();}else if(SERVER)netHello();}});
 async function netPoll(){
   if(!net.on||net.polling)return;net.polling=true;
   try{const j=await api('inbox');netApplyMe(j.me);
@@ -2897,7 +2985,7 @@ function parsePayload(str){
     const ver=parseInt(String(parts[6]).slice(1),10)||0;if(ver!==ENGINE_VER)return{ver};
     const[,pid,ps,elo,nonce,cs]=parts;const cards=cs.split(';').map(c=>{const f=c.split(',');if(f.length<8)return null;
       const s2={};['ser','rec','pas','att','blo','def'].forEach((k,i)=>s2[k]=Math.max(0,Math.min(100,Math.round(+f[i+1]||0))));
-      return{name:decodeURIComponent(f[0]).slice(0,18)||'?',s:s2,poste:POSTES.some(q=>q.v===f[7])?f[7]:'POL'};});
+      return{name:Array.from(decodeURIComponent(f[0])).slice(0,18).join('')||'?',s:s2,poste:POSTES.some(q=>q.v===f[7])?f[7]:'POL'};});
     if(cards.length!==7||cards.some(c=>!c)||!pid||!nonce)return null;
     return{pid,pseudo:Array.from(decodeURIComponent(ps)).slice(0,16).join('')||'Pote',elo:Math.round(+elo)||ELO_START,nonce,cards,ver};
   }catch(e){return null;}
@@ -3506,7 +3594,8 @@ async function playMatch(sim,disp,names,myIdx,res){
 
 setMode('pending');render();renderAch();renderDups();
 setTimeout(()=>{const na=checkAch(true);if(na.length)showAch(na);},1500);
-try{const t=localStorage.getItem('cartes-volley-onglet');if(['packs','binder','team','match'].includes(t))setTab(t);}catch(e){}
+try{const t=localStorage.getItem('cartes-volley-onglet');if(['packs','binder','team','match'].includes(t))setTab(t);else if(!isAdmin)setTab('packs');}catch(e){}
+appReady=true;applyRole();if(isAdmin)renderOfficial();
 connect();
 setTimeout(netHello,600);
 </script>
