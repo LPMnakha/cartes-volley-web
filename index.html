@@ -2402,12 +2402,16 @@ async function shareCard(p){
 function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};}
 function hashStr(s){let h=1779033703^s.length;for(let i=0;i<s.length;i++){h=Math.imul(h^s.charCodeAt(i),3432918353);h=h<<13|h>>>19;}h=Math.imul(h^h>>>16,2246822507);h=Math.imul(h^h>>>13,3266489909);return(h^h>>>16)>>>0;}
 const M_START=[5,0,1,2,3,4]; // positions 1..6 : PAS, R4a, CEN1, PTU, R4b, CEN2
-const ME_SF=.4,ME_AC=.5,ME_PF=.07,ME_AE=.22,ME_BS=.36,ME_DK=.1,ME_NZ=.75; // réglages du moteur
+const ME_SF=.4,ME_PF=.07,ME_AE=.2; // réglages du moteur
 function simulateMatch(A,B,seed){
   const R=mulberry32(seed),teams=[A,B];
   // stat brute 0 à 1 : 30 = débutant, 60 = amateur qui se débrouille, 85 = joueur compétitif pré-régional
   const st=(t,i,k)=>Math.max(0,Math.min(1,(+teams[t].cards[i].s[k]||0)/100));
   const cl=(x,a,b)=>Math.max(a,Math.min(b,x));
+  const sg=x=>1/(1+Math.exp(-x)); // courbe de duel : 0 à 1 selon l'écart
+  const nz=w=>(R()-.5)*w;
+  // petit écart = petit effet, gros écart = énorme effet (80 contre 20 = massacre)
+  const gp=g=>Math.sign(g)*Math.pow(Math.abs(g),1.5)/.775;
   const rot=[M_START.slice(),M_START.slice()],score=[0,0],rallies=[];
   let serve=R()<.5?0:1;
   // sur le terrain : le libéro remplace le central en défense, sauf quand ce central sert
@@ -2419,45 +2423,48 @@ function simulateMatch(A,B,seed){
     const srv=serve,rcv=1-serve,oc=[onCourt(0,srv===0),onCourt(1,srv===1)],acts=[];let winner=null;
     const server=oc[srv][0],sv=st(srv,server,'ser');
     // service : un mauvais serveur rate souvent
-    if(R()<cl(ME_SF*Math.pow(1-sv,1.6),.025,.45)){winner=rcv;acts.push({k:'serveFault',t:srv,p:server,net:R()<.55});}
+    if(R()<cl(ME_SF*Math.pow(1-sv,1.6),.02,.45)){winner=rcv;acts.push({k:'serveFault',t:srv,p:server,net:R()<.55});}
     else{
-      const power=sv*.75+R()*.45;
       const recvs=oc[rcv].filter(i=>i===6||i===0||i===3),rc=pick(recvs.length?recvs:back(oc[rcv]),i=>i===6?1.4:1);
-      const rs=st(rcv,rc,'rec');
-      // ace : dépend de la puissance du service et surtout de la réception (20 en récep = on se fait allumer)
-      if(R()<cl(ME_AC*Math.pow(power,1.3)*Math.pow(1-rs,1.6),.005,.6)){winner=srv;acts.push({k:'ace',t:srv,p:server,r:rc});}
+      const rs=st(rcv,rc,'rec'),gap=gp(sv-rs),lvl=(sv+rs)/2;
+      // duel service contre réception
+      if(R()<sg(-2.75+7*gap-1.5*(lvl-.6))){winner=srv;acts.push({k:'ace',t:srv,p:server,r:rc});}
       else{
-        const rq=rs*.7+R()*.5-power*.3+.05;
-        acts.push({k:'serve',t:srv,p:server,r:rc,q:power});
+        const rq=cl(.55-gap*.9+(rs-.6)*.3+nz(.6),0,1);
+        acts.push({k:'serve',t:srv,p:server,r:rc,q:cl(.5+gap*.6+nz(.3),0,1)});
         acts.push({k:rq<.3?'recBad':rq<.6?'rec':'recGood',t:rcv,p:rc,q:rq});
         let atk=rcv,qual=rq,touch=rc,ex=0;
-        if(rq<.2&&R()<.55){ // la réception repasse le filet : balle facile pour l'autre équipe
-          acts.push({k:'overpass',t:rcv,p:rc});atk=srv;qual=.75;
+        if(rq<.25&&R()<.5){ // la réception repasse directement le filet : balle facile pour l'autre équipe
+          acts.push({k:'overpass',t:rcv,p:rc});atk=srv;qual=.8;
           const d=pick(back(oc[srv]),i=>i===6?1.5:1);acts.push({k:'free',t:srv,p:d});touch=d;
         }
         while(winner==null&&ex<14){ex++;
           const T=atk,O=1-atk,ocT=oc[T],ocO=oc[O];
-          const setter=ocT.includes(5)&&touch!==5?5:pick(ocT.filter(i=>i!==touch),i=>i===6?2:1);
-          const ps=st(T,setter,'pas')*(setter===5?1:.6);
-          if(R()<cl(ME_PF*Math.pow(1-ps,2)+(qual<.3?.04:0),.005,.3)){winner=O;acts.push({k:'setFault',t:T,p:setter});break;}
-          const sq=ps*.7+R()*.3+qual*.3-.15;
+          // la passe : c'est la stat passe de celui qui la fait qui compte, quel que soit son poste
+          const setter=ocT.includes(5)&&touch!==5?5:pick(ocT.filter(i=>i!==touch),i=>Math.pow(st(T,i,'pas')+.1,2));
+          const ps=st(T,setter,'pas');
+          if(R()<cl(ME_PF*Math.pow(1-ps,2)+Math.max(0,.3-qual)*.8*(1.2-ps),.005,.4)){winner=O;acts.push({k:'setFault',t:T,p:setter});break;}
+          const sq=cl(.5+(ps-.6)*.8+(qual-.5)*.7+nz(.35),0,1);
           acts.push({k:sq<.4?'setBad':'set',t:T,p:setter,q:sq});
           const fr=front(ocT).filter(i=>i!==setter&&i!==6),bk=back(ocT).filter(i=>i!==setter&&i!==6&&(i===0||i===2||i===3));
           let cands=fr.slice();if(sq>.5&&bk.length&&R()<.18)cands=bk;if(!cands.length)cands=ocT.filter(i=>i!==setter&&i!==6);
           const at=pick(cands,i=>{let w=Math.pow(st(T,i,'att')+.15,2.5);if((i===1||i===4)&&sq<.4)w*=.2;return w;});
-          const isBack=!fr.includes(at),as=st(T,at,'att'),tip=R()<.1;
-          if(!tip&&R()<cl(ME_AE*Math.pow(1-as,1.4)+(sq<.35?.05:0)+(isBack?.03:0),.025,.5)){winner=O;acts.push({k:'attErr',t:T,p:at,net:R()<.6,back:isBack});break;}
-          const aq=tip?as*.4+R()*.45:as*.55+R()*ME_NZ+sq*.15-.1-(isBack?.08:0);
-          const bl=front(ocO).filter(i=>i!==6),b1=pick(bl,i=>Math.pow(st(O,i,'blo')+.1,2));
-          const bp=(st(O,b1,'blo')*.55+R()*ME_NZ-.1)*(isBack?.85:1);
-          if(!tip&&bp>aq+ME_BS){winner=O;acts.push({k:'stuff',t:T,p:at,b:b1,back:isBack});break;}
-          const touchB=!tip&&bp>aq-.05;
-          const dfs=back(ocO).concat(tip?front(ocO):[]),d=pick(dfs,i=>i===6?2:i===5?.6:1);
-          const dq=st(O,d,'def')*.55+R()*ME_NZ-aq*.55+.05+(touchB?.2:0)+(tip?.15:0);
+          const isBack=!fr.includes(at),as=st(T,at,'att'),tip=sq<.45?R()<.25:R()<.08;
+          // faute d'attaque : stat attaque + passe pourrie
+          if(!tip&&R()<cl(ME_AE*Math.pow(1-as,1.4)+Math.max(0,.45-sq)*.35+(isBack?.03:0),.02,.55)){winner=O;acts.push({k:'attErr',t:T,p:at,net:R()<.6,back:isBack});break;}
+          const pw=as-(isBack?.08:0)+(sq-.5)*.3; // force réelle de l'attaque
+          // duel attaque contre contre
+          const bl=front(ocO).filter(i=>i!==6),b1=pick(bl,i=>Math.pow(st(O,i,'blo')+.1,2)),bs=st(O,b1,'blo');
+          if(!tip&&R()<sg(-2.6+5*gp(bs-pw))){winner=O;acts.push({k:'stuff',t:T,p:at,b:b1,back:isBack});break;}
+          const touchB=!tip&&R()<sg(-.8+4*gp(bs-pw));
+          // duel attaque contre défense
+          const dfs=back(ocO).concat(tip?front(ocO):[]),d=pick(dfs,i=>i===6?2:i===5?.6:1),ds=st(O,d,'def');
+          const aq=cl(.5+(pw-.6)*.8+nz(.3)-(tip?.3:0),0,1);
           acts.push({k:tip?'tip':'attack',t:T,p:at,b:touchB?b1:null,d,q:aq,back:isBack});
-          if(dq<ME_DK){winner=T;acts.push({k:'kill',t:T,p:at,d,tip});break;}
-          acts.push({k:dq>.55?'digGood':'dig',t:O,p:d,q:dq,save:aq>.8});
-          atk=O;qual=cl(dq,0,.9);touch=d;
+          if(R()<sg(-.6+5.5*gp(pw-ds)-(touchB?1:0)-(tip?1.3:0))){winner=T;acts.push({k:'kill',t:T,p:at,d,tip});break;}
+          const dq=cl(.5+gp(ds-pw)*.8+(touchB?.15:0)+(tip?.15:0)+nz(.4),0,.95);
+          acts.push({k:dq>.55?'digGood':'dig',t:O,p:d,q:dq,save:aq>.75});
+          atk=O;qual=dq;touch=d;
         }
         if(winner==null){winner=atk;acts.push({k:'kill',t:atk,p:touch,d:null});}
       }
