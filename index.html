@@ -221,7 +221,7 @@ textarea.text-in{font-size:1rem;font-weight:500;resize:none;line-height:1.35}
   font-family:"Great Vibes","Brush Script MT","Segoe Script",cursive;font-size:clamp(.95rem,4.6vw,1.3rem);color:#FFE97A;
   text-shadow:0 0 4px rgba(0,0,0,.95),0 0 12px rgba(255,200,0,.7)}
 .mini.signature .msr{position:absolute;inset:2% 3.6%;clip-path:polygon(0 6.5%,8.5% 0,91.5% 0,100% 6.5%,100% 87.5%,50% 100%,0 87.5%);background:linear-gradient(120deg,#7A4E00,#FFE97A 25%,#B8860B 45%,#FFF6C8 55%,#C99700 75%,#7A4E00);background-size:260% 100%;animation:sigShine 2.6s linear infinite}
-.mini.signature .mface::after{content:"Signature";position:absolute;left:50%;top:1%;transform:translateX(-50%);font-family:"Great Vibes",cursive;font-size:11cqw;color:#FFE97A;text-shadow:0 0 3px #000;white-space:nowrap}
+.mini.signature .mface::after{display:none;content:"";position:absolute;left:50%;top:1%;transform:translateX(-50%);font-family:"Great Vibes",cursive;font-size:11cqw;color:#FFE97A;text-shadow:0 0 3px #000;white-space:nowrap}
 .sig-tag{font-style:normal;font-family:"Great Vibes",cursive;font-size:.95rem;padding:0 6px;border-radius:99px;color:#2A1C02;background:linear-gradient(90deg,#B8860B,#FFE97A,#FFD700)}
 .toggle.gold:has(input:checked){border-color:rgba(255,215,0,.7);background:linear-gradient(110deg,rgba(255,215,0,.16),rgba(255,246,200,.1))}
 .toggle.gold:has(input:checked) .sw{background:linear-gradient(90deg,#B8860B,#FFE97A,#FFD700)}
@@ -927,7 +927,7 @@ function cardHTML(p,i=0,tagOk=true){
   return`<button class="card ${vt(p)}${dv?' divers':''}${fa?' fullart':''}${sg?' signature':''}" type="button" data-id="${esc(p.id)}" style="--i:${i}" aria-label="${esc(p.name)}, ${posteL(p.poste)}, ${sg?'Signature':'note '+o}">
     ${p.example&&tagOk?'<span class="tag">Exemple</span>':''}
     <div class="face">
-      ${sg?'<div class="sig-rim"></div><span class="sig-badge">Signature</span>':''}${fa?`<div class="fa-art"><img src="${p.photo}" alt=""><div class="fa-holo"></div><div class="fa-glit"></div></div>`:''}
+      ${sg?'<div class="sig-rim"></div>':''}${fa?`<div class="fa-art"><img src="${p.photo}" alt=""><div class="fa-holo"></div><div class="fa-glit"></div></div>`:''}
       <div class="c-top"><div>${sg?'':`<div class="c-ovr">${o}</div>`}<span class="c-pos">${esc(p.poste)}</span></div>${dv||sg?STAR:hexIcon(p.s)}</div>
       <div class="c-photo">${p.photo?`<img src="${p.photo}" alt="">`:esc(initials(p.name))}</div>
       <div class="c-name">${esc(p.name)}</div>
