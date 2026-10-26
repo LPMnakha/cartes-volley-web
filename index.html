@@ -666,7 +666,10 @@ body.player #tab-btn-cards,body.player #fab,body.player #m-export-cards,body.pla
 .upd-bar{width:100%;height:10px;border-radius:99px;background:rgba(255,255,255,.1);overflow:hidden}
 .upd-bar i{display:block;height:100%;width:0;border-radius:99px;background:linear-gradient(90deg,#FFD23F,#FF7A2F);transition:width .3s}
 .upd-msg{margin:0}.upd-msg:empty{display:none}
-.upd-act{display:flex;gap:8px;width:100%;margin-top:4px}.upd-act .btn{flex:1}.upd-act #upd-go{flex:1.4}
+.upd-act{display:flex;gap:8px;width:100%;margin-top:4px}
+#chp .upd-act .btn{padding:12px 6px;font-size:.92rem}
+.ch-row{display:grid;grid-template-columns:minmax(0,1fr) auto auto;gap:8px;align-items:center;padding:8px 10px;border-radius:10px;background:rgba(255,255,255,.04)}
+.ch-row.in{background:rgba(255,122,47,.12);border:1px solid rgba(255,122,47,.4)}.ch-row span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;font-weight:600}.ch-row small{color:var(--muted);font-weight:500}.upd-act .btn{flex:1}.upd-act #upd-go{flex:1.4}
 .msheet{position:fixed;inset:0;z-index:60;display:flex;flex-direction:column;background:radial-gradient(90% 50% at 50% 0%,#1C3580,#070E24 75%);overflow:hidden;animation:fadeIn .25s both}
 .sh-bar{display:flex;align-items:center;gap:12px;padding:calc(10px + env(safe-area-inset-top)) 16px 10px;border-bottom:1px solid var(--line);background:rgba(10,20,48,.7)}
 .sh-bar h2{flex:1;margin:0;font-family:var(--display);font-weight:900;font-size:1.5rem;text-transform:uppercase;letter-spacing:.02em}
@@ -1140,6 +1143,7 @@ body.player .tabs{grid-template-columns:repeat(4,minmax(0,1fr))} /* sans l'ongle
       <div class="rank" id="f-res"></div>
       <p class="err" id="f-err" hidden></p>
     </div>
+    <div class="section" id="ch-sec" hidden><span class="label">Défis</span><div class="rank" id="ch-list"></div></div>
     <div class="section"><div class="rank-head"><span class="label">Classement</span><div class="mseg small" id="r-seg" role="group" aria-label="Classement"><button type="button" data-r="friends" aria-pressed="true">Amis</button><button type="button" data-r="all" aria-pressed="false">Général</button></div></div>
       <div class="rank" id="m-rank"></div></div>
     <div class="section" id="m-hist-sec" hidden><span class="label">Derniers matchs</span><div class="mhist" id="m-hist"></div></div>
@@ -1353,6 +1357,15 @@ body.player .tabs{grid-template-columns:repeat(4,minmax(0,1fr))} /* sans l'ongle
 </section>
 <section class="cpi" id="cp-intro" hidden aria-label="Avant le match"><div class="cpi-stage" id="cpi-stage"></div><p class="cpi-skip">Touche pour passer</p></section>
 <section class="cpi k2" id="ch-intro" hidden aria-label="Défi"><div class="cpi-stage" id="chi-stage"></div></section>
+<section class="upd" id="chp" hidden role="dialog" aria-modal="true" aria-labelledby="chp-t">
+  <div class="upd-box">
+    <span class="upd-ic" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M3.5 9.5c3 1 5.5 3.5 6.5 8M20.5 9.5c-3 1-5.5 3.5-6.5 8M8 3.8c1.5 2.5 6.5 2.5 8 0"/></svg></span>
+    <b id="chp-t">Défi reçu</b>
+    <p class="upd-v" id="chp-v"></p>
+    <p class="note upd-msg" id="chp-msg"></p>
+    <div class="upd-act"><button class="btn" type="button" id="chp-no">Refuser</button><button class="btn" type="button" id="chp-later">Plus tard</button><button class="btn primary" type="button" id="chp-go">Accepter</button></div>
+  </div>
+</section>
 <section class="upd" id="upd" hidden role="dialog" aria-modal="true" aria-labelledby="upd-t">
   <div class="upd-box">
     <span class="upd-ic" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12m0 0l-5-5m5 5l5-5M5 21h14"/></svg></span>
@@ -1907,6 +1920,7 @@ $('r-ok').addEventListener('click',async()=>{
 });
 try{if(sessionStorage.getItem('cartes-volley-reset')){sessionStorage.removeItem('cartes-volley-reset');setTimeout(()=>toast('Compte réinitialisé : tout repart de zéro'),400);}}catch(e){}
 window.__back=function(){
+  if(!$('chp').hidden){$('chp-later').click();return true;}
   if(!$('upd').hidden){if(upd.step!=='dl')$('upd-later').click();return true;}
   if(!$('sheet').hidden){closeSheet();return true;}
   if(!$('cp-intro').hidden){$('cp-intro').click();return true;}
@@ -2969,13 +2983,13 @@ let rankView='friends';try{const v=localStorage.getItem('cartes-volley-rank');if
 async function api(path,body){
   if(!SERVER)throw Object.assign(new Error('off'),{code:'off'});
   ensureProfile();const ctl=new AbortController(),tm=setTimeout(()=>ctl.abort(),10000);
-  try{const r=await fetch(SERVER+'/api/'+path,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({pid:state.pid,key:state.key,...(body||{})}),signal:ctl.signal});
+  try{const r=await fetch(SERVER+'/api/'+path,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({pid:state.pid,key:state.key,ver:ENGINE_VER,...(body||{})}),signal:ctl.signal});
     const j=await r.json().catch(()=>({}));if(!r.ok)throw Object.assign(new Error(j.err||'http'),{code:j.err||'http',data:j});return j;}
   catch(e){if(!e.code)e.code='net';throw e;}finally{clearTimeout(tm);}
 }
 function netMsg(e,who){const c=e&&e.code;who=who?esc(who):'ton pote';
   if(c==='net'||c==='off'||c==='http')return"Pas de connexion au serveur : il faut internet pour jouer contre un pote.";
-  if(c==='version'){const d=e.data||{};return d.theirs!==d.server?`${who} a une ancienne version de l'appli : il doit la mettre à jour.`:"Ton appli n'est pas à jour : installe la dernière version.";}
+  if(c==='version')return e.data&&e.data.who==='theirs'?`${who} n'a pas la dernière version de l'appli : il doit la mettre à jour (et l'ouvrir une fois) avant de jouer.`:"Ton appli n'est pas à jour : installe la dernière version pour jouer.";
   if(c==='used')return"Ce QR a déjà servi pour un match. Demande à ton pote d'en préparer un nouveau.";
   if(c==='cards'){netCards();return e.data&&e.data.who==='theirs'?`L'équipe de ${who} contient des cartes qui ne sont pas dans la liste officielle : il doit rouvrir l'appli avec internet, refaire son équipe si besoin, puis préparer un nouveau QR.`:"Ton équipe contient des cartes qui ne sont pas (ou plus) dans la liste officielle. Ta liste vient d'être mise à jour : vérifie ton équipe et prépare un nouveau QR.";}
   if(c==='unknown_friend')return`${who} n'est pas encore connecté au serveur : il doit ouvrir la dernière version de l'appli avec internet.`;
@@ -3004,14 +3018,15 @@ document.addEventListener('visibilitychange',()=>{if(!document.hidden){if(net.on
 async function netPoll(){
   if(!net.on||net.polling)return;net.polling=true;
   try{const j=await api('inbox');netApplyMe(j.me);
-    for(const m of j.matches||[]){if(state.played.includes(m.id)){netAck(m.id);continue;}if(!net.queue.some(x=>x.id===m.id))net.queue.push(m);}}
+    for(const m of j.matches||[]){if(state.played.includes(m.id)){netAck(m.id);continue;}if(!net.queue.some(x=>x.id===m.id))net.queue.push(m);}
+    onChals(j.chals);}
   catch(e){if(e.code==='net'){net.on=false;net.err='net';renderNet();clearInterval(net.timer);net.timer=null;setTimeout(netHello,15000);}}
   finally{net.polling=false;}
   netDrain();
 }
-const netBusy=()=>defiBusy||!$('match').hidden||!$('opening').hidden||!$('cp-intro').hidden||!$('ch-intro').hidden||openBusy||cpBusy;
+const netBusy=()=>defiBusy||!$('upd').hidden||!$('match').hidden||!$('opening').hidden||!$('cp-intro').hidden||!$('ch-intro').hidden||openBusy||cpBusy;
 let draining=false;
-async function netDrain(){if(draining||netBusy())return;const m=net.queue.shift();if(!m)return;draining=true;try{await playOnline(m,true);}finally{draining=false;}if(net.queue.length)setTimeout(netDrain,800);}
+async function netDrain(){if(draining||netBusy()||!$('chp').hidden)return;const m=net.queue.shift();if(!m){chPop();return;}draining=true;try{await playOnline(m,true);}finally{draining=false;}if(net.queue.length)setTimeout(netDrain,800);}
 async function netAck(id){net.acks.add(id);if(!net.on)return;const ids=[...net.acks];try{await api('ack',{ids});ids.forEach(x=>net.acks.delete(x));}catch(e){}}
 async function netRank(force){
   if(!net.on)return;if(!force&&Date.now()-net.rankTs<20000)return;net.rankTs=Date.now();
@@ -3052,9 +3067,50 @@ async function challenge(pid,btn){
   if(defiBusy)return;if(!teamFull()){toast("Complète ton équipe dans l'onglet Équipe pour défier tes amis.");return;}
   if(!net.on){toast("Pas de connexion au serveur.");return;}
   defiBusy=true;if(btn){btn.disabled=true;btn.textContent='…';}ac();
-  try{teamSent='';await netTeam();const j=await api('challenge',{to:pid});if(j.chem)setChem(j.chem);await playOnline(j.match,false);}
+  try{teamSent='';await netTeam();const j=await api('challenge',{to:pid});
+    toast(j.already?`Ton défi à ${j.chal.pseudo} attend encore sa réponse.`:`Défi envoyé à ${j.chal.pseudo} : le match se jouera quand il l'acceptera.`);if(!j.already){sfx.whoosh();buzz(40);}
+    netPoll();}
   catch(e){toast(e.code==='no_team'?(e.data&&e.data.who==='mine'?"Ton équipe contient une carte retirée de la liste officielle : refais-la dans l'onglet Équipe.":"Ton ami n'a pas encore d'équipe complète enregistrée."):e.code==='not_friend'?"Vous n'êtes plus amis.":netMsg(e));}
-  finally{defiBusy=false;if(btn){btn.disabled=false;btn.textContent='Défier';}}
+  finally{defiBusy=false;if(btn){btn.disabled=false;btn.textContent='Défier';}renderChals();}
+}
+/* défis reçus et envoyés : on accepte ou on refuse */
+const LS_CHSEEN='cartes-volley-defis-vus';
+let chSeen={};try{chSeen=JSON.parse(localStorage.getItem(LS_CHSEEN)||'{}')||{};}catch(e){}
+const chMark=k=>{chSeen[k]=Date.now();const lim=Date.now()-14*864e5;for(const x in chSeen)if(chSeen[x]<lim)delete chSeen[x];try{localStorage.setItem(LS_CHSEEN,JSON.stringify(chSeen));}catch(e){}};
+function onChals(c){
+  if(!c)return;net.chals=c;
+  for(const o of c.outgoing||[])if((o.st==='ref'||o.st==='exp')&&!chSeen['r'+o.id]){chMark('r'+o.id);toast(o.st==='ref'?`${o.pseudo} a refusé ton défi.`:`Ton défi à ${o.pseudo} a expiré sans réponse.`);}
+  const k=JSON.stringify([(c.incoming||[]).map(x=>x.id),(c.outgoing||[]).filter(x=>x.st==='wait').map(x=>x.id)]);
+  if(k!==net.chKey){net.chKey=k;if(!$('tab-match').hidden&&mMode==='pvp')renderMatchTab();} // boutons du classement à jour
+  renderChals();chPop();
+}
+function renderChals(){
+  const c=net.chals||{incoming:[],outgoing:[]},inc=c.incoming||[],out=(c.outgoing||[]).filter(o=>o.st==='wait');
+  $('ch-sec').hidden=!net.on||(!inc.length&&!out.length);
+  $('ch-list').innerHTML=inc.map(x=>`<div class="ch-row in"><span>${esc(x.pseudo)} <small>te défie</small></span><button class="btn rb" type="button" data-chno="${esc(x.id)}">Refuser</button><button class="btn rb def" type="button" data-chok="${esc(x.id)}">Accepter</button></div>`).join('')+
+    out.map(x=>`<div class="ch-row"><span>${esc(x.pseudo)} <small>· en attente de sa réponse</small></span><span></span><button class="btn rb" type="button" data-chcancel="${esc(x.id)}">Annuler</button></div>`).join('');
+}
+$('ch-list').addEventListener('click',e=>{const a=e.target.closest('[data-chok]'),n=e.target.closest('[data-chno]'),c=e.target.closest('[data-chcancel]');
+  if(a)answerChal(a.dataset.chok,true,a);else if(n)answerChal(n.dataset.chno,false,n);else if(c)answerChal(c.dataset.chcancel,'cancel',c);});
+let chCur=null;
+function chPop(){ // fenêtre pour un défi reçu pas encore vu (jamais par-dessus un match ou une ouverture de booster)
+  if(!$('chp').hidden||netBusy()||!$('upd').hidden)return;
+  const x=((net.chals||{}).incoming||[]).find(i=>!chSeen['v'+i.id]);if(!x)return;
+  chCur=x;chMark('v'+x.id);$('chp-t').textContent=`${x.pseudo} te défie !`;
+  const done=state.matches.some(m=>!m.friendly&&m.opp===x.pseudo&&parisDay(m.ts)===parisDay(Date.now()));
+  $('chp-v').textContent='1 set de 25 points';$('chp-msg').textContent=`Le match se jouera avec ton équipe actuelle et tes consignes.${done?' Vous avez déjà joué un match classé aujourd\'hui : celui-ci sera amical.':''}`;
+  $('chp').hidden=false;ac();sfx.ding('gold');buzz([60,40,60]);
+}
+$('chp-later').addEventListener('click',()=>{$('chp').hidden=true;chCur=null;setTimeout(chPop,300);});
+$('chp-no').addEventListener('click',()=>{const x=chCur;$('chp').hidden=true;chCur=null;if(x)answerChal(x.id,false);});
+$('chp-go').addEventListener('click',()=>{const x=chCur;$('chp').hidden=true;chCur=null;if(x)answerChal(x.id,true);});
+async function answerChal(id,accept,btn){
+  if(defiBusy)return;if(accept===true&&!teamFull()){toast("Complète ton équipe dans l'onglet Équipe pour jouer ce défi.");return;}
+  defiBusy=true;if(btn)btn.disabled=true;ac();
+  try{if(accept===true){teamSent='';await netTeam();const j=await api('answer',{id,accept:true});if(j.chem)setChem(j.chem);defiBusy=false;await playOnline(j.match,'acc');}
+    else{await api('answer',accept==='cancel'?{id,cancel:true}:{id,accept:false});toast(accept==='cancel'?'Défi annulé.':'Défi refusé.');}}
+  catch(e){toast(e.code==='expired'?'Ce défi a expiré.':e.code==='answered'?'Ce défi a déjà été joué ou refusé.':e.code==='no_team'?(e.data&&e.data.who==='mine'?"Ton équipe contient une carte retirée de la liste officielle : refais-la dans l'onglet Équipe.":"L'équipe de ton ami n'est plus complète : le défi ne peut pas se jouer."):netMsg(e));}
+  finally{defiBusy=false;if(btn)btn.disabled=false;netPoll();}
 }
 /* complicité reçue du serveur, plus ce qui n'est pas encore envoyé */
 function setChem(srv){const c={...(srv||{})};(state.chemPend||[]).forEach(k=>c[k]=(c[k]||0)+1);state.chem=c;saveState();}
@@ -3088,20 +3144,21 @@ const duosOf=ids=>ids.slice(0,5).map(a=>ids[5]+'>'+a);
 const chemArr=ids=>ids.map((id,i)=>i<5?Math.min(CHEM_MAX,Math.floor(((state.chem||{})[ids[5]+'>'+id]||0)/CHEM_STEP)):0);
 // mon équipe, telle qu'elle joue (campagne et défis)
 function myTeam(){if(!teamFull())return null;const ids=teamIds();return{ids,tac:{...(state.tac||{})},chem:chemArr(ids),cards:ids.map(id=>{const p=players.find(x=>x.id===id);return{id,name:p.name,s:{...p.s},poste:p.poste};})};}
-function payloadTeamScore(d){return Math.round(d.cards.reduce((t,c,i)=>{const sl=TEAM_SLOTS.find(x=>x.k===SLOT_ORDER[i]);return t+Math.round(Object.entries(POSTE_W[sl.p]).reduce((u,[k,v])=>u+c.s[k]*v,0));},0)/7);}
+function payloadTeamScore(d){return Math.round(d.cards.reduce((t,c,i)=>{const sl=TEAM_SLOTS.find(x=>x.k===SLOT_ORDER[i]);return t+Math.round(Object.entries(POSTE_W[sl.p]).reduce((u,[k,v])=>u+c.s[k]*v,0));},0)/d.cards.length);} // même note que dans l'onglet Équipe (6 ou 7 joueurs)
 function renderMatchTab(){
   ensureProfile();setMMode(mMode);
   if(document.activeElement!==$('m-pseudo'))$('m-pseudo').value=state.pseudo;
   $('m-elo').textContent=state.elo;$('m-rankname').textContent=rankName(state.elo);
   const rk=state.matches.filter(m=>!m.friendly),w=rk.filter(m=>m.win).length,l=rk.length-w;
   $('m-record').textContent=rk.length?`${w} victoire${w>1?'s':''} · ${l} défaite${l>1?'s':''}`:'Tout le monde commence à '+ELO_START+' d\'élo. Gagner contre plus fort que toi rapporte plus.';
-  $('m-noteam').hidden=teamFull();$('f-mycode').textContent=state.pid;
+  $('m-noteam').hidden=teamFull();$('f-mycode').textContent=state.pid;renderChals();
   // classement : amis ou général, depuis le serveur
   renderNet();document.querySelectorAll('#r-seg button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.r===rankView));$('r-seg').hidden=!net.rank;
   const RR=rankRows();
   const frIds=new Set(net.rank?net.rank.friends.map(f=>f.pid):[]);
   $('m-rank').innerHTML=RR.rows.map((x,i)=>{const meRow=x.pid===state.pid,pos=x.pos||i+1,sep=x.pos&&x.pos>RR.rows.length?'<div class="rank-sep">…</div>':'';
-    const act=meRow||!net.on?'':frIds.has(x.pid)?`<button class="btn rb def" type="button" data-defi="${esc(x.pid)}"${x.team?'':' disabled title="Pas encore d\'équipe enregistrée"'}>Défier</button>`:`<button class="btn rb" type="button" data-add="${esc(x.pid)}">Ajouter</button>`;
+    const cIn=((net.chals||{}).incoming||[]).find(c=>c.pid===x.pid),cOut=((net.chals||{}).outgoing||[]).find(c=>c.pid===x.pid&&c.st==='wait');
+    const act=meRow||!net.on?'':frIds.has(x.pid)?(cIn?`<button class="btn rb def" type="button" data-chok="${esc(cIn.id)}">Accepter</button>`:cOut?'<button class="btn rb" type="button" disabled>En attente</button>':`<button class="btn rb def" type="button" data-defi="${esc(x.pid)}"${x.team?'':' disabled title="Pas encore d\'équipe enregistrée"'}>Défier</button>`):`<button class="btn rb" type="button" data-add="${esc(x.pid)}">Ajouter</button>`;
     return`${sep}<div class="rank-row${meRow?' me':''}${pos<=3?' top':''}${act?' act':''}"><b>${pos}</b><span>${esc(meRow?state.pseudo:x.pseudo)}${meRow?' (toi)':''}${!meRow&&frIds.has(x.pid)&&!x.team?' <em>sans équipe</em>':''}</span><small>${x.w}V ${x.l}D</small><b>${x.elo}</b>${act}</div>`;}).join('')+
     (RR.note?`<p class="note" style="margin:4px 0 0">${RR.note}</p>`:'');
   netRank();
@@ -3113,7 +3170,7 @@ $('m-hist').addEventListener('click',e=>{const r=e.target.closest('.mh-row.has')
 $('m-pseudo').addEventListener('change',async()=>{const v=cleanPseudo($('m-pseudo').value);if(!v){$('m-pseudo').value=state.pseudo;return;}if(v===state.pseudo){$('m-pseudo').value=v;return;}state.pseudo=v;$('m-pseudo').value=v;await saveState();renderMatchTab();netSyncPseudo();});
 $('m-pseudo').setAttribute('maxlength','40'); // la vraie limite (16 caractères, emojis compris) est appliquée à la validation
 $('m-pseudo').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();e.target.blur();}});
-$('m-rank').addEventListener('click',e=>{const d=e.target.closest('[data-defi]'),a=e.target.closest('[data-add]');if(d&&!d.disabled)challenge(d.dataset.defi,d);else if(a)addFriend(a.dataset.add,a);});
+$('m-rank').addEventListener('click',e=>{const ok=e.target.closest('[data-chok]');if(ok){answerChal(ok.dataset.chok,true,ok);return;}const d=e.target.closest('[data-defi]'),a=e.target.closest('[data-add]');if(d&&!d.disabled)challenge(d.dataset.defi,d);else if(a)addFriend(a.dataset.add,a);});
 $('f-res').addEventListener('click',e=>{const a=e.target.closest('[data-add]'),d=e.target.closest('[data-defi]');if(a)addFriend(a.dataset.add,a);else if(d&&!d.disabled)challenge(d.dataset.defi,d);});
 /* =================== Feuille de match =================== */
 // colonnes : points, aces, attaques gagnantes, contres gagnants, défenses, fautes
@@ -3273,7 +3330,7 @@ function cpTeam(n){
   return cpCache[n]={name:t.teams[n-t.a],cards,tac,lv:payloadTeamScore({cards})};
 }
 // note d'équipe (comme dans l'onglet Équipe) : chaque joueur noté selon son poste
-const teamNote=T=>T.cards.reduce((t,c,i)=>{const sl=TEAM_SLOTS.find(x=>x.k===SLOT_ORDER[i]);return t+Object.entries(POSTE_W[sl.p]).reduce((u,[k,v])=>u+c.s[k]*v,0);},0)/7;
+const teamNote=T=>T.cards.reduce((t,c,i)=>{const sl=TEAM_SLOTS.find(x=>x.k===SLOT_ORDER[i]);return t+Object.entries(POSTE_W[sl.p]).reduce((u,[k,v])=>u+c.s[k]*v,0);},0)/T.cards.length;
 const teamAvg=T=>payloadTeamScore(T);
 const cpChCache={};
 function cpChance(me,n){
@@ -3495,16 +3552,16 @@ async function playOnline(m,incoming){
   }
   netAck(m.id);renderMatchTab();
   if(!sim){toast(`Match contre ${op.pseudo} : ${win?'victoire':'défaite'} ${m.score[myIdx]}-${m.score[1-myIdx]}. Mets l'appli à jour pour voir les prochains matchs.`);return;}
-  if(incoming)await challengeIntro(op.pseudo,m.ranked);
+  if(incoming)await challengeIntro(op.pseudo,m.ranked,incoming==='acc'?'acc':m.acc===op.pid?'accepted':'defi');
   await playMatch(sim,myIdx===0?[dispCards(A),dispCards(B)]:[dispCards(A),dispCards(B)],names,myIdx,{win,d:e?e.d:0,before:e?e.before:state.elo,after:e?e.after:state.elo,ts:m.ts,online:true,incoming,opName:op.pseudo,friendly:!m.ranked,fmt,title:m.ranked?'Défi classé · 1 set de 25 points':'Match amical · 1 set de 25 points'});
   if(na.length)showAch(na);
   netRank(true);
 }
 // petite intro quand un pote lance un match contre moi
-function challengeIntro(name,ranked){return new Promise(res=>{const ov=$('ch-intro'),st=$('chi-stage');ov.style.setProperty('--c','#FF7A2F');ov.hidden=false;document.body.style.overflow='hidden';
+function challengeIntro(name,ranked,how){return new Promise(res=>{const ov=$('ch-intro'),st=$('chi-stage');ov.style.setProperty('--c','#FF7A2F');ov.hidden=false;document.body.style.overflow='hidden';
   let done=false;const end=()=>{if(done)return;done=true;ov.hidden=true;st.innerHTML='';document.body.style.overflow='';res();};ov.onclick=end;
   ac();sfx.whoosh();buzz([60,40,60]);
-  st.innerHTML=`<small class="cpi-venue">${ranked?'Défi classé':'Match amical'}</small><b class="cpi-tier">${esc(name)}</b><span class="cpi-step">t'a défié : le match commence !</span>`;
+  st.innerHTML=`<small class="cpi-venue">${ranked?'Défi classé':'Match amical'}</small><b class="cpi-tier">${esc(name)}</b><span class="cpi-step">${how==='acc'?'Tu as accepté son défi : le match commence !':how==='accepted'?'a accepté ton défi : voici le match !':'t\'a défié : le match commence !'}</span>`;
   setTimeout(()=>{if(done)return;sfx.boom();st.innerHTML=`<b class="cpi-go">Coup d'envoi !</b>`;tone('sine',2850,2950,.28,.09);setTimeout(end,900);},2000);});}
 function closeMatch(){mRun++;mSkip=true;$('match').hidden=true;document.body.style.overflow='';setTimeout(()=>{if(typeof netDrain==='function')netDrain();},400);}
 $('mt-close').addEventListener('click',closeMatch);
@@ -3632,7 +3689,7 @@ async function playMatch(sim,disp,names,myIdx,res){
   com(res.win?`Victoire de <b>${esc(names[myIdx])}</b> !`:`Victoire de <b>${esc(names[1-myIdx])}</b>`);
   const end=document.createElement('div');end.className='mt-end';
   end.innerHTML=`<div><b class="${res.win?'w':'l'}">${res.win?'Victoire !':'Défaite'}</b><span class="sc">${(sim.sets&&sim.sets.length===1?sim.sets[0]:sim.score)[myIdx]} – ${(sim.sets&&sim.sets.length===1?sim.sets[0]:sim.score)[1-myIdx]}</span>
-    ${res.friendly?`<span class="el">Match amical</span><span class="note" style="max-width:30ch">Vous avez déjà joué un match classé aujourd'hui : celui-ci ne change pas l'élo.</span>`:`<span class="el">Élo ${res.before} → ${res.after} <i class="${res.d>=0?'':'n'}">${res.d>=0?'+':''}${res.d}</i></span><span class="note">${rankName(res.after)}</span>`}<span class="note" style="max-width:30ch">${res.online?(res.incoming?`Défi lancé par ${esc(res.opName)}.`:`${esc(res.opName)} verra le match à sa prochaine ouverture de l'appli.`):''}</span>
+    ${res.friendly?`<span class="el">Match amical</span><span class="note" style="max-width:30ch">Vous avez déjà joué un match classé aujourd'hui : celui-ci ne change pas l'élo.</span>`:`<span class="el">Élo ${res.before} → ${res.after} <i class="${res.d>=0?'':'n'}">${res.d>=0?'+':''}${res.d}</i></span><span class="note">${rankName(res.after)}</span>`}<span class="note" style="max-width:30ch">${res.online?(res.incoming==='acc'?`${esc(res.opName)} verra le match à sa prochaine ouverture de l'appli.`:res.incoming?`${esc(res.opName)} a accepté ton défi.`:''):''}</span>
     <div class="row-actions"><button class="btn" type="button" data-sh>Feuille de match</button><button class="btn primary" type="button" data-end>Terminer</button></div></div>`;
   end.querySelector('[data-end]').addEventListener('click',closeMatch);
   const rec=state.matches.find(x=>x.ts===res.ts)||state.matches[0];end.querySelector('[data-sh]').addEventListener('click',()=>openSheet(rec));M.appendChild(end);
