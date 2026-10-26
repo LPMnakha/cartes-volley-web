@@ -879,7 +879,7 @@ input[type=range]::-moz-range-thumb{width:20px;height:20px;border-radius:50%;bac
     <div class="section prof">
       <div class="prof-row">
         <div class="prof-name"><label class="label" for="m-pseudo">Ton pseudo</label><input class="text-in" type="text" id="m-pseudo" maxlength="16" autocomplete="off" enterkeyhint="done"></div>
-        <div class="elo-box"><small>ÉLO</small><b id="m-elo">500</b><span id="m-rankname"></span></div>
+        <div class="elo-box"><small>ÉLO</small><b id="m-elo">400</b><span id="m-rankname"></span></div>
       </div>
       <p class="note" id="m-record" style="margin:0"></p>
     </div>
@@ -1021,7 +1021,7 @@ input[type=range]::-moz-range-thumb{width:20px;height:20px;border-radius:50%;bac
     </div>
     <div class="section" id="m-reset-sec">
       <span class="label">Réinitialiser mon compte</span>
-      <p class="note" style="margin:0">Remet tout à zéro sur cet appareil : toutes les cartes, le classeur, l'équipe, les succès, l'historique, les matchs et l'élo (retour à 500).</p>
+      <p class="note" style="margin:0">Remet tout à zéro sur cet appareil : toutes les cartes, le classeur, l'équipe, les succès, l'historique, les matchs et l'élo (retour à 400).</p>
       <button class="btn b-clear" type="button" id="r-btn">Réinitialiser mon compte</button>
       <div class="b-confirm" id="r-confirm" hidden role="alertdialog" aria-labelledby="r-confirm-t">
         <b id="r-confirm-t">Tout effacer ?</b>
@@ -1170,8 +1170,9 @@ const shown=()=>players.length?players:EXAMPLES;
 
 /* ---------- Classeur et booster du jour : état ---------- */
 const LS_STATE='cartes-volley-etat';
+const ELO_START=400; // élo de départ de tout le monde
 let state=loadState(),timeOffset=null,lockTimer=null,packStatus='checking',openBusy=false;
-function blankState(){return{owned:[],counts:{},lastDay:'',lastTs:0,count:0,rev:0,bonus:{classic:0,silver:0,gold:0,icon:0},streak:{cur:0,best:0,lastDay:''},history:[],ach:{},team:{},exchanges:0,pid:'',pseudo:'',elo:500,matches:[],opps:{},played:[]};}
+function blankState(){return{owned:[],counts:{},lastDay:'',lastTs:0,count:0,rev:0,bonus:{classic:0,silver:0,gold:0,icon:0},streak:{cur:0,best:0,lastDay:''},history:[],ach:{},team:{},exchanges:0,pid:'',pseudo:'',elo:ELO_START,eloBase:ELO_START,matches:[],opps:{},played:[]};}
 function fixState(j){
   const o=blankState();if(!j||typeof j!=='object')return o;
   if(j.counts&&typeof j.counts==='object')for(const k in j.counts){const n=Math.max(0,Math.floor(+j.counts[k]||0));if(n)o.counts[String(k)]=n;}
@@ -1181,8 +1182,11 @@ function fixState(j){
   if(j.bonus&&typeof j.bonus==='object')for(const k in o.bonus)o.bonus[k]=Math.max(0,Math.floor(+j.bonus[k]||0));
   if(j.streak&&typeof j.streak==='object')o.streak={cur:+j.streak.cur||0,best:+j.streak.best||0,lastDay:String(j.streak.lastDay||'')};
   o.history=Array.isArray(j.history)?j.history.filter(h=>h&&Array.isArray(h.ids)).slice(0,30):[];
-  o.pid=String(j.pid||'');o.pseudo=String(j.pseudo||'').slice(0,16);o.elo=Number.isFinite(+j.elo)&&j.elo!==''&&j.elo!=null?Math.round(+j.elo):500;
+  o.pid=String(j.pid||'');o.pseudo=String(j.pseudo||'').slice(0,16);o.elo=Number.isFinite(+j.elo)&&j.elo!==''&&j.elo!=null?Math.round(+j.elo):ELO_START;
+  o.eloBase=ELO_START;
   o.matches=Array.isArray(j.matches)?j.matches.slice(0,40):[];o.opps=j.opps&&typeof j.opps==='object'?{...j.opps}:{};o.played=Array.isArray(j.played)?j.played.slice(-300):[];
+  // départ passé de 500 à 400 : les anciens comptes sont décalés une seule fois de -100, avec l'élo des potes, pour garder les écarts
+  if(j.eloBase!==ELO_START&&j.elo!=null&&j.elo!==''){const sh=ELO_START-500;o.elo+=sh;for(const k in o.opps)if(o.opps[k]&&Number.isFinite(+o.opps[k].e))o.opps[k]={...o.opps[k],e:Math.round(+o.opps[k].e)+sh};}
   o.ach=j.ach&&typeof j.ach==='object'?{...j.ach}:{};o.team=j.team&&typeof j.team==='object'?{...j.team}:{};
   return o;
 }
@@ -2507,7 +2511,7 @@ const RANKS=[[0,'Débutant'],[450,'Amateur'],[500,'Régional'],[560,'National'],
 const rankName=e=>RANKS.filter(r2=>e>=r2[0]).pop()[1];
 const eloExp=(a,b)=>1/(1+Math.pow(10,(b-a)/400));
 const ELO_K=32;
-const ENGINE_VER=3; // à augmenter à chaque changement du moteur : deux versions différentes ne donnent pas le même match
+const ENGINE_VER=4; // à augmenter à chaque changement du moteur : deux versions différentes ne donnent pas le même match
 let myCode=null,myNonce=null,oppData=null;
 function teamPayload(nonce){
   const cards=SLOT_ORDER.map(k=>{const sl=TEAM_SLOTS.find(x=>x.k===k),c=teamCard(sl);return[encodeURIComponent(c.name),c.s.ser,c.s.rec,c.s.pas,c.s.att,c.s.blo,c.s.def,c.poste].join(',');});
@@ -2521,7 +2525,7 @@ function parsePayload(str){
       const s2={};['ser','rec','pas','att','blo','def'].forEach((k,i)=>s2[k]=Math.max(0,Math.min(100,Math.round(+f[i+1]||0))));
       return{name:decodeURIComponent(f[0]).slice(0,18)||'?',s:s2,poste:POSTES.some(q=>q.v===f[7])?f[7]:'POL'};});
     if(cards.length!==7||cards.some(c=>!c)||!pid||!nonce)return null;
-    return{pid,pseudo:decodeURIComponent(ps).slice(0,16)||'Pote',elo:Math.round(+elo)||500,nonce,cards,ver};
+    return{pid,pseudo:decodeURIComponent(ps).slice(0,16)||'Pote',elo:Math.round(+elo)||ELO_START,nonce,cards,ver};
   }catch(e){return null;}
 }
 function payloadTeamScore(d){return Math.round(d.cards.reduce((t,c,i)=>{const sl=TEAM_SLOTS.find(x=>x.k===SLOT_ORDER[i]);return t+Math.round(Object.entries(POSTE_W[sl.p]).reduce((u,[k,v])=>u+c.s[k]*v,0));},0)/7);}
@@ -2530,7 +2534,7 @@ function renderMatchTab(){
   if(document.activeElement!==$('m-pseudo'))$('m-pseudo').value=state.pseudo;
   $('m-elo').textContent=state.elo;$('m-rankname').textContent=rankName(state.elo);
   const w=state.matches.filter(m=>m.win).length,l=state.matches.length-w;
-  $('m-record').textContent=state.matches.length?`${w} victoire${w>1?'s':''} · ${l} défaite${l>1?'s':''}`:'Tout le monde commence à 500 d\'élo. Gagner contre plus fort que toi rapporte plus.';
+  $('m-record').textContent=state.matches.length?`${w} victoire${w>1?'s':''} · ${l} défaite${l>1?'s':''}`:'Tout le monde commence à '+ELO_START+' d\'élo. Gagner contre plus fort que toi rapporte plus.';
   const ok=teamFull();$('m-noteam').hidden=ok;$('m-prep').hidden=!ok;if(!ok){$('m-vs').hidden=true;stopScan();}
   // classement : toi + les potes déjà affrontés
   const rows=[{n:state.pseudo,e:state.elo,me:true,w,l}].concat(Object.values(state.opps).map(o=>({n:o.n,e:o.e,w:o.w,l:o.l}))).sort((a,b)=>b.e-a.e);
