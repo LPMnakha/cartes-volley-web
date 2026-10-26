@@ -266,7 +266,7 @@ textarea.text-in{font-size:1rem;font-weight:500;resize:none;line-height:1.35}
 .b-confirm p{margin:0;color:var(--muted)}
 .off-box{display:flex;flex-direction:column;gap:10px;padding:12px;border-radius:14px;border:1px solid rgba(255,210,63,.35);background:rgba(255,210,63,.06)}
 .off-box .note b{color:var(--ink)}
-body.player #tab-btn-cards,body.player #fab,body.player #m-export-cards,body.player #m-import-cards,body.player .adm-only{display:none!important}
+body.player #tab-btn-cards,body.player #fab,body.player #m-export-cards,body.player .adm-only{display:none!important}
 .r-check{display:flex;align-items:center;gap:10px;font-weight:600;cursor:pointer}.r-check input{width:22px;height:22px;accent-color:var(--danger)}
 .btn.danger:disabled{opacity:.4;pointer-events:none}
 .adm-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px}
@@ -1220,7 +1220,7 @@ body.player .tabs{grid-template-columns:repeat(4,minmax(0,1fr))} /* sans l'ongle
       <span class="label">Copie de secours</span>
       <button class="menu-item" type="button" id="m-export">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12m0 0l-5-5m5 5l5-5M4 21h16"/></svg>
-        <span><b>Enregistrer une sauvegarde</b><small>Un fichier .json à garder dans Fichiers ou à t'envoyer, photos comprises</small></span>
+        <span><b>Enregistrer une sauvegarde</b><small>Ta progression dans un fichier .json, à garder dans Fichiers ou à t'envoyer</small></span>
       </button>
       <button class="menu-item" type="button" id="m-export-cards">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="3" width="10" height="14" rx="1.5"/><path d="M17 8v13m0 0l-3.5-3.5M17 21l3.5-3.5"/></svg>
@@ -1228,23 +1228,13 @@ body.player .tabs{grid-template-columns:repeat(4,minmax(0,1fr))} /* sans l'ongle
       </button>
       <label class="menu-item" for="m-import" style="cursor:pointer">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21V9m0 0l-5 5m5-5l5 5M4 3h16"/></svg>
-        <span><b>Importer une sauvegarde</b><small>Restaure ton classeur depuis un fichier .json (et les cartes, en mode admin)</small></span>
+        <span><b>Importer une sauvegarde</b><small>Restaure ta progression depuis un fichier .json</small></span>
         <input type="file" id="m-import" accept=".json,application/json" hidden>
       </label>
-      <label class="menu-item" for="m-import-cards" style="cursor:pointer">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="7" width="10" height="14" rx="1.5"/><path d="M17 16V3m0 0l-3.5 3.5M17 3l3.5 3.5"/></svg>
-        <span><b>Importer les cartes uniquement</b><small>Remplace ta liste de cartes par celle du fichier, sans toucher à ton classeur</small></span>
-        <input type="file" id="m-import-cards" accept=".json,application/json" hidden>
-      </label>
-      <div class="b-confirm" id="mi-confirm" hidden role="alertdialog" aria-labelledby="mi-confirm-t">
-        <b id="mi-confirm-t">Mettre à jour les cartes ?</b>
-        <p id="mi-confirm-txt"></p>
-        <div class="row-actions"><button class="btn" type="button" id="mi-cancel">Annuler</button><button class="btn primary" type="button" id="mi-ok">Mettre à jour</button></div>
-      </div>
     </div>
     <div class="section" id="m-reset-sec">
       <span class="label">Réinitialiser mon compte</span>
-      <p class="note" style="margin:0">Remet tout à zéro sur cet appareil : toutes les cartes, le classeur, l'équipe, les succès, l'historique, les matchs, tes amis en ligne et l'élo (retour à 400).</p>
+      <p class="note" style="margin:0">Remet tout à zéro sur cet appareil : les cartes obtenues dans ton classeur, l'équipe, les succès, l'historique, les matchs, tes amis en ligne et l'élo (retour à 400).</p>
       <button class="btn b-clear" type="button" id="r-btn">Réinitialiser mon compte</button>
       <div class="b-confirm" id="r-confirm" hidden role="alertdialog" aria-labelledby="r-confirm-t">
         <b id="r-confirm-t">Tout effacer ?</b>
@@ -1820,13 +1810,15 @@ $('form').addEventListener('submit',async e=>{
 /* ---------- Menu : sauvegarde ---------- */
 $('menu-btn').addEventListener('click',()=>show('menu'));
 let exportCardsOnly=false;
+// sauvegarde = ta progression (classeur, équipe, succès, campagne, élo…), sans les cartes, qui viennent de la liste officielle
+// « Exporter les cartes seulement » (admin) reste un fichier à part
 const exportPayload=(d,only)=>only?{app:'cartes-volley',version:2,exportedAt:d.toISOString(),players}
-  :{app:'cartes-volley',version:2,exportedAt:d.toISOString(),players,classeur:state};
+  :{app:'cartes-volley',version:3,kind:'sauvegarde',exportedAt:d.toISOString(),classeur:state};
 const exportName=(stamp,only)=>`cartes-volley-${only?'cartes-':''}${stamp}.json`;
 $('m-export-cards').addEventListener('click',()=>{exportCardsOnly=true;$('m-export').click();});
 $('m-export').addEventListener('click',async()=>{
   const onlyCards=exportCardsOnly;exportCardsOnly=false;
-  if(!players.length){toast("Crée au moins une carte avant d'enregistrer une sauvegarde.");return;}
+  if(onlyCards&&!players.length){toast("Aucune carte à exporter.");return;}
   if(APP){
     const d=new Date(),stamp=d.getFullYear()+'-'+String(d.getMonth()+1).padStart(2,'0')+'-'+String(d.getDate()).padStart(2,'0');
     let res='error';try{res=AndroidBridge.saveFile(exportName(stamp,onlyCards),JSON.stringify(exportPayload(d,onlyCards),null,1));}catch(e){}
@@ -1851,43 +1843,21 @@ $('m-export').addEventListener('click',async()=>{
 });
 $('m-import').addEventListener('change',async e=>{
   const f=e.target.files[0];e.target.value='';if(!f)return;
-  try{
-    const j=JSON.parse(await f.text());const arr=Array.isArray(j)?j:j.players;
-    if(!Array.isArray(arr))throw 0;
-    const list=arr.filter(p=>p&&p.id&&!p.example).map(normalize);
-    if(!isAdmin){ // joueur : les cartes viennent de la liste officielle, on ne reprend que le classeur
-      if(j&&j.classeur&&mergeState(j.classeur)){cleanOwned();await saveState();render();toast('Classeur restauré');}else toast("Ce fichier ne contient pas de classeur.");closeAll();return;}
-    if(!list.length){toast('Ce fichier ne contient aucune carte.');return;}
-    for(const p of list)await persist(p);
-    if(j&&j.classeur&&mergeState(j.classeur)){await saveState();render();}
-    toast(list.length+(list.length>1?' cartes restaurées':' carte restaurée'));closeAll();
-  }catch(err){toast("Ce fichier n'est pas une sauvegarde Cartes Volley.");}
+  let j;try{j=JSON.parse(await f.text());}catch(err){toast("Ce fichier n'est pas une sauvegarde Cartes Volley.");return;}
+  const cl=j&&!Array.isArray(j)&&j.classeur;
+  if(!cl||typeof cl!=='object'){toast(Array.isArray(j)||(j&&j.players)?"Ce fichier ne contient que des cartes, pas de sauvegarde.":"Ce fichier n'est pas une sauvegarde Cartes Volley.");return;}
+  // la sauvegarde remplace ta progression ; anti-triche : on garde le booster et la tentative de campagne les plus récents
+  const keep={lastDay:state.lastDay,lastTs:state.lastTs,pkT:state.pkT,count:state.count,cday:state.camp.day,cts:state.camp.ts,rev:state.rev,played:state.played};
+  const f2=fixState(cl);state=f2;
+  if(keep.lastDay>state.lastDay)state.lastDay=keep.lastDay;state.lastTs=Math.max(state.lastTs,keep.lastTs);state.pkT=Math.max(state.pkT,keep.pkT);state.count=Math.max(state.count,keep.count);
+  if(keep.cday>state.camp.day)state.camp.day=keep.cday;state.camp.ts=Math.max(state.camp.ts,keep.cts);
+  state.played=[...new Set([...(state.played||[]),...keep.played])].slice(-300);state.rev=Math.max(state.rev,keep.rev);
+  cleanOwned();await saveState();
+  render();renderPacks();renderAch();renderDups();if(!$('tab-binder').hidden)renderBinder();if(!$('tab-team').hidden)renderTeam();
+  const n=Object.keys(state.counts).length;toast(`Sauvegarde restaurée : ${n} carte${n>1?'s':''} dans ton classeur`);closeAll();
+  if(net.on)netHello();
 });
 
-/* Importer les cartes uniquement : la liste devient celle du fichier, le classeur ne bouge pas */
-let pendingCards=null;
-$('m-import-cards').addEventListener('change',async e=>{
-  const f=e.target.files[0];e.target.value='';if(!f)return;
-  try{
-    const j=JSON.parse(await f.text());const arr=Array.isArray(j)?j:j.players;if(!Array.isArray(arr))throw 0;
-    const list=arr.filter(p=>p&&p.id&&!p.example).map(normalize);
-    if(!list.length){toast('Ce fichier ne contient aucune carte.');return;}
-    const mine=new Set(players.map(p=>p.id)),theirs=new Set(list.map(p=>p.id));
-    const add=list.filter(p=>!mine.has(p.id)).length,upd=list.length-add,del=players.filter(p=>!theirs.has(p.id)).length;
-    pendingCards=list;
-    const pl=(n,a,b)=>`${n} ${n>1?b:a}`;
-    $('mi-confirm-txt').textContent=`${pl(add,'nouvelle carte','nouvelles cartes')}, ${pl(upd,'mise à jour','mises à jour')}, ${pl(del,'carte supprimée','cartes supprimées')}. Ton classeur n'est pas touché : les cartes que tu as déjà obtenues y restent si elles existent encore.`;
-    $('mi-confirm').hidden=false;$('mi-confirm').scrollIntoView({block:'center',behavior:'smooth'});
-  }catch(err){toast("Ce fichier n'est pas une sauvegarde Cartes Volley.");}
-});
-$('mi-cancel').addEventListener('click',()=>{pendingCards=null;$('mi-confirm').hidden=true;});
-$('mi-ok').addEventListener('click',async()=>{
-  const list=pendingCards;pendingCards=null;$('mi-confirm').hidden=true;if(!list)return;
-  const keep=new Set(list.map(p=>p.id));
-  for(const p of players.filter(p=>!keep.has(p.id)))await remove(p.id);
-  for(const p of list)await persist(p);
-  toast(`Cartes mises à jour : ${list.length} carte${list.length>1?'s':''}`);closeAll();
-});
 /* Réinitialiser le compte : tout repart de zéro, sauf la date du dernier booster (sinon un reset rendrait le booster du jour) */
 const rClose=()=>{$('r-confirm').hidden=true;$('r-btn').hidden=false;$('r-sure').checked=false;$('r-ok').disabled=true;};
 $('r-btn').addEventListener('click',()=>{$('r-confirm').hidden=false;$('r-btn').hidden=true;$('r-confirm').scrollIntoView({block:'center',behavior:'smooth'});});
@@ -1895,7 +1865,6 @@ $('r-cancel').addEventListener('click',rClose);
 $('r-sure').addEventListener('change',()=>{$('r-ok').disabled=!$('r-sure').checked;});
 $('r-ok').addEventListener('click',async()=>{
   if(!$('r-sure').checked)return;$('r-ok').disabled=true;
-  for(const p of players.slice())await remove(p.id);
   const keep={lastDay:state.lastDay,lastTs:state.lastTs,pkT:state.pkT,rev:state.rev,played:state.played,cday:state.camp.day,cts:state.camp.ts,pid:state.pid,key:state.key};
   let resetOk=!keep.pid||!keep.key||!SERVER;if(!resetOk){try{await api('reset',{pseudo:''});resetOk=true;}catch(e){}} // élo, victoires et amis remis à zéro en ligne aussi
   state=blankState();state.pid=keep.pid;state.key=keep.key;state.resetPending=!resetOk; // sans internet : fait à la prochaine connexionstate.lastDay=keep.lastDay;state.lastTs=keep.lastTs;state.pkT=keep.pkT;state.rev=keep.rev;state.played=keep.played;state.camp.day=keep.cday;state.camp.ts=keep.cts; // les QR déjà joués et la tentative du jour restent bloqués
