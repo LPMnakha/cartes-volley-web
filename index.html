@@ -2682,6 +2682,12 @@ function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a
 function hashStr(s){let h=1779033703^s.length;for(let i=0;i<s.length;i++){h=Math.imul(h^s.charCodeAt(i),3432918353);h=h<<13|h>>>19;}h=Math.imul(h^h>>>16,2246822507);h=Math.imul(h^h>>>13,3266489909);return(h^h>>>16)>>>0;}
 const M_START=[5,0,1,2,3,4]; // positions 1..6 : PAS, R4a, CEN1, PTU, R4b, CEN2
 // fautes de service selon la stat : même un serveur à 100 rate de temps en temps
+// Équilibre des matchs serrés : entre deux équipes proches, le petit écart de note est en partie gommé
+// (57 contre 59 ≈ 45 % de victoires), alors qu'un gros écart reste écrasant. ME_CLOSE = points de note gommés au maximum.
+const ME_CLOSE=6;
+const ME_PW=[{rec:.3,att:.3,def:.2,ser:.15,blo:.05},{blo:.45,att:.3,ser:.15,pas:.05,def:.05},{att:.45,blo:.2,ser:.2,def:.1,rec:.05},
+  {rec:.3,att:.3,def:.2,ser:.15,blo:.05},{blo:.45,att:.3,ser:.15,pas:.05,def:.05},{pas:.5,def:.15,ser:.15,rec:.1,blo:.05,att:.05},{rec:.45,def:.45,pas:.1}]; // R4, CEN, PTU, R4, CEN, PAS, LIB
+const teamNoteE=T=>T.cards.reduce((t,c,i)=>t+Object.entries(ME_PW[i]).reduce((u,[k,v])=>u+(+c.s[k]||0)*v,0),0)/7;
 // taux de ratés selon la stat (0 à 100) : même à 100, on rate de temps en temps
 const ME_SFT=[[0,.40],[20,.30],[30,.25],[60,.15],[87,.11],[100,.07]]; // fautes de service
 const ME_AFT=[[0,.40],[20,.30],[30,.25],[60,.12],[87,.08],[100,.05]]; // attaques dehors ou dans le filet
@@ -2693,7 +2699,9 @@ function simulateMatch(A,B,seed,opts){
   const O=opts||{sets:1,pts:10,tie:10},multi=!!opts;
   const R=mulberry32(seed),teams=[A,B];
   // stat brute 0 à 1 : 30 = débutant, 60 = amateur qui se débrouille, 85 = joueur compétitif pré-régional
-  const st=(t,i,k)=>Math.max(0,Math.min(1,(+teams[t].cards[i].s[k]||0)/100));
+  const g0=teamNoteE(B)-teamNoteE(A),ga=Math.abs(g0),eff=ga*ga/(ga+ME_CLOSE),sh=(ga-eff)/2*Math.sign(g0); // écart réel → écart effectif
+  const adj=[sh,-sh]; // l'équipe la plus faible remonte un peu, la plus forte descend un peu
+  const st=(t,i,k)=>Math.max(0,Math.min(1,((+teams[t].cards[i].s[k]||0)+adj[t])/100));
   const cl=(x,a,b)=>Math.max(a,Math.min(b,x));
   const sg=x=>1/(1+Math.exp(-x)); // courbe de duel : 0 à 1 selon l'écart
   const nz=w=>(R()-.5)*w;
@@ -2792,12 +2800,14 @@ function netMsg(e,who){const c=e&&e.code;who=who?esc(who):'ton pote';
   if(c==='bad_key'||c==='unknown_player')return"Ton compte en ligne n'est pas reconnu. Réessaie dans un instant.";
   return"Le serveur a refusé la demande. Réessaie dans un instant.";}
 function netApplyMe(me){if(!me)return;net.me=me;if(state.elo!==me.elo){state.elo=me.elo;saveState();}}
-async function netHello(){
+let helloP=null;
+function netHello(){if(!helloP)helloP=netHello1().finally(()=>{helloP=null;});return helloP;}
+async function netHello1(){
   if(!SERVER){net.on=false;net.err='off';renderNet();return;}
   ensureProfile();
   try{const w=state.matches.filter(m=>m.win).length,j=await api('hello',{pseudo:state.pseudo,elo:state.elo,w,l:state.matches.length-w});
     net.on=true;net.err='';netApplyMe(j.me);netStartPoll();if(j.inbox)netPoll();netRank(true);}
-  catch(e){net.on=false;net.err=e.code;}
+  catch(e){net.on=false;net.err=e.code;if(e.code==='net'||e.code==='server'||e.code==='http'){clearTimeout(net.retry);net.retry=setTimeout(netHello,15000);}}
   renderNet();
 }
 function netStartPoll(){if(net.timer)return;net.timer=setInterval(()=>{if(!document.hidden)netPoll();},5000);}
@@ -2867,7 +2877,7 @@ const RANKS=[[0,'Débutant'],[450,'Amateur'],[500,'Régional'],[560,'National'],
 const rankName=e=>RANKS.filter(r2=>e>=r2[0]).pop()[1];
 const eloExp=(a,b)=>1/(1+Math.pow(10,(b-a)/400));
 const ELO_K=32;
-const ENGINE_VER=7; // à augmenter à chaque changement du moteur : deux versions différentes ne donnent pas le même match
+const ENGINE_VER=8; // à augmenter à chaque changement du moteur : deux versions différentes ne donnent pas le même match
 let myCode=null,myNonce=null,oppData=null,oppRaw=null;
 function teamPayload(nonce){
   const cards=SLOT_ORDER.map(k=>{const sl=TEAM_SLOTS.find(x=>x.k===k),c=teamCard(sl);return[encodeURIComponent(c.name),c.s.ser,c.s.rec,c.s.pas,c.s.att,c.s.blo,c.s.def,c.poste].join(',');});
@@ -3131,7 +3141,7 @@ const teamAvg=T=>payloadTeamScore(T);
 const cpChCache={};
 function cpChance(me,n){
   const key=n+'|'+me.cards.map(c=>SKILLS.map(x=>c.s[x.k]).join(',')).join(';');if(cpChCache[key]!=null)return cpChCache[key];
-  const op=cpTeam(n),f=cpTier(n).fmt;let w=0;const N=40;
+  const op=cpTeam(n),f=cpTier(n).fmt;let w=0;const N=100;
   for(let i=0;i<N;i++)if(simulateMatch(me,op,hashStr('prono|'+n+'|'+i),f).winner===0)w++;
   return cpChCache[key]=Math.round(w/N*100);
 }
