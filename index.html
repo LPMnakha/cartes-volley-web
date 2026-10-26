@@ -1836,7 +1836,7 @@ async function openPack(){
       txt.innerHTML='<span class="w cnt" id="op-cnt">0</span>';await countUp($('op-cnt'),o,R===3?1800:1300,alive);if(!alive())return;
       sfx.boom();shake();flash(R===3?'#F3E8FF':'#FFF6D0');{const[x,y]=centerOf(txt);burst(x,y,fx.c,R===3?160:110,12,{up:2});}
       await wait(900);if(!alive())return;
-      await show(`<span class="w ph">${p.photo?`<img src="${p.photo}" alt="">`:esc(initials(p.name))}</span>`);if(!alive())return;
+      if(!isFA){await show(`<span class="w ph">${p.photo?`<img src="${p.photo}" alt="">`:esc(initials(p.name))}</span>`);if(!alive())return;} // Full Art : l'image se découvre quand la carte se fissure
       txt.innerHTML='';fl.classList.remove('hide');
     }
     fl.querySelector('.front').innerHTML=cardHTML(p,0,false);
