@@ -402,6 +402,8 @@ textarea.text-in{font-size:1rem;font-weight:500;resize:none;line-height:1.35}
 .elo-box span{font-size:.7rem;color:var(--muted);white-space:nowrap}
 .qr{display:grid;place-items:center;background:#fff;border-radius:14px;padding:12px;width:min(100%,300px);aspect-ratio:1;margin:0 auto}
 .qr img{width:100%;height:100%;image-rendering:pixelated}
+.qr.small{width:140px;padding:6px;margin:0;flex:none}
+.vs-qr{display:flex;gap:12px;align-items:center}
 .qr p{color:#18202A;text-align:center;margin:0;font-size:.85rem}
 .scan{position:relative;display:flex;flex-direction:column;gap:10px;align-items:center}
 .scan video{width:min(100%,320px);aspect-ratio:1;object-fit:cover;border-radius:14px;background:#000}
@@ -889,6 +891,7 @@ input[type=range]::-moz-range-thumb{width:20px;height:20px;border-radius:50%;bac
     <div class="section" id="m-prep">
       <button class="btn primary" type="button" id="m-start">Préparer un match</button>
       <div class="stack" id="m-qrbox" hidden>
+        <div class="banner" id="m-played" hidden><span><b>Match joué.</b> Si ton pote ne l'a pas vu, il scanne ce QR maintenant : le même match se lancera chez lui. Pour un nouveau match, touche « Nouveau QR ».</span></div>
         <span class="label">1. Montre ce QR à ton pote</span>
         <div class="qr" id="m-qr"></div>
         <div class="row-actions"><button class="btn" type="button" id="m-copy">Copier mon code</button><button class="btn" type="button" id="m-new">Nouveau QR</button></div>
@@ -2504,21 +2507,22 @@ function renderMatchTab(){
   $('m-hist-sec').hidden=!state.matches.length;
   $('m-hist').innerHTML=state.matches.slice(0,10).map(m=>`<div class="mh-row"><i class="${m.win?'w':'l'}">${m.win?'V':'D'}</i><span>contre ${esc(m.opp)}</span><b>${m.my}-${m.op}</b><small>${m.d>=0?'+':''}${m.d} · ${fmt.format(new Date(m.ts))}</small></div>`).join('');
 }
-$('m-pseudo').addEventListener('change',async()=>{const v=$('m-pseudo').value.trim().slice(0,16);if(!v)return;state.pseudo=v;await saveState();renderMatchTab();if(myNonce)showMyQR();});
+$('m-pseudo').addEventListener('change',async()=>{const v=$('m-pseudo').value.trim().slice(0,16);if(!v)return;state.pseudo=v;await saveState();renderMatchTab();if(myNonce&&$('m-played').hidden){myCode=null;showMyQR();}});
 $('m-pseudo').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();e.target.blur();}});
 function mErr(t){const e=$('m-err');e.textContent=t||'';e.hidden=!t;}
 async function showMyQR(){
-  myCode=teamPayload(myNonce);const box=$('m-qr');box.innerHTML='<p>Création du QR…</p>';
+  if(!myCode)myCode=teamPayload(myNonce);const box=$('m-qr');box.innerHTML='<p>Création du QR…</p>';
   try{const q=await loadLib('qr');try{q.stringToBytes=q.stringToBytesFuncs&&q.stringToBytesFuncs['UTF-8']||q.stringToBytes;}catch(e){}
     const qr=q(0,'L');qr.addData(myCode);qr.make();box.innerHTML=`<img alt="QR code de ton équipe" src="${qr.createDataURL(6,2)}">`;}
   catch(e){box.innerHTML="<p>QR indisponible sans connexion. Utilise « Copier mon code » et envoie-le à ton pote.</p>";}
 }
-$('m-start').addEventListener('click',()=>{ensureProfile();myNonce=rid(8);oppData=null;$('m-vs').hidden=true;$('m-qrbox').hidden=false;$('m-start').hidden=true;mErr('');showMyQR();});
-$('m-new').addEventListener('click',()=>{myNonce=rid(8);oppData=null;$('m-vs').hidden=true;mErr('');showMyQR();});
+$('m-start').addEventListener('click',()=>{ensureProfile();myNonce=rid(8);myCode=null;oppData=null;$('m-vs').hidden=true;$('m-qrbox').hidden=false;$('m-start').hidden=true;mErr('');showMyQR();});
+$('m-new').addEventListener('click',()=>{myNonce=rid(8);myCode=null;$('m-played').hidden=true;oppData=null;$('m-vs').hidden=true;mErr('');showMyQR();});
 $('m-copy').addEventListener('click',async()=>{if(!myCode)return;try{await navigator.clipboard.writeText(myCode);toast('Code copié : envoie-le à ton pote');}
   catch(e){const t=$('m-code');t.closest('details').open=true;t.value=myCode;t.select();toast('Code sélectionné : copie-le à la main');}});
 $('m-code-ok').addEventListener('click',()=>gotCode($('m-code').value));
 function gotCode(str){
+  if(!$('m-played').hidden){mErr('Tu as déjà joué avec ce QR. Touche « Nouveau QR » pour un autre match.');return false;}
   const d=parsePayload(str);
   if(!d){mErr("Ce code n'est pas un QR Cartes Volley valide.");return false;}
   if(d.nonce===myNonce||d.pid===state.pid){mErr("C'est ton propre QR : scanne celui de ton pote.");return false;}
@@ -2529,7 +2533,7 @@ function gotCode(str){
 }
 const matchId=(a,b)=>String(hashStr([a,b].sort().join('|')));
 function renderVS(){
-  const d=oppData,me=parsePayload(teamPayload(myNonce));if(!d||!me)return;
+  const d=oppData,me=parsePayload(myCode);if(!d||!me)return;
   const myS=payloadTeamScore(me),opS=payloadTeamScore(d),E=eloExp(state.elo,d.elo),win=Math.round(ELO_K*(1-E)),lose=Math.round(ELO_K*E);
   const vsCards=dd=>dd.cards.map(c=>miniHTML({...c,id:'x',kind:'joueur',photo:null})).join('');
   const el=$('m-vs');el.hidden=false;
@@ -2537,8 +2541,9 @@ function renderVS(){
     <div class="vs-grid"><div><b>${esc(state.pseudo)}</b><small>${state.elo} élo · équipe ${myS}</small></div><span class="vs">VS</span><div><b>${esc(d.pseudo)}</b><small>${d.elo} élo · équipe ${opS}</small></div></div>
     <div class="vs-teams">${vsCards(me)}</div><div class="vs-teams">${vsCards(d)}</div>
     <p class="vs-stake">Victoire : <b>+${win}</b> élo · Défaite : <b>−${lose}</b> élo</p>
-    <p class="note" style="margin:0;text-align:center">Ton pote doit aussi avoir scanné ton QR pour voir le même match.</p>
+    <div class="vs-qr"><div class="qr small" id="m-qr2"></div><p class="note" style="margin:0">Ton pote doit aussi scanner <b>ton</b> QR pour voir le match sur son téléphone. Tu peux lancer maintenant : ton QR reste affiché après le match.</p></div>
     <button class="btn primary" type="button" id="m-go">Lancer le match</button>`;
+  const q1=$('m-qr').innerHTML;$('m-qr2').innerHTML=q1;
   $('m-go').addEventListener('click',launchMatch);el.scrollIntoView({block:'center',behavior:'smooth'});
 }
 /* scan : caméra en direct, ou photo */
@@ -2570,7 +2575,7 @@ let mRun=0,mSpeed=1,mSkip=false;
 const MPOS={1:[7.2,15.3],2:[7.2,11.3],3:[4.5,11.3],4:[1.8,11.3],5:[1.8,15.3],6:[4.5,15.3]};
 const SETTER_SPOT=[6.3,10.3],SERVE_SPOT=[7.4,18.8],BENCH=[9.85,13.6];
 async function launchMatch(){
-  if(!oppData||!myNonce)return;const me=parsePayload(teamPayload(myNonce)),op=oppData,mid=matchId(myNonce,op.nonce);
+  if(!oppData||!myNonce)return;const me=parsePayload(myCode),op=oppData,mid=matchId(myNonce,op.nonce);
   if(state.played.includes(mid)){mErr('Ce match a déjà été joué.');return;}
   ac();
   const first=myNonce<op.nonce,A=first?me:op,B=first?op:me,myIdx=first?0:1;
@@ -2582,7 +2587,7 @@ async function launchMatch(){
   state.opps[op.pid]={n:op.pseudo,e:opNew,w:prev.w+(win?1:0),l:prev.l+(win?0:1)};
   state.matches.unshift({ts:Date.now(),opp:op.pseudo,my:sim.score[myIdx],op:sim.score[1-myIdx],win,d,before});state.matches=state.matches.slice(0,40);
   const na=checkAch(false);await saveState();
-  myNonce=null;oppData=null;$('m-vs').hidden=true;$('m-qrbox').hidden=true;$('m-start').hidden=false;renderMatchTab();
+  oppData=null;$('m-vs').hidden=true;$('m-played').hidden=false;renderMatchTab(); // le QR reste affiché : le pote peut encore le scanner
   // affichage : mes cartes avec leurs photos, celles du pote avec leurs initiales
   const myCards=SLOT_ORDER.map((k,i)=>{const c=teamCard(TEAM_SLOTS.find(x=>x.k===k));return c&&c.name===me.cards[i].name?c:{...me.cards[i],id:'m'+i,kind:'joueur',photo:null};});
   const opCards=op.cards.map((c,i)=>({...c,id:'o'+i,kind:'joueur',photo:null}));
@@ -2694,7 +2699,7 @@ async function playMatch(sim,disp,names,myIdx,res){
   com(res.win?`Victoire de <b>${esc(names[myIdx])}</b> !`:`Victoire de <b>${esc(names[1-myIdx])}</b>`);
   const end=document.createElement('div');end.className='mt-end';
   end.innerHTML=`<div><b class="${res.win?'w':'l'}">${res.win?'Victoire !':'Défaite'}</b><span class="sc">${sim.score[myIdx]} – ${sim.score[1-myIdx]}</span>
-    <span class="el">Élo ${res.before} → ${res.after} <i class="${res.d>=0?'':'n'}">${res.d>=0?'+':''}${res.d}</i></span><span class="note">${rankName(res.after)}</span>
+    <span class="el">Élo ${res.before} → ${res.after} <i class="${res.d>=0?'':'n'}">${res.d>=0?'+':''}${res.d}</i></span><span class="note">${rankName(res.after)}</span><span class="note" style="max-width:30ch">Ton pote n'a pas vu le match ? Il scanne ton QR, toujours affiché dans l'onglet Match.</span>
     <button class="btn primary" type="button">Terminer</button></div>`;
   end.querySelector('button').addEventListener('click',closeMatch);M.appendChild(end);
   if(res.win){sfx.fanfare();buzz([100,60,100,60,240]);}else sfx.thump();
