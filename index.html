@@ -213,6 +213,8 @@ textarea.text-in{font-size:1rem;font-weight:500;resize:none;line-height:1.35}
 @keyframes pagePrev{from{transform:rotateY(40deg) translateX(-24px);opacity:.15}}
 
 /* Signature : Full Art avec liseré or animé */
+.c-sigline{font-family:"Great Vibes","Brush Script MT",cursive;font-size:clamp(1rem,5vw,1.4rem);color:#FFE97A;text-align:center;position:relative;z-index:2;text-shadow:0 0 4px #000,0 0 10px rgba(255,200,0,.6)}
+.card.signature .c-pos{font-size:.9rem}
 .card.signature .sig-rim{position:absolute;inset:1.7% 2.8%;clip-path:polygon(0 6.5%,8.5% 0,91.5% 0,100% 6.5%,100% 87.5%,50% 100%,0 87.5%);z-index:0;
   background:linear-gradient(120deg,#7A4E00,#FFE97A 22%,#B8860B 42%,#FFF6C8 52%,#C99700 72%,#7A4E00);background-size:260% 100%;animation:sigShine 2.6s linear infinite}
 .sig-badge{position:absolute;top:.6%;left:50%;transform:translateX(-50%);z-index:3;white-space:nowrap;line-height:1.1;
@@ -605,7 +607,7 @@ input[type=range]::-moz-range-thumb{width:20px;height:20px;border-radius:50%;bac
       <button class="icon-btn mute-btn" type="button" id="mute-btn" aria-label="Couper le son et les vibrations"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 5L6 9H3v6h3l5 4z"/><path class="w1" d="M15.5 8.5a5 5 0 010 7"/><path class="w2" d="M18.5 5.5a9 9 0 010 13"/><path class="x" d="M16 9l6 6M22 9l-6 6"/></svg></button>
     </div>
     <div class="banner" id="pack-ex" hidden><span>Tirage parmi les <b>exemples</b> tant que tu n'as pas créé de cartes.</span></div>
-    <div class="banner" id="pack-few" hidden><span>Il faut au moins <b>5 cartes</b> pour ouvrir un booster : tu en as <b id="pack-few-n">0</b>. Crée-en d'autres dans l'onglet Cartes.</span></div>
+    <div class="banner" id="pack-few" hidden><span>Il faut au moins <b>5 cartes</b> pour ouvrir un booster : tu en as <b id="pack-few-n">0</b> (les Signature ne comptent pas). Crée-en d'autres dans l'onglet Cartes.</span></div>
     <div class="pack-zone" id="pack-zone"><div class="rays"></div><button class="pack" id="pack" type="button" aria-label="Ouvrir le booster"></button></div>
     <button class="btn primary open-btn" type="button" id="open-btn">Ouvrir le booster</button>
     <p class="lock-txt" id="pack-lock" hidden></p>
@@ -681,7 +683,7 @@ input[type=range]::-moz-range-thumb{width:20px;height:20px;border-radius:50%;bac
       <label class="toggle" for="f-fullart"><input type="checkbox" id="f-fullart"><span class="sw" aria-hidden="true"></span>
         <span><b>Full Art</b><small>Carte holographique : la photo prend toute la carte</small></span></label>
       <label class="toggle gold" for="f-sig"><input type="checkbox" id="f-sig"><span class="sw" aria-hidden="true"></span>
-        <span><b>Signature</b><small>Full Art signée, 10 fois plus rare qu'une carte normale</small></span></label>
+        <span><b>Signature</b><small>Full Art signée, sans note ni stats : 0,5 % de chance par booster</small></span></label>
       <label class="label" for="f-name">Nom</label>
       <input class="text-in" type="text" id="f-name" maxlength="18" placeholder="Prénom ou surnom" autocomplete="off" enterkeyhint="done">
       <div class="stack" id="f-poste-wrap"><span class="label">Poste</span>
@@ -795,6 +797,10 @@ const TIER_L={icon:'Carte icône',gold:'Carte or',silver:'Carte argent',bronze:'
 const POSTES_ALL=[...POSTES,{v:'DIV',l:'Divers'}];
 const posteL=v=>(POSTES_ALL.find(p=>p.v===v)||{l:v}).l;
 const isDiv=p=>!!p&&p.kind==='divers';
+const isSigP=p=>!!(p&&p.signature&&p.photo); // une Signature n'a ni note ni stats
+const vt=p=>isSigP(p)?'gold':tier(ovr(p.s)); // couleur affichée : dorée pour les Signature
+const sortVal=p=>isSigP(p)?101:ovr(p.s);
+const SIG_CHANCE=0.005; // chaque Signature a 0,5 % de chance d'être dans un booster
 const allS=n=>{const o={};SKILLS.forEach(x=>o[x.k]=n);return o;};
 const initials=n=>(n||'').trim().split(/\s+/).filter(Boolean).map(w=>w[0]).slice(0,2).join('').toUpperCase()||'?';
 const clampN=v=>Math.max(0,Math.min(100,Math.round(+v||0)));
@@ -918,14 +924,15 @@ function hexIcon(s){
 const STAR=`<svg class="c-star" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l2.9 6.6 7.1.6-5.4 4.7 1.6 7L12 17.3 5.8 20.9l1.6-7L2 9.2l7.1-.6z" fill="currentColor" fill-opacity=".75"/></svg>`;
 function cardHTML(p,i=0,tagOk=true){
   const o=ovr(p.s),dv=isDiv(p),fa=p.fullart&&p.photo,sg=p.signature&&p.photo;
-  return`<button class="card ${tier(o)}${dv?' divers':''}${fa?' fullart':''}${sg?' signature':''}" type="button" data-id="${esc(p.id)}" style="--i:${i}" aria-label="${esc(p.name)}, ${posteL(p.poste)}, note ${o}">
+  return`<button class="card ${vt(p)}${dv?' divers':''}${fa?' fullart':''}${sg?' signature':''}" type="button" data-id="${esc(p.id)}" style="--i:${i}" aria-label="${esc(p.name)}, ${posteL(p.poste)}, ${sg?'Signature':'note '+o}">
     ${p.example&&tagOk?'<span class="tag">Exemple</span>':''}
     <div class="face">
       ${sg?'<div class="sig-rim"></div><span class="sig-badge">Signature</span>':''}${fa?`<div class="fa-art"><img src="${p.photo}" alt=""><div class="fa-holo"></div><div class="fa-glit"></div></div>`:''}
-      <div class="c-top"><div><div class="c-ovr">${o}</div><span class="c-pos">${esc(p.poste)}</span></div>${dv?STAR:hexIcon(p.s)}</div>
+      <div class="c-top"><div>${sg?'':`<div class="c-ovr">${o}</div>`}<span class="c-pos">${esc(p.poste)}</span></div>${dv||sg?STAR:hexIcon(p.s)}</div>
       <div class="c-photo">${p.photo?`<img src="${p.photo}" alt="">`:esc(initials(p.name))}</div>
       <div class="c-name">${esc(p.name)}</div>
       ${dv?`<div class="c-div"><span class="c-kind">DIVERS</span><span class="c-desc">${esc(p.desc||'')}</span></div>`
+        :sg?'<div class="c-sigline">Édition signée</div>'
         :`<div class="c-stats">${SKILLS.map(x=>`<div><b>${p.s[x.k]}</b><span>${x.a}</span></div>`).join('')}</div>`}
     </div></button>`;
 }
@@ -957,8 +964,9 @@ function radar(s,{size=340,labels=true,anim=true,cmp=null}={}){
 function render(){
   const list=shown();
   $('banner').hidden=players.length>0;
-  const avg=list.length?Math.round(list.reduce((t,p)=>t+ovr(p.s),0)/list.length):0;
-  const best=[...list].sort((a,b)=>ovr(b.s)-ovr(a.s))[0];
+  const rated=list.filter(p=>!isSigP(p));
+  const avg=rated.length?Math.round(rated.reduce((t,p)=>t+ovr(p.s),0)/rated.length):0;
+  const best=[...rated].sort((a,b)=>ovr(b.s)-ovr(a.s))[0];
   $('summary').innerHTML=`<div class="sum"><b>${list.length}</b><span>Cartes</span></div>
     <div class="sum"><b>${avg}</b><span>Moyenne</span></div>
     <div class="sum"><b>${best?esc(best.name):'–'}</b><span>Top note</span></div>`;
@@ -968,7 +976,7 @@ function render(){
   if(filter!=='ALL'&&!counts[filter]){filter='ALL';return render();}
   const sort=$('sort').value;
   const view=list.filter(p=>filter==='ALL'||p.poste===filter)
-    .sort((a,b)=>sort==='name'?a.name.localeCompare(b.name,'fr'):ovr(b.s)-ovr(a.s));
+    .sort((a,b)=>sort==='name'?a.name.localeCompare(b.name,'fr'):sortVal(b)-sortVal(a));
   $('grid').innerHTML=view.map((p,i)=>cardHTML(p,i)).join('');
   $('empty-filter').hidden=view.length>0;
   renderPacks();
@@ -994,14 +1002,16 @@ function openDetail(id,keepScroll){
   $('d-title').textContent=p.name;
   $('d-card').innerHTML=cardHTML(p,0,false);
   $('d-tier').innerHTML=`${TIER_L[tier(o)]} · <b>${posteL(p.poste)}</b>${p.signature&&p.photo?' · <b style="color:#FFD700">Signature</b>':p.fullart&&p.photo?' · Full Art':''}${p.example?' · exemple':''}`;
-  const dv=isDiv(p);
-  $('d-div-sec').hidden=!dv;$('d-radar-sec').hidden=dv;$('d-traits').hidden=dv;$('d-bars-sec').hidden=dv;
-  if(dv){$('d-desc').textContent=p.desc||'Pas de description.';$('d-note').textContent=p.note;$('d-note-bar').style.width=p.note+'%';}
-  const others=shown().filter(x=>x.id!==id&&!isDiv(x));
+  const dv=isDiv(p),sgp=isSigP(p),noStats=dv||sgp;
+  $('d-div-sec').hidden=!noStats;$('d-radar-sec').hidden=noStats;$('d-traits').hidden=noStats;$('d-bars-sec').hidden=noStats;
+  $('d-note').closest('.bars').hidden=sgp;$('d-div-sec').querySelector('.label').textContent=sgp?'Carte Signature':'Carte divers';
+  if(noStats){$('d-desc').textContent=sgp?(dv&&p.desc?p.desc+' · ':'')+'Édition signée, sans statistiques.':(p.desc||'Pas de description.');if(!sgp){$('d-note').textContent=p.note;$('d-note-bar').style.width=p.note+'%';}}
+  if(sgp)$('d-tier').innerHTML=`<b style="color:#FFD700">Signature</b> · ${esc(posteL(p.poste))}${p.example?' · exemple':''}`;
+  const others=shown().filter(x=>x.id!==id&&!isDiv(x)&&!isSigP(x));
   const prev=$('d-compare').value;
   $('d-compare').innerHTML=`<option value="">Personne</option>`+others.map(x=>`<option value="${esc(x.id)}">${esc(x.name)} (${ovr(x.s)})</option>`).join('');
   $('d-compare').value=keepScroll&&others.some(x=>x.id===prev)?prev:'';
-  if(!dv)drawDetailRadar(true);
+  if(!noStats)drawDetailRadar(true);
   const sorted=[...SKILLS].sort((a,b)=>p.s[b.k]-p.s[a.k]);
   $('d-traits').innerHTML=`<div class="trait up"><span class="label">Point fort</span><b>${sorted[0].l}</b></div>
     <div class="trait down"><span class="label">À travailler</span><b>${sorted[5].l}</b></div>`;
@@ -1012,7 +1022,7 @@ function openDetail(id,keepScroll){
   if(!keepScroll)show('detail');
 }
 function drawDetailRadar(anim){
-  const p=findP(openId);if(!p||isDiv(p))return;const q=findP($('d-compare').value);
+  const p=findP(openId);if(!p||isDiv(p)||isSigP(p))return;const q=findP($('d-compare').value);
   $('d-radar').innerHTML=radar(p.s,{cmp:q?q.s:null,anim});
   $('d-legend').innerHTML=q?`<span><i style="background:#FF7A2F"></i>${esc(p.name)}</span><span><i style="background:#5CD6FF"></i>${esc(q.name)}</span>`:'';
 }
@@ -1047,6 +1057,9 @@ function setKindUI(){
   $('f-poste-wrap').hidden=dv;$('f-stats-sec').hidden=dv;$('f-div-sec').hidden=!dv;$('f-radar').hidden=dv;$('f-live').classList.toggle('solo',dv);
   $('f-name').placeholder=dv?'Nom de la carte':'Prénom ou surnom';
   if(!editing||!editing.id)$('f-title').textContent=dv?'Nouvelle carte divers':'Nouveau joueur';
+  const sg=$('f-sig').checked; // une Signature n'a ni note ni stats
+  if(sg){$('f-stats-sec').hidden=true;$('f-live').hidden=true;}else $('f-live').hidden=false;
+  $('f-note').closest('.sl').hidden=sg;
   updateLive();
 }
 document.querySelectorAll('#f-kinds input').forEach(i=>i.addEventListener('change',setKindUI));
@@ -1076,7 +1089,7 @@ $('f-photo').addEventListener('change',e=>{const f=e.target.files[0];e.target.va
   im.onerror=()=>{URL.revokeObjectURL(url);toast("Cette image n'a pas pu être lue. Essaie une photo JPG ou PNG.");};
   im.src=url;});
 $('f-fullart').addEventListener('change',()=>{if(draftPhoto){openCropper(draftOrig||draftPhoto,null);}});
-$('f-sig').addEventListener('change',()=>{const on=$('f-sig').checked,was=$('f-fullart').checked;
+$('f-sig').addEventListener('change',()=>{setKindUI();const on=$('f-sig').checked,was=$('f-fullart').checked;
   $('f-fullart').disabled=on;if(on&&!was){$('f-fullart').checked=true;if(draftPhoto)openCropper(draftOrig||draftPhoto,null);}});
 $('f-photo-clear').addEventListener('click',()=>{draftPhoto=null;setAvatar();});
 $('f-photo-crop').addEventListener('click',()=>{if(draftPhoto)openCropper(draftOrig||draftPhoto,null);});
@@ -1169,7 +1182,7 @@ $('form').addEventListener('submit',async e=>{
   const signature=$('f-sig').checked,fullart=$('f-fullart').checked||signature;
   const p=formDiv()?{id,fullart,kind:'divers',name,poste:'DIV',note:n,desc:$('f-desc').value.trim().slice(0,60),photo:draftPhoto,s:allS(n)}
     :{id,fullart,kind:'joueur',name,poste,photo:draftPhoto,s:formS()};
-  p.signature=signature;p.createdAt=(editing&&editing.createdAt)||Date.now();
+  p.signature=signature;if(signature){p.s=allS(0);if(p.kind==='divers')p.note=0;}p.createdAt=(editing&&editing.createdAt)||Date.now();
   await persist(p);
   toast(isNew?'Carte créée':'Carte mise à jour');
   editing=null;openDetail(id);
@@ -1235,7 +1248,7 @@ const TIER_FX={
   icon:{c:['#FFD6F5','#B8E6FF','#C9FFD9','#FFF3B0','#C9B8FF','#FFFFFF'],glow:'rgba(201,184,255,.95)',n:260}};
 const TIER_RANK={bronze:0,silver:1,gold:2,icon:3};
 const RM=matchMedia('(prefers-reduced-motion: reduce)').matches;
-const SIGNATURE_RARITY=10; // une Signature sort 10 fois moins souvent qu'une carte normale de même note
+const SIGNATURE_RARITY=10; // ne sert plus au tirage (voir SIG_CHANCE), garde l'ordre de rareté
 const FULLART_RARITY=3; // une Full Art sort 3 fois moins souvent qu'une carte normale de même note
 // Chance de tirage : d'abord la rareté (bronze 1, argent 1/3, or 1/10, icône 1/30),
 // puis un petit écart selon la note dans la même rareté (au plus 1,5 fois entre le bas et le haut de la tranche).
@@ -1244,9 +1257,10 @@ const TIER_RANGE={bronze:[0,64],silver:[65,74],gold:[75,84],icon:[85,100]};
 const weightOf=p=>{const o=ovr(p.s),t=tier(o),[lo,hi]=TIER_RANGE[t],k=(o-lo)/(hi-lo);
   return TIER_WEIGHT[t]*Math.pow(1/1.5,k)/(p.signature&&p.photo?SIGNATURE_RARITY:p.fullart&&p.photo?FULLART_RARITY:1);};
 const PACK_SIZE=5;
-function drawPack(pool){ // tirage pondéré sans remise : 5 joueurs différents
-  const left=pool.map(p=>({p,w:weightOf(p)})),out=[];
-  for(let k=0;k<PACK_SIZE&&left.length;k++){
+function drawPack(pool){ // chaque Signature : 0,5 % de chance ; le reste, tirage pondéré sans remise
+  const out=pool.filter(p=>isSigP(p)&&Math.random()<SIG_CHANCE).slice(0,PACK_SIZE);
+  const left=pool.filter(p=>!isSigP(p)).map(p=>({p,w:weightOf(p)}));
+  while(out.length<PACK_SIZE&&left.length){
     const T=left.reduce((a,b)=>a+b.w,0);let x=Math.random()*T,i=0;
     while(i<left.length-1&&x>=left[i].w){x-=left[i].w;i++;}
     out.push(left.splice(i,1)[0].p);
@@ -1254,7 +1268,7 @@ function drawPack(pool){ // tirage pondéré sans remise : 5 joueurs différents
   return out;
 }
 // la plus rare = la plus petite chance de tirage (note et Full Art comprises) ; à égalité, la mieux notée
-const rarer=(p,q)=>weightOf(p)<weightOf(q)||(weightOf(p)===weightOf(q)&&ovr(p.s)>ovr(q.s));
+const rarer=(p,q)=>isSigP(p)!==isSigP(q)?isSigP(p):weightOf(p)<weightOf(q)||(weightOf(p)===weightOf(q)&&ovr(p.s)>ovr(q.s));
 function revealOrder(cards){ // ordre au hasard, sauf la plus rare qui sort en dernier
   const a=cards.slice();let bi=0;a.forEach((p,i)=>{if(rarer(p,a[bi]))bi=i;});
   const best=a.splice(bi,1)[0];
@@ -1263,25 +1277,26 @@ function revealOrder(cards){ // ordre au hasard, sauf la plus rare qui sort en d
 }
 let oddsCache={key:'',map:null};
 function packOdds(pool){ // chance d'apparaître, estimée par simulation (le tirage sans remise n'a pas de formule simple)
-  const key=pool.map(p=>p.id+':'+ovr(p.s)+':'+(p.fullart&&p.photo?1:0)).join('|');
+  const key=pool.map(p=>p.id+':'+ovr(p.s)+':'+(p.fullart&&p.photo?1:0)+(isSigP(p)?'s':'')).join('|');
   if(oddsCache.key===key)return oddsCache.map;
-  const N=pool.length<=PACK_SIZE?1:4000,cnt=new Map(pool.map(p=>[p.id,0]));
-  for(let n=0;n<N;n++)drawPack(pool).forEach(p=>cnt.set(p.id,cnt.get(p.id)+1));
-  const map=new Map(pool.map(p=>[p.id,cnt.get(p.id)/N]));oddsCache={key,map};return map;
+  const N=pool.filter(p=>!isSigP(p)).length<=PACK_SIZE?1:4000,cnt=new Map(pool.map(p=>[p.id,0]));
+  const normal=pool.filter(p=>!isSigP(p));
+  for(let n=0;n<N;n++)drawPack(normal).forEach(p=>cnt.set(p.id,cnt.get(p.id)+1));
+  const map=new Map(pool.map(p=>[p.id,isSigP(p)?SIG_CHANCE:cnt.get(p.id)/N]));oddsCache={key,map};return map;
 }
 function packHTML(){return`<div class="pack-top"></div><div class="pack-bot"><div class="pack-art">${HEX_BIG}<b>BOOSTER</b><span>CARTES VOLLEY</span><i>5 CARTES</i></div></div>`;}
-function miniHTML(p){const o=ovr(p.s);const fa=p.fullart&&p.photo,sg=p.signature&&p.photo;return`<div class="mini ${tier(o)}${isDiv(p)?' divers':''}${fa?' fullart':''}${sg?' signature':''}"><div class="mface">${sg?'<div class="msr"></div>':''}${fa?`<div class="mfa"><img src="${p.photo}" alt=""></div>`:''}<div class="mo">${o}<small>${esc(p.poste)}</small></div>
+function miniHTML(p){const o=ovr(p.s);const fa=p.fullart&&p.photo,sg=p.signature&&p.photo;return`<div class="mini ${vt(p)}${isDiv(p)?' divers':''}${fa?' fullart':''}${sg?' signature':''}"><div class="mface">${sg?'<div class="msr"></div>':''}${fa?`<div class="mfa"><img src="${p.photo}" alt=""></div>`:''}<div class="mo">${sg?'':o}<small>${esc(p.poste)}</small></div>
   <div class="mp">${p.photo?`<img src="${p.photo}" alt="">`:esc(initials(p.name))}</div><div class="mn">${esc(p.name)}</div></div></div>`;}
 $('pack').innerHTML=packHTML();
 function renderPacks(){
   const pool=players;$('pack-ex').hidden=true;
-  const few=pool.length<PACK_SIZE;
-  $('pack-few').hidden=!few;$('pack-few-n').textContent=pool.length;
+  const nNormal=pool.filter(p=>!isSigP(p)).length,few=nNormal<PACK_SIZE;
+  $('pack-few').hidden=!few;$('pack-few-n').textContent=nNormal;
   renderLock();
   const od=few?null:packOdds(pool);
-  const rows=pool.map(p=>({p,o:ovr(p.s),w:weightOf(p),c:few?0:od.get(p.id)})).sort((a,b)=>a.w-b.w||b.o-a.o); // de la plus rare à la plus courante
+  const rows=pool.map(p=>({p,o:ovr(p.s),w:isSigP(p)?-1:weightOf(p),c:few?0:od.get(p.id)})).sort((a,b)=>a.w-b.w||b.o-a.o); // de la plus rare à la plus courante
   const col={icon:'#C9B8FF',gold:'#FFD23F',silver:'#DCE3EA',bronze:'#E9A877'};
-  $('odds').innerHTML=rows.map(x=>`<div class="odd"><i style="background:${col[tier(x.o)]}"></i><span>${esc(x.p.name)}${x.p.signature&&x.p.photo?' <em class="sig-tag">Signature</em>':x.p.fullart&&x.p.photo?' <em class="fa-tag">FULL ART</em>':''}</span><b>${x.o}</b><span>${few?'–':(x.c*100).toFixed(x.c<.1?1:0)+' %'}</span></div>`).join('');
+  $('odds').innerHTML=rows.map(x=>`<div class="odd"><i style="background:${isSigP(x.p)?'#FFD700':col[tier(x.o)]}"></i><span>${esc(x.p.name)}${x.p.signature&&x.p.photo?' <em class="sig-tag">Signature</em>':x.p.fullart&&x.p.photo?' <em class="fa-tag">FULL ART</em>':''}</span><b>${isSigP(x.p)?'–':x.o}</b><span>${few?'–':(x.c*100).toFixed(x.c<.1?1:0)+' %'}</span></div>`).join('');
 }
 function setTab(t){
   ['cards','packs','binder'].forEach(k=>{$('tab-'+k).hidden=t!==k;$('tab-btn-'+k).setAttribute('aria-selected',t===k);});
@@ -1299,7 +1314,7 @@ async function refreshPackLock(){
   renderLock();
 }
 function renderLock(){
-  const few=players.length<PACK_SIZE,b=$('open-btn'),l=$('pack-lock');
+  const few=players.filter(p=>!isSigP(p)).length<PACK_SIZE,b=$('open-btn'),l=$('pack-lock');
   clearInterval(lockTimer);
   if(few){b.disabled=true;b.textContent='Ouvrir le booster';l.hidden=true;}
   else if(packStatus==='checking'){b.disabled=true;b.textContent="Vérification de l'heure…";l.hidden=true;}
@@ -1335,7 +1350,7 @@ function renderBinder(dir){
   for(let k=0;k<PER_PAGE;k++){
     const i=start+k,p=list[i];
     if(!p){slots.push('<div class="bslot blank" aria-hidden="true"></div>');continue;}
-    const num='#'+String(i+1).padStart(3,'0'),tc=TIER_COL[tier(ovr(p.s))];
+    const num='#'+String(i+1).padStart(3,'0'),tc=isSigP(p)?'#FFD700':TIER_COL[tier(ovr(p.s))];
     slots.push(own.has(p.id)
       ?`<button class="bslot own" type="button" data-id="${esc(p.id)}" aria-label="${num} ${esc(p.name)}">${miniHTML(p)}<span class="bnum">${num}</span></button>`
       :`<div class="bslot miss" style="--tc:${tc}" aria-label="${num}, carte pas encore obtenue"><span class="bnum">${num}</span>${isDiv(p)?SIL_D:SIL_P}<span class="qm">?</span></div>`);
@@ -1438,7 +1453,6 @@ async function faReveal(fl,alive){
   await wait(700);
 }
 const GOLD_C=['#FFD700','#FFE97A','#FFF6C8','#E0A800','#FFFFFF','#B8860B'];
-const isSigP=p=>!!(p&&p.signature&&p.photo);
 async function sigReveal(fl,p,t,alive){
   const O=$('opening'),stage=$('op-stage'),walk=$('walk'),txt=$('walk-txt');
   const card=fl.querySelector('.front .card');if(card)card.classList.add('fa-intro');
@@ -1460,7 +1474,7 @@ async function sigReveal(fl,p,t,alive){
   // 3. Le mot « Signature » s'écrit, rayons dorés
   walk.classList.remove('rainbow');walk.style.setProperty('--wc','rgba(255,215,0,.95)');txt.style.setProperty('--wc','rgba(255,215,0,.95)');
   walk.classList.add('on','gold');
-  txt.innerHTML=`<span class="w sigword">Signature</span><span class="w mid sigsub">${TIER_L[t]} · ${esc(posteL(p.poste))}</span>`;
+  txt.innerHTML=`<span class="w sigword">Signature</span><span class="w mid sigsub">Édition signée · ${esc(posteL(p.poste))}</span>`;
   sfx.chord();buzz([40,60,40,60,140]);
   await wait(2600);if(!alive())return;
   if(svg.parentNode)svg.remove();txt.innerHTML='';
@@ -1531,7 +1545,7 @@ async function countUp(el,to,ms,alive){
 }
 
 async function openPack(){
-  const pool=players;if(pool.length<PACK_SIZE){renderPacks();setTab('packs');toast('Il faut au moins 5 cartes pour ouvrir un booster.');return;}
+  const pool=players;if(pool.filter(p=>!isSigP(p)).length<PACK_SIZE){renderPacks();setTab('packs');toast('Il faut au moins 5 cartes pour ouvrir un booster.');return;}
   if(openBusy)return;
   ac(); // le son doit démarrer pendant le toucher, avant toute attente
   openBusy=true;packStatus='checking';renderLock();
@@ -1545,7 +1559,7 @@ async function openPack(){
   const before=new Set(state.owned),fresh=new Set(pulled.filter(p=>!before.has(p.id)).map(p=>p.id));
   state.lastDay=today;state.lastTs=now;pulled.forEach(p=>{if(!before.has(p.id))state.owned.push(p.id);});
   saveState();packStatus='locked';renderLock();
-  const best=pulled.map(p=>tier(ovr(p.s))).reduce((m,t)=>TIER_RANK[t]>TIER_RANK[m]?t:m,'bronze'),bestR=TIER_RANK[best]; // la lueur annonce le plus haut niveau du booster
+  const best=pulled.map(vt).reduce((m,t)=>TIER_RANK[t]>TIER_RANK[m]?t:m,'bronze'),bestR=TIER_RANK[best]; // la lueur annonce le plus haut niveau du booster
   const O=$('opening'),stage=$('op-stage'),tray=$('op-tray');
   O.hidden=false;O.classList.remove('dark');document.body.style.overflow='hidden';fxSize();FX.parts=[];
   $('op-count').textContent='BOOSTER';tray.innerHTML='<div class="slot"></div>'.repeat(5);tray.hidden=false;
@@ -1575,7 +1589,7 @@ async function openPack(){
   // 3. Révélation carte par carte, la meilleure en dernier
   const walk=$('walk'),txt=$('walk-txt'),tease=$('op-tease');
   for(let i=0;i<5;i++){
-    const p=pulled[i],o=ovr(p.s),t=tier(o),fx=TIER_FX[t],R=TIER_RANK[t];
+    const p=pulled[i],o=ovr(p.s),t=vt(p),fx=TIER_FX[t],R=TIER_RANK[t];
     $('op-count').textContent=`CARTE ${i+1} / 5`;
     stage.querySelectorAll('.stack-back').forEach(e=>e.remove());
     for(let k=4-i;k>0;k--)stage.insertAdjacentHTML('beforeend',`<div class="stack-back" style="transform:translate(${k*5}px,${k*-5}px) rotate(${k*1.5}deg)"><div class="cardback">${HEX_BIG}</div></div>`);
@@ -1657,7 +1671,7 @@ async function openPack(){
     <div class="op-actions"><button class="btn" type="button" id="op-done">Terminé</button><button class="btn primary" type="button" id="op-again">Voir le classeur</button></div></div>`);
   $('op-done').addEventListener('click',closeOpening);
   $('op-again').addEventListener('click',()=>{closeOpening();setTab('binder');});
-  const[bx,by]=centerOf(stage.querySelector('.best'));burst(bx,by,TIER_FX[tier(ovr(top.s))].c,60,8);
+  const[bx,by]=centerOf(stage.querySelector('.best'));burst(bx,by,TIER_FX[vt(top)].c,60,8);
 }
 window.addEventListener('resize',()=>{if(!$('opening').hidden)fxSize();});
 
