@@ -424,6 +424,14 @@ textarea.text-in{font-size:1rem;font-weight:500;resize:none;line-height:1.35}
 .vs-stake{text-align:center;color:var(--muted);font-size:.9rem;margin:0}
 .vs-stake b{color:var(--ink)}
 .rank{display:grid;gap:6px}
+.rank-head{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:8px}
+.mseg.small{padding:3px;border-radius:11px}.mseg.small button{padding:6px 12px;font-size:.82rem;border-radius:8px}
+.rank-row.top b:first-child{color:#FFD23F}
+.rank-sep{text-align:center;color:var(--muted);font-family:var(--data);font-size:.8rem;padding:2px 0}
+.net{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:12px;border:1px solid var(--line);background:rgba(255,255,255,.03);font-size:.88rem;font-weight:600}
+.net>i{width:10px;height:10px;border-radius:50%;background:#9FB0DA;flex:none}
+.net.on>i{background:#3EE08F;box-shadow:0 0 8px #3EE08F}.net.off>i{background:#FF5A5A}
+.net span{flex:1}.net .btn{padding:6px 12px;font-size:.8rem}
 .rank-row{display:grid;grid-template-columns:2ch minmax(0,1fr) auto auto;gap:10px;align-items:center;padding:8px 10px;border-radius:10px;background:rgba(255,255,255,.04)}
 .rank-row.me{background:rgba(255,122,47,.14);border:1px solid rgba(255,122,47,.4)}
 .rank-row b{font-family:var(--data);font-weight:700}
@@ -1074,7 +1082,7 @@ input[type=range]::-moz-range-thumb{width:20px;height:20px;border-radius:50%;bac
     <div class="mseg" id="m-seg" role="group" aria-label="Mode de jeu"><button type="button" data-m="camp" aria-pressed="true">Campagne</button><button type="button" data-m="pvp" aria-pressed="false">Contre un pote</button></div>
     <div class="cp-root" id="m-camp"><div class="cp-root" id="cp-root"></div></div>
     <div class="stack" id="m-pvp" hidden style="gap:16px">
-    <p class="note" style="margin:0">Affronte un pote : 10 points gagnants avec 2 points d'écart. Chacun scanne le QR de l'autre, et le même match se joue sur vos deux téléphones.</p>
+    <p class="note" style="margin:0">Affronte un pote : 10 points gagnants avec 2 points d'écart. Un seul scan suffit : le match se lance aussi sur le téléphone de ton pote, et votre élo est mis à jour en ligne.</p>
     <div class="section prof">
       <div class="prof-row">
         <div class="prof-name"><label class="label" for="m-pseudo">Ton pseudo</label><input class="text-in" type="text" id="m-pseudo" maxlength="16" autocomplete="off" enterkeyhint="done"></div>
@@ -1082,23 +1090,34 @@ input[type=range]::-moz-range-thumb{width:20px;height:20px;border-radius:50%;bac
       </div>
       <p class="note" id="m-record" style="margin:0"></p>
     </div>
+    <div class="net" id="m-net"><i></i><span id="m-net-txt">Connexion au serveur…</span><button class="btn" type="button" id="m-net-retry" hidden>Réessayer</button></div>
     <div class="banner" id="m-noteam" hidden><span>Complète ton équipe (7 cartes) dans l'onglet <b>Équipe</b> pour pouvoir jouer.</span></div>
     <div class="section" id="m-prep">
       <button class="btn primary" type="button" id="m-start">Préparer un match</button>
       <div class="stack" id="m-qrbox" hidden>
-        <div class="banner" id="m-played" hidden><span><b>Match joué.</b> Si ton pote ne l'a pas vu, il scanne ce QR maintenant : le même match se lancera chez lui. Pour un nouveau match, touche « Nouveau QR ».</span></div>
+        <div class="banner" id="m-played" hidden><span><b>Match joué.</b> Pour un nouveau match, touche « Nouveau QR ».</span></div>
         <span class="label">1. Montre ce QR à ton pote</span>
         <div class="qr" id="m-qr"></div>
         <div class="row-actions"><button class="btn" type="button" id="m-copy">Copier mon code</button><button class="btn" type="button" id="m-new">Nouveau QR</button></div>
         <span class="label">2. Scanne le sien</span>
         <div class="row-actions"><button class="btn primary" type="button" id="m-scan">Scanner</button><label class="btn" for="m-photo" style="text-align:center;cursor:pointer">Photo du QR<input type="file" id="m-photo" accept="image/*" hidden></label></div>
-        <div class="scan" id="m-scanbox" hidden><video id="m-video" playsinline muted autoplay></video><div class="scan-frame"></div><button class="btn" type="button" id="m-scan-stop">Arrêter</button></div>
+        <div id="m-scanslot"></div><div class="scan" id="m-scanbox" hidden><video id="m-video" playsinline muted autoplay></video><div class="scan-frame"></div><button class="btn" type="button" id="m-scan-stop">Arrêter</button></div>
         <details class="m-paste"><summary>Coller le code de ton pote</summary><textarea class="text-in" id="m-code" rows="3" placeholder="CV1|…"></textarea><button class="btn" type="button" id="m-code-ok">Valider le code</button></details>
         <p class="err" id="m-err" hidden></p>
       </div>
     </div>
     <div class="section vs" id="m-vs" hidden></div>
-    <div class="section"><span class="label">Classement entre potes</span><div class="rank" id="m-rank"></div></div>
+    <div class="section" id="f-sec">
+      <span class="label">Mes amis</span>
+      <div class="row-actions"><button class="btn" type="button" id="f-show">Mon QR d'ami</button><button class="btn primary" type="button" id="f-scan">Scanner un ami</button></div>
+      <div class="stack" id="f-qrbox" hidden><div class="qr" id="f-qr"></div><p class="note" style="margin:0;text-align:center">Ton pote touche « Scanner un ami » et vise ce QR. Vous serez amis tous les deux.</p>
+        <button class="btn" type="button" id="f-copy">Copier mon code ami</button></div>
+      <div id="f-scanhost"></div>
+      <details class="m-paste"><summary>Entrer un code ami</summary><input class="text-in" type="text" id="f-code" placeholder="Code ami" autocomplete="off" enterkeyhint="done"><button class="btn" type="button" id="f-code-ok">Ajouter</button></details>
+      <p class="err" id="f-err" hidden></p>
+    </div>
+    <div class="section"><div class="rank-head"><span class="label">Classement</span><div class="mseg small" id="r-seg" role="group" aria-label="Classement"><button type="button" data-r="friends" aria-pressed="true">Amis</button><button type="button" data-r="all" aria-pressed="false">Général</button></div></div>
+      <div class="rank" id="m-rank"></div></div>
     <div class="section" id="m-hist-sec" hidden><span class="label">Derniers matchs</span><div class="mhist" id="m-hist"></div></div>
     </div>
   </div>
@@ -1307,6 +1326,7 @@ input[type=range]::-moz-range-thumb{width:20px;height:20px;border-radius:50%;bac
   <div class="mt-actions"><button class="btn" type="button" id="mt-skipset" hidden>Fin du set</button><button class="btn" type="button" id="mt-skip">Aller au résultat</button></div>
 </section>
 <section class="cpi" id="cp-intro" hidden aria-label="Avant le match"><div class="cpi-stage" id="cpi-stage"></div><p class="cpi-skip">Touche pour passer</p></section>
+<section class="cpi k2" id="ch-intro" hidden aria-label="Défi reçu"><div class="cpi-stage" id="chi-stage"></div></section>
 <section class="msheet" id="sheet" hidden aria-label="Feuille de match">
   <div class="sh-bar">
     <button class="icon-btn" type="button" id="sh-close" aria-label="Fermer"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
@@ -1382,7 +1402,7 @@ const shown=()=>players.length?players:EXAMPLES;
 const LS_STATE='cartes-volley-etat';
 const ELO_START=400; // élo de départ de tout le monde
 let state=loadState(),timeOffset=null,lockTimer=null,packStatus='checking',openBusy=false;
-function blankState(){return{owned:[],counts:{},lastDay:'',lastTs:0,pkT:0,count:0,rev:0,bonus:{classic:0,silver:0,gold:0,icon:0},streak:{cur:0,best:0,lastDay:''},history:[],ach:{},team:{},exchanges:0,pid:'',pseudo:'',elo:ELO_START,eloBase:ELO_START,matches:[],opps:{},played:[],camp:{st:1,day:'',ts:0,res:{},last:null,tries:0}};}
+function blankState(){return{owned:[],counts:{},lastDay:'',lastTs:0,pkT:0,count:0,rev:0,bonus:{classic:0,silver:0,gold:0,icon:0},streak:{cur:0,best:0,lastDay:''},history:[],ach:{},team:{},exchanges:0,pid:'',key:'',pseudo:'',elo:ELO_START,eloBase:ELO_START,matches:[],opps:{},played:[],camp:{st:1,day:'',ts:0,res:{},last:null,tries:0}};}
 function fixState(j){
   const o=blankState();if(!j||typeof j!=='object')return o;
   if(j.counts&&typeof j.counts==='object')for(const k in j.counts){const n=Math.max(0,Math.floor(+j.counts[k]||0));if(n)o.counts[String(k)]=n;}
@@ -1393,7 +1413,7 @@ function fixState(j){
   if(j.bonus&&typeof j.bonus==='object')for(const k in o.bonus)o.bonus[k]=Math.max(0,Math.floor(+j.bonus[k]||0));
   if(j.streak&&typeof j.streak==='object')o.streak={cur:+j.streak.cur||0,best:+j.streak.best||0,lastDay:String(j.streak.lastDay||'')};
   o.history=Array.isArray(j.history)?j.history.filter(h=>h&&Array.isArray(h.ids)).slice(0,30):[];
-  o.pid=String(j.pid||'');o.pseudo=String(j.pseudo||'').slice(0,16);o.elo=Number.isFinite(+j.elo)&&j.elo!==''&&j.elo!=null?Math.round(+j.elo):ELO_START;
+  o.pid=String(j.pid||'');o.key=/^[A-Za-z0-9_-]{16,64}$/.test(j.key||'')?j.key:'';o.pseudo=String(j.pseudo||'').slice(0,16);o.elo=Number.isFinite(+j.elo)&&j.elo!==''&&j.elo!=null?Math.round(+j.elo):ELO_START;
   o.eloBase=ELO_START;
   o.matches=Array.isArray(j.matches)?j.matches.slice(0,40):[];o.opps=j.opps&&typeof j.opps==='object'?{...j.opps}:{};o.played=Array.isArray(j.played)?j.played.slice(-300):[];
   // départ passé de 500 à 400 : les anciens comptes sont décalés une seule fois de -100, avec l'élo des potes, pour garder les écarts
@@ -2751,6 +2771,90 @@ function simulateMatch(A,B,seed,opts){
 }
 
 
+
+/* =================== En ligne : serveur des potes (amis, élo, matchs) =================== */
+const SERVER='https://cartes-volley.cottereau-nati.workers.dev'; // serveur Cloudflare (amis, élo, matchs)
+const net={on:false,me:null,rank:null,err:'',polling:false,timer:null,rankTs:0,queue:[],acks:new Set()};
+let rankView='friends';try{const v=localStorage.getItem('cartes-volley-rank');if(v==='all'||v==='friends')rankView=v;}catch(e){}
+async function api(path,body){
+  if(!SERVER)throw Object.assign(new Error('off'),{code:'off'});
+  ensureProfile();const ctl=new AbortController(),tm=setTimeout(()=>ctl.abort(),10000);
+  try{const r=await fetch(SERVER+'/api/'+path,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({pid:state.pid,key:state.key,...(body||{})}),signal:ctl.signal});
+    const j=await r.json().catch(()=>({}));if(!r.ok)throw Object.assign(new Error(j.err||'http'),{code:j.err||'http',data:j});return j;}
+  catch(e){if(!e.code)e.code='net';throw e;}finally{clearTimeout(tm);}
+}
+function netMsg(e,who){const c=e&&e.code;who=who?esc(who):'ton pote';
+  if(c==='net'||c==='off'||c==='http')return"Pas de connexion au serveur : il faut internet pour jouer contre un pote.";
+  if(c==='version'){const d=e.data||{};return d.theirs!==d.server?`${who} a une ancienne version de l'appli : il doit la mettre à jour.`:"Ton appli n'est pas à jour : installe la dernière version.";}
+  if(c==='used')return"Ce QR a déjà servi pour un match. Demande à ton pote d'en préparer un nouveau.";
+  if(c==='unknown_friend')return`${who} n'est pas encore connecté au serveur : il doit ouvrir la dernière version de l'appli avec internet.`;
+  if(c==='self')return"C'est ton propre code.";
+  if(c==='bad_key'||c==='unknown_player')return"Ton compte en ligne n'est pas reconnu. Réessaie dans un instant.";
+  return"Le serveur a refusé la demande. Réessaie dans un instant.";}
+function netApplyMe(me){if(!me)return;net.me=me;if(state.elo!==me.elo){state.elo=me.elo;saveState();}}
+async function netHello(){
+  if(!SERVER){net.on=false;net.err='off';renderNet();return;}
+  ensureProfile();
+  try{const w=state.matches.filter(m=>m.win).length,j=await api('hello',{pseudo:state.pseudo,elo:state.elo,w,l:state.matches.length-w});
+    net.on=true;net.err='';netApplyMe(j.me);netStartPoll();if(j.inbox)netPoll();netRank(true);}
+  catch(e){net.on=false;net.err=e.code;}
+  renderNet();
+}
+function netStartPoll(){if(net.timer)return;net.timer=setInterval(()=>{if(!document.hidden)netPoll();},5000);}
+document.addEventListener('visibilitychange',()=>{if(!document.hidden){if(net.on)netPoll();else if(SERVER)netHello();}});
+async function netPoll(){
+  if(!net.on||net.polling)return;net.polling=true;
+  try{const j=await api('inbox');netApplyMe(j.me);
+    for(const m of j.matches||[]){if(state.played.includes(m.id)){netAck(m.id);continue;}if(!net.queue.some(x=>x.id===m.id))net.queue.push(m);}}
+  catch(e){if(e.code==='net'){net.on=false;net.err='net';renderNet();clearInterval(net.timer);net.timer=null;setTimeout(netHello,15000);}}
+  finally{net.polling=false;}
+  netDrain();
+}
+const netBusy=()=>!$('match').hidden||!$('opening').hidden||!$('cp-intro').hidden||!$('ch-intro').hidden||openBusy||cpBusy;
+let draining=false;
+async function netDrain(){if(draining||netBusy())return;const m=net.queue.shift();if(!m)return;draining=true;try{await playOnline(m,true);}finally{draining=false;}if(net.queue.length)setTimeout(netDrain,800);}
+async function netAck(id){net.acks.add(id);if(!net.on)return;const ids=[...net.acks];try{await api('ack',{ids});ids.forEach(x=>net.acks.delete(x));}catch(e){}}
+async function netRank(force){
+  if(!net.on)return;if(!force&&Date.now()-net.rankTs<20000)return;net.rankTs=Date.now();
+  try{const j=await api('rank');net.rank=j;netApplyMe(j.me);if(!$('tab-match').hidden)renderMatchTab();}catch(e){}
+}
+function renderNet(){
+  const el=$('m-net');if(!el)return;el.className='net '+(net.on?'on':net.err?'off':'');
+  $('m-net-txt').textContent=net.on?`En ligne · ton élo et tes matchs sont synchronisés`:net.err==='off'?'Serveur pas encore installé : les matchs entre potes arrivent bientôt.':net.err?'Hors ligne : il faut internet pour jouer contre un pote.':'Connexion au serveur…';
+  $('m-net-retry').hidden=net.on||!net.err||net.err==='off';
+  $('f-sec').hidden=!net.on&&net.err==='off';
+}
+$('m-net-retry').addEventListener('click',()=>{net.err='';renderNet();netHello();});
+/* amis */
+function fErr(t){const e=$('f-err');e.textContent=t||'';e.hidden=!t;}
+const friendCode=()=>`CVF1|${state.pid}|${encodeURIComponent(state.pseudo)}`;
+$('f-show').addEventListener('click',async()=>{ensureProfile();stopScan();const box=$('f-qrbox');box.hidden=!box.hidden;if(box.hidden)return;fErr('');
+  const q=$('f-qr');q.innerHTML='<p>Création du QR…</p>';
+  try{const lib=await loadLib('qr');const qr=lib(0,'M');qr.addData(friendCode());qr.make();q.innerHTML=`<img alt="Ton QR d'ami" src="${qr.createDataURL(6,2)}">`;}
+  catch(e){q.innerHTML=`<p>QR indisponible sans connexion. Donne plutôt ton code ami : <b>${esc(state.pid)}</b></p>`;}});
+$('f-copy').addEventListener('click',async()=>{try{await navigator.clipboard.writeText(state.pid);toast('Code ami copié : '+state.pid);}catch(e){toast('Ton code ami : '+state.pid);}});
+$('f-code-ok').addEventListener('click',()=>{const v=$('f-code').value.trim().toLowerCase();if(v)gotFriend(v);});
+async function gotFriend(str){
+  str=String(str||'').trim();const parts=str.split('|'),code=parts[0]==='CVF1'?parts[1]:str;
+  stopScan();if(!code)return;
+  if(code===state.pid){fErr("C'est ton propre code ami.");return;}
+  if(!net.on){fErr("Pas de connexion au serveur : réessaie avec internet.");return;}
+  fErr('');try{const j=await api('friend',{code});$('f-code').value='';$('f-qrbox').hidden=true;
+    toast(j.already?`${j.friend.pseudo} est déjà ton ami`:`${j.friend.pseudo} est maintenant ton ami !`);if(!j.already){sfx.ding('gold');buzz([40,40,80]);}netRank(true);}
+  catch(e){fErr(e.code==='unknown_friend'?"Ce code ne correspond à aucun joueur connecté. Ton pote doit ouvrir la dernière version de l'appli avec internet.":netMsg(e));}
+}
+document.querySelectorAll('#r-seg button').forEach(b=>b.addEventListener('click',()=>{rankView=b.dataset.r;try{localStorage.setItem('cartes-volley-rank',rankView);}catch(e){}renderMatchTab();}));
+function rankRows(){
+  const R=net.rank,me=state.pid;
+  if(!R){ // hors ligne : potes déjà affrontés
+    const w=state.matches.filter(m=>m.win).length,l=state.matches.length-w;
+    return{rows:[{pid:me,pseudo:state.pseudo,elo:state.elo,w,l}].concat(Object.entries(state.opps).map(([pid,o])=>({pid,pseudo:o.n,elo:o.e,w:o.w,l:o.l}))).sort((a,b)=>b.elo-a.elo),note:'Hors ligne : classement de ton dernier passage.'};}
+  if(rankView==='friends'){const rows=[R.me].concat(R.friends).sort((a,b)=>b.elo-a.elo||b.w-a.w);
+    return{rows,note:R.friends.length?'':'Ajoute tes potes avec leur QR d\'ami pour les voir ici. Un match joué ensemble vous rend amis aussi.'};}
+  const rows=R.all.slice();if(!rows.some(x=>x.pid===me))rows.push({...R.me,pos:R.pos});
+  return{rows,note:`${R.total} joueur${R.total>1?'s':''} classé${R.total>1?'s':''}`};
+}
+
 /* =================== Match : profil, QR, élo =================== */
 const SLOT_ORDER=['R4a','CEN1','PTU','R4b','CEN2','PAS','LIB'];
 const LIBS={qr:['lib/qrcode.js','https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.js','qrcode'],scan:['lib/jsQR.js','https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js','jsQR']};
@@ -2758,13 +2862,13 @@ function loadLib(k){return new Promise((res,rej)=>{const[loc,cdn,g]=LIBS[k];if(w
   const tryU=(u,next)=>{const sc=document.createElement('script');sc.src=u;sc.onload=()=>window[g]?res(window[g]):next();sc.onerror=next;document.head.appendChild(sc);};
   tryU(loc,()=>tryU(cdn,()=>rej(new Error('lib'))));});}
 const rid=n=>{let s2='';const a='abcdefghijkmnopqrstuvwxyz23456789';const r2=crypto.getRandomValues(new Uint8Array(n));r2.forEach(x=>s2+=a[x%a.length]);return s2;};
-function ensureProfile(){let ch=false;if(!state.pid){state.pid=rid(10);ch=true;}if(!state.pseudo){state.pseudo='Joueur '+Math.floor(1000+Math.random()*9000);ch=true;}if(ch)saveState();}
+function ensureProfile(){let ch=false;if(!state.pid){state.pid=rid(10);ch=true;}if(!state.key){state.key=rid(24);ch=true;}if(!state.pseudo){state.pseudo='Joueur '+Math.floor(1000+Math.random()*9000);ch=true;}if(ch)saveState();}
 const RANKS=[[0,'Débutant'],[450,'Amateur'],[500,'Régional'],[560,'National'],[620,'Pro'],[700,'Élite'],[800,'Légende']];
 const rankName=e=>RANKS.filter(r2=>e>=r2[0]).pop()[1];
 const eloExp=(a,b)=>1/(1+Math.pow(10,(b-a)/400));
 const ELO_K=32;
-const ENGINE_VER=6; // à augmenter à chaque changement du moteur : deux versions différentes ne donnent pas le même match
-let myCode=null,myNonce=null,oppData=null;
+const ENGINE_VER=7; // à augmenter à chaque changement du moteur : deux versions différentes ne donnent pas le même match
+let myCode=null,myNonce=null,oppData=null,oppRaw=null;
 function teamPayload(nonce){
   const cards=SLOT_ORDER.map(k=>{const sl=TEAM_SLOTS.find(x=>x.k===k),c=teamCard(sl);return[encodeURIComponent(c.name),c.s.ser,c.s.rec,c.s.pas,c.s.att,c.s.blo,c.s.def,c.poste].join(',');});
   return['CV1',state.pid,encodeURIComponent(state.pseudo),state.elo,nonce,cards.join(';'),'m'+ENGINE_VER].join('|');
@@ -2788,16 +2892,19 @@ function renderMatchTab(){
   const w=state.matches.filter(m=>m.win).length,l=state.matches.length-w;
   $('m-record').textContent=state.matches.length?`${w} victoire${w>1?'s':''} · ${l} défaite${l>1?'s':''}`:'Tout le monde commence à '+ELO_START+' d\'élo. Gagner contre plus fort que toi rapporte plus.';
   const ok=teamFull();$('m-noteam').hidden=ok;$('m-prep').hidden=!ok;if(!ok){$('m-vs').hidden=true;stopScan();}
-  // classement : toi + les potes déjà affrontés
-  const rows=[{n:state.pseudo,e:state.elo,me:true,w,l}].concat(Object.values(state.opps).map(o=>({n:o.n,e:o.e,w:o.w,l:o.l}))).sort((a,b)=>b.e-a.e);
-  $('m-rank').innerHTML=rows.map((x,i)=>`<div class="rank-row${x.me?' me':''}"><b>${i+1}</b><span>${esc(x.n)}${x.me?' (toi)':''}</span><small>${x.me?`${x.w}V ${x.l}D`:`contre toi ${x.l}V ${x.w}D`}</small><b>${x.e}</b></div>`).join('')+
-    (rows.length<2?'<p class="note" style="margin:4px 0 0">Joue contre tes potes pour les voir apparaître ici. Leur élo est celui de votre dernier match.</p>':'');
+  // classement : amis ou général, depuis le serveur
+  renderNet();document.querySelectorAll('#r-seg button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.r===rankView));$('r-seg').hidden=!net.rank;
+  const RR=rankRows();
+  $('m-rank').innerHTML=RR.rows.map((x,i)=>{const meRow=x.pid===state.pid,pos=x.pos||i+1,sep=x.pos&&x.pos>RR.rows.length?'<div class="rank-sep">…</div>':'';
+    return`${sep}<div class="rank-row${meRow?' me':''}${pos<=3?' top':''}"><b>${pos}</b><span>${esc(x.pseudo)}${meRow?' (toi)':''}</span><small>${x.w}V ${x.l}D</small><b>${x.elo}</b></div>`;}).join('')+
+    (RR.note?`<p class="note" style="margin:4px 0 0">${RR.note}</p>`:'');
+  if(mMode==='pvp')netRank();
   const fmt=new Intl.DateTimeFormat('fr-FR',{day:'numeric',month:'short'});
   $('m-hist-sec').hidden=!state.matches.length;
   $('m-hist').innerHTML=state.matches.slice(0,10).map((m,i)=>`<div class="mh-row${m.sh?' has':''}" data-i="${i}"${m.sh?' role="button" tabindex="0" aria-label="Voir la feuille de match"':''}><i class="${m.win?'w':'l'}">${m.win?'V':'D'}</i><span>contre ${esc(m.opp)}</span><b>${m.my}-${m.op}</b><small>${m.d>=0?'+':''}${m.d} · ${fmt.format(new Date(m.ts))}</small></div>`).join('');
 }
 $('m-hist').addEventListener('click',e=>{const r=e.target.closest('.mh-row.has');if(r)openSheet(state.matches[+r.dataset.i]);});
-$('m-pseudo').addEventListener('change',async()=>{const v=$('m-pseudo').value.trim().slice(0,16);if(!v)return;state.pseudo=v;await saveState();renderMatchTab();if(myNonce&&$('m-played').hidden){myCode=null;showMyQR();}});
+$('m-pseudo').addEventListener('change',async()=>{const v=$('m-pseudo').value.trim().slice(0,16);if(!v)return;state.pseudo=v;await saveState();renderMatchTab();if(net.on)api('hello',{pseudo:v}).then(()=>netRank(true)).catch(()=>{});if(myNonce&&$('m-played').hidden){myCode=null;showMyQR();}});
 $('m-pseudo').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();e.target.blur();}});
 function mErr(t){const e=$('m-err');e.textContent=t||'';e.hidden=!t;}
 async function showMyQR(){
@@ -2810,7 +2917,7 @@ $('m-start').addEventListener('click',()=>{ensureProfile();myNonce=rid(8);myCode
 $('m-new').addEventListener('click',()=>{myNonce=rid(8);myCode=null;$('m-played').hidden=true;oppData=null;$('m-vs').hidden=true;mErr('');showMyQR();});
 $('m-copy').addEventListener('click',async()=>{if(!myCode)return;try{await navigator.clipboard.writeText(myCode);toast('Code copié : envoie-le à ton pote');}
   catch(e){const t=$('m-code');t.closest('details').open=true;t.value=myCode;t.select();toast('Code sélectionné : copie-le à la main');}});
-$('m-code-ok').addEventListener('click',()=>gotCode($('m-code').value));
+$('m-code-ok').addEventListener('click',()=>onCode($('m-code').value));
 function gotCode(str){
   if(!$('m-played').hidden){mErr('Tu as déjà joué avec ce QR. Touche « Nouveau QR » pour un autre match.');return false;}
   const d=parsePayload(str);
@@ -2821,7 +2928,7 @@ function gotCode(str){
   // un QR ne sert qu'une fois : impossible de rejouer un ancien QR pour gagner de l'élo
   if(state.played.includes('n:'+d.nonce)){mErr('Ce QR a déjà servi pour un match. Demande à ton pote d\'en préparer un nouveau.');return false;}
   const mid=matchId(myNonce,d.nonce);if(state.played.includes(mid)){mErr('Ce match a déjà été joué. Préparez chacun un nouveau QR.');return false;}
-  mErr('');oppData=d;stopScan();renderVS();sfx.ding('silver');buzz(60);return true;
+  mErr('');oppData=d;oppRaw=String(str).trim();stopScan();renderVS();sfx.ding('silver');buzz(60);return true;
 }
 const matchId=(a,b)=>String(hashStr([a,b].sort().join('|')));
 function renderVS(){
@@ -2833,32 +2940,36 @@ function renderVS(){
     <div class="vs-grid"><div><b>${esc(state.pseudo)}</b><small>${state.elo} élo · équipe ${myS}</small></div><span class="vs">VS</span><div><b>${esc(d.pseudo)}</b><small>${d.elo} élo · équipe ${opS}</small></div></div>
     <div class="vs-teams">${vsCards(me)}</div><div class="vs-teams">${vsCards(d)}</div>
     <p class="vs-stake">Victoire : <b>+${win}</b> élo · Défaite : <b>−${lose}</b> élo</p>
-    <div class="vs-qr"><div class="qr small" id="m-qr2"></div><p class="note" style="margin:0">Ton pote doit aussi scanner <b>ton</b> QR pour voir le match sur son téléphone. Tu peux lancer maintenant : ton QR reste affiché après le match.</p></div>
+    <p class="note" style="margin:0;text-align:center">Le match se lancera aussi tout seul sur le téléphone de ${esc(d.pseudo)}.</p>
     <button class="btn primary" type="button" id="m-go">Lancer le match</button>`;
-  const q1=$('m-qr').innerHTML;$('m-qr2').innerHTML=q1;
   $('m-go').addEventListener('click',launchMatch);el.scrollIntoView({block:'center',behavior:'smooth'});
 }
 /* scan : caméra en direct, ou photo */
 let scanStream=null,scanTimer=null;
 function stopScan(){clearInterval(scanTimer);scanTimer=null;if(scanStream){scanStream.getTracks().forEach(t=>t.stop());scanStream=null;}$('m-scanbox').hidden=true;}
 $('m-scan-stop').addEventListener('click',stopScan);
-$('m-scan').addEventListener('click',async()=>{
-  mErr('');let jsQR_;try{jsQR_=await loadLib('scan');}catch(e){mErr('Le lecteur de QR ne se charge pas sans connexion. Utilise « Coller le code de ton pote ».');return;}
+const onCode=str=>/^CVF1\|/.test(String(str||'').trim())?gotFriend(str):gotCode(str);
+let scanFor=null;
+async function startScan(host,errFn,onData){
+  stopScan();errFn('');let jsQR_;try{jsQR_=await loadLib('scan');}catch(e){errFn('Le lecteur de QR ne se charge pas sans connexion. Entre le code à la main.');return;}
   try{scanStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'},audio:false});}
-  catch(e){mErr("La caméra n'est pas accessible ici. Prends une photo du QR avec « Photo du QR », ou colle le code de ton pote.");return;}
-  const v=$('m-video');v.srcObject=scanStream;$('m-scanbox').hidden=false;try{await v.play();}catch(e){}
+  catch(e){errFn("La caméra n'est pas accessible ici. Prends une photo du QR, ou entre le code à la main.");return;}
+  const box=$('m-scanbox');host.appendChild(box);scanFor=onData;
+  const v=$('m-video');v.srcObject=scanStream;box.hidden=false;try{await v.play();}catch(e){}
   const cv=document.createElement('canvas'),cx=cv.getContext('2d',{willReadFrequently:true});
   scanTimer=setInterval(()=>{if(!v.videoWidth)return;const k=Math.min(1,640/Math.max(v.videoWidth,v.videoHeight));cv.width=v.videoWidth*k;cv.height=v.videoHeight*k;
     cx.drawImage(v,0,0,cv.width,cv.height);const im=cx.getImageData(0,0,cv.width,cv.height),res=jsQR_(im.data,cv.width,cv.height,{inversionAttempts:'dontInvert'});
-    if(res&&res.data&&res.data.startsWith('CV1|'))gotCode(res.data);},220);
-});
+    if(res&&res.data&&/^CVF?1\|/.test(res.data))scanFor(res.data);},220);
+}
+$('m-scan').addEventListener('click',()=>startScan($('m-scanslot'),mErr,onCode));
+$('f-scan').addEventListener('click',()=>{$('f-qrbox').hidden=true;startScan($('f-scanhost'),fErr,onCode);});
 $('m-photo').addEventListener('change',async e=>{
   const f=e.target.files[0];e.target.value='';if(!f)return;mErr('');
   let jsQR_;try{jsQR_=await loadLib('scan');}catch(err){mErr('Le lecteur de QR ne se charge pas sans connexion. Colle plutôt le code de ton pote.');return;}
   const url=URL.createObjectURL(f);try{const im=await loadImg(url);
     for(const size of [1000,700,1400,500]){const k=Math.min(1,size/Math.max(im.width,im.height)),cv=document.createElement('canvas');cv.width=Math.round(im.width*k);cv.height=Math.round(im.height*k);
       const cx=cv.getContext('2d');cx.drawImage(im,0,0,cv.width,cv.height);const d=cx.getImageData(0,0,cv.width,cv.height),res=jsQR_(d.data,cv.width,cv.height);
-      if(res&&res.data){gotCode(res.data);return;}}
+      if(res&&res.data){onCode(res.data);return;}}
     mErr("Aucun QR trouvé sur la photo. Recommence en cadrant bien le QR.");}catch(err){mErr("Cette photo n'a pas pu être lue.");}finally{URL.revokeObjectURL(url);}
 });
 
@@ -3201,29 +3312,46 @@ let mRun=0,mSpeed=1,mSkip=false,mFF=false;
 const MPOS={1:[7.2,15.3],2:[7.2,11.3],3:[4.5,11.3],4:[1.8,11.3],5:[1.8,15.3],6:[4.5,15.3]};
 const SETTER_SPOT=[6.3,10.3],SERVE_SPOT=[7.4,18.8],BENCH=[9.85,13.6];
 async function launchMatch(){
-  if(!oppData||!myNonce)return;const me=parsePayload(myCode),op=oppData,mid=matchId(myNonce,op.nonce);
-  if(state.played.includes(mid)){mErr('Ce match a déjà été joué.');return;}
-  ac();
-  const first=myNonce<op.nonce,A=first?me:op,B=first?op:me,myIdx=first?0:1;
-  const sim=simulateMatch(A,B,hashStr(mid+'|cartes-volley'));
-  // l'élo est compté dès le lancement : fermer l'animation ne change rien
-  const win=sim.winner===myIdx,E=eloExp(state.elo,op.elo),d=Math.round(ELO_K*((win?1:0)-E)),before=state.elo;
-  state.elo+=d;state.played.push(mid,'n:'+op.nonce,'n:'+myNonce);
-  const opNew=op.elo-Math.round(ELO_K*((win?1:0)-E)),prev=state.opps[op.pid]||{w:0,l:0};
-  state.opps[op.pid]={n:op.pseudo,e:opNew,w:prev.w+(win?1:0),l:prev.l+(win?0:1)};
-  const names0=myIdx===0?[state.pseudo,op.pseudo]:[op.pseudo,state.pseudo];
-  state.matches.unshift({ts:Date.now(),opp:op.pseudo,my:sim.score[myIdx],op:sim.score[1-myIdx],win,d,before,sh:sheetFrom(sim,A,B,names0,myIdx)});state.matches=state.matches.slice(0,40);
-  state.matches.forEach((m,i)=>{if(i>=15)delete m.sh;}); // on garde les feuilles des 15 derniers matchs
-  const na=checkAch(false);await saveState();
-  oppData=null;$('m-vs').hidden=true;$('m-played').hidden=false;renderMatchTab(); // le QR reste affiché : le pote peut encore le scanner
-  // affichage : mes cartes avec leurs photos, celles du pote avec leurs initiales
-  const myCards=SLOT_ORDER.map((k,i)=>{const c=teamCard(TEAM_SLOTS.find(x=>x.k===k));return c&&c.name===me.cards[i].name?c:{...me.cards[i],id:'m'+i,kind:'joueur',photo:null};});
-  const opCards=op.cards.map((c,i)=>({...c,id:'o'+i,kind:'joueur',photo:null}));
-  const disp=myIdx===0?[myCards,opCards]:[opCards,myCards],names=myIdx===0?[state.pseudo,op.pseudo]:[op.pseudo,state.pseudo];
-  await playMatch(sim,disp,names,myIdx,{win,d,before,after:state.elo,ts:state.matches[0].ts});
-  if(na.length)showAch(na);
+  if(!oppData||!oppRaw)return;ac();
+  if(!myCode){if(!myNonce)myNonce=rid(8);myCode=teamPayload(myNonce);}
+  const go=$('m-go');go.disabled=true;go.textContent='Connexion au serveur…';mErr('');
+  let j;try{j=await api('match',{mine:myCode,theirs:oppRaw});}
+  catch(e){go.disabled=false;go.textContent='Lancer le match';mErr(netMsg(e,oppData.pseudo));$('m-vs').scrollIntoView({block:'center',behavior:'smooth'});return;}
+  oppData=null;oppRaw=null;$('m-vs').hidden=true;
+  await playOnline(j.match,false);
 }
-function closeMatch(){mRun++;mSkip=true;$('match').hidden=true;document.body.style.overflow='';}
+// rejoue un match fixé par le serveur (lancé par moi ou par un pote) : même graine, même résultat sur les deux téléphones
+async function playOnline(m,incoming){
+  const A=parsePayload(m.pa),B=parsePayload(m.pb);
+  if(!A||!B||!A.cards||!B.cards){netAck(m.id);return;}
+  const myIdx=A.pid===state.pid?0:1,me=myIdx?B:A,op=myIdx?A:B,e=m.elo&&m.elo[state.pid];
+  const sim=simulateMatch(A,B,hashStr(m.id+'|cartes-volley')),win=m.winner===myIdx;
+  const names=myIdx===0?[state.pseudo,op.pseudo]:[op.pseudo,state.pseudo];
+  let na=[];
+  if(!state.played.includes(m.id)&&e){
+    state.played.push(m.id,'n:'+A.nonce,'n:'+B.nonce);
+    state.elo=e.after;
+    const prev=state.opps[op.pid]||{w:0,l:0};state.opps[op.pid]={n:op.pseudo,e:m.elo[op.pid]?m.elo[op.pid].after:op.elo,w:prev.w+(win?1:0),l:prev.l+(win?0:1)};
+    state.matches.unshift({ts:m.ts||Date.now(),opp:op.pseudo,my:sim.score[myIdx],op:sim.score[1-myIdx],win,d:e.d,before:e.before,sh:sheetFrom(sim,A,B,names,myIdx),id:m.id,by:m.by});
+    state.matches=state.matches.slice(0,40);state.matches.forEach((x,i)=>{if(i>=15)delete x.sh;});
+    na=checkAch(false);await saveState();
+  }
+  // mon QR vient de servir : il ne peut plus être utilisé
+  if(myNonce&&(A.nonce===myNonce||B.nonce===myNonce)){myNonce=null;myCode=null;$('m-qrbox').hidden=true;$('m-start').hidden=false;$('m-played').hidden=true;}
+  netAck(m.id);renderMatchTab();
+  if(incoming)await challengeIntro(op.pseudo,e);
+  const myCards=myDispCards(me),opCards=op.cards.map((c,i)=>({...c,id:'o'+i,kind:'joueur',photo:null}));
+  await playMatch(sim,myIdx===0?[myCards,opCards]:[opCards,myCards],names,myIdx,{win,d:e?e.d:0,before:e?e.before:state.elo,after:e?e.after:state.elo,ts:m.ts,online:true,incoming,opName:op.pseudo});
+  if(na.length)showAch(na);
+  netRank(true);
+}
+// petite intro quand un pote lance un match contre moi
+function challengeIntro(name,e){return new Promise(res=>{const ov=$('ch-intro'),st=$('chi-stage');ov.style.setProperty('--c','#FF7A2F');ov.hidden=false;document.body.style.overflow='hidden';
+  let done=false;const end=()=>{if(done)return;done=true;ov.hidden=true;st.innerHTML='';document.body.style.overflow='';res();};ov.onclick=end;
+  ac();sfx.whoosh();buzz([60,40,60]);
+  st.innerHTML=`<small class="cpi-venue">Défi reçu</small><b class="cpi-tier">${esc(name)}</b><span class="cpi-step">a scanné ton QR : le match commence !</span>`;
+  setTimeout(()=>{if(done)return;sfx.boom();st.innerHTML=`<b class="cpi-go">Coup d'envoi !</b>`;tone('sine',2850,2950,.28,.09);setTimeout(end,900);},2000);});}
+function closeMatch(){mRun++;mSkip=true;$('match').hidden=true;document.body.style.overflow='';setTimeout(()=>{if(typeof netDrain==='function')netDrain();},400);}
 $('mt-close').addEventListener('click',closeMatch);
 $('mt-skip').addEventListener('click',()=>{mSkip=true;});
 $('mt-skipset').addEventListener('click',()=>{mFF=true;});
@@ -3349,7 +3477,7 @@ async function playMatch(sim,disp,names,myIdx,res){
   com(res.win?`Victoire de <b>${esc(names[myIdx])}</b> !`:`Victoire de <b>${esc(names[1-myIdx])}</b>`);
   const end=document.createElement('div');end.className='mt-end';
   end.innerHTML=`<div><b class="${res.win?'w':'l'}">${res.win?'Victoire !':'Défaite'}</b><span class="sc">${sim.score[myIdx]} – ${sim.score[1-myIdx]}</span>
-    <span class="el">Élo ${res.before} → ${res.after} <i class="${res.d>=0?'':'n'}">${res.d>=0?'+':''}${res.d}</i></span><span class="note">${rankName(res.after)}</span><span class="note" style="max-width:30ch">Ton pote n'a pas vu le match ? Il scanne ton QR, toujours affiché dans l'onglet Match.</span>
+    <span class="el">Élo ${res.before} → ${res.after} <i class="${res.d>=0?'':'n'}">${res.d>=0?'+':''}${res.d}</i></span><span class="note">${rankName(res.after)}</span><span class="note" style="max-width:30ch">${res.online?(res.incoming?`Match lancé par ${esc(res.opName)}. Ton élo est à jour en ligne.`:`Le match s'est aussi lancé sur le téléphone de ${esc(res.opName)}. Élo mis à jour en ligne.`):''}</span>
     <div class="row-actions"><button class="btn" type="button" data-sh>Feuille de match</button><button class="btn primary" type="button" data-end>Terminer</button></div></div>`;
   end.querySelector('[data-end]').addEventListener('click',closeMatch);
   const rec=state.matches.find(x=>x.ts===res.ts)||state.matches[0];end.querySelector('[data-sh]').addEventListener('click',()=>openSheet(rec));M.appendChild(end);
@@ -3360,6 +3488,7 @@ setMode('pending');render();renderAch();renderDups();
 setTimeout(()=>{const na=checkAch(true);if(na.length)showAch(na);},1500);
 try{const t=localStorage.getItem('cartes-volley-onglet');if(['packs','binder','team','match'].includes(t))setTab(t);}catch(e){}
 connect();
+setTimeout(netHello,600);
 </script>
 
 </body></html>
