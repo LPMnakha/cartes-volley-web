@@ -2651,6 +2651,8 @@ async function playMatch(sim,disp,names,myIdx,res){
     let cur=null;const A=r.acts;
     for(let ai=0;ai<A.length&&!mSkip;ai++){
       const a=A[ai],t=a.t,o=1-t,me2=toks[t][a.p],nx=A[ai+1];
+      // après sa frappe, le serveur rentre sur le terrain, à sa place en position 1
+      if(a.k==='serve'||a.k==='ace'||a.k==='serveFault')setTimeout(()=>{if(alive())place(me2,spot(r,t,a.p));},T(250));
       if(a.k==='serveFault'){flashTok(me2);if(a.net){await fly(mir(side(t),[5+Math.random()*2,9.3]),1.8,800);await fly(mir(side(t),[5.5,10]),.3,300);com(`Service de ${nm(t,a.p)} dans le filet`);}
         else{await fly(mir(side(o),[Math.random()*9,19.3]),3.2,1100);com(`Service de ${nm(t,a.p)} dehors`);}popTxt('Faute','#FF8A8A');}
       else if(a.k==='ace'){flashTok(me2);const tgt=jitter(spot(r,o,a.r),1.2);await fly(tgt,3,1000);flashTok(toks[o][a.r],'miss');com(`ACE de ${nm(t,a.p)} !`);popTxt('Ace !');}
