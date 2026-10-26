@@ -299,6 +299,99 @@ textarea.text-in{font-size:1rem;font-weight:500;resize:none;line-height:1.35}
 .pack-title.t-gold{color:#FFD23F;text-shadow:0 0 24px rgba(255,210,63,.9)}
 .pack-title.t-icon{background:linear-gradient(90deg,#FF8BE0,#7AD8FF,#8CFFB0,#FFF07A,#FF8BE0);background-size:200% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;
   animation:slam .6s cubic-bezier(.2,.9,.3,1.35) both,slide 1.4s linear infinite;filter:drop-shadow(0 0 14px rgba(201,184,255,.8))}
+
+/* ---- Doublons, bonus, série, historique ---- */
+.bcount{position:absolute;top:-6px;right:-6px;z-index:3;font-family:var(--data);font-weight:700;font-size:.66rem;background:var(--orange);color:#1B0A00;border-radius:99px;padding:1px 6px;box-shadow:0 2px 6px rgba(0,0,0,.5)}
+.newtag.dup{background:#DCE3EA;color:#18202A}
+.dups{display:grid;gap:10px}
+.dup-row{display:grid;grid-template-columns:12px minmax(0,1fr) auto;gap:10px;align-items:center}
+.dup-row i{width:12px;height:12px;border-radius:3px}
+.dup-row .dmeta{display:flex;flex-direction:column;gap:4px;min-width:0}
+.dup-row .dmeta span{font-weight:600}
+.dup-row .dmeta small{color:var(--muted);font-variant-numeric:tabular-nums}
+.dup-row .track{height:8px}
+.dup-row .btn{padding:9px 12px;font-size:.88rem}
+.dup-row .btn:disabled{opacity:.35;cursor:default}
+.bonus-list{display:grid;gap:8px}
+.bonus-btn{display:flex;justify-content:space-between;align-items:center;gap:10px;width:100%;text-align:left;border-radius:14px;padding:12px 14px;border:1px solid var(--line);background:rgba(255,255,255,.05);font-weight:600}
+.bonus-btn b{font-family:var(--display);font-weight:900;font-size:1.15rem;text-transform:uppercase}
+.bonus-btn.t-silver{border-color:rgba(232,238,245,.5)}.bonus-btn.t-gold{border-color:rgba(255,210,63,.6)}.bonus-btn.t-icon{border-color:rgba(201,184,255,.6)}
+.bonus-btn small{font-family:var(--data);color:var(--muted)}
+.streak{display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:12px;background:rgba(255,122,47,.1);border:1px solid rgba(255,122,47,.35)}
+.streak svg{width:30px;height:30px;flex:none}
+.streak b{font-family:var(--display);font-weight:900;font-size:1.5rem;line-height:1}
+.streak span{color:var(--muted);font-size:.86rem}
+.streak.off{background:rgba(255,255,255,.04);border-color:var(--line)}
+.streak.off svg{filter:grayscale(1);opacity:.5}
+.hist{display:grid;gap:12px}
+.h-item{display:grid;gap:6px}
+.h-head{display:flex;justify-content:space-between;gap:8px;font-size:.84rem;color:var(--muted)}
+.h-head b{color:var(--ink);font-family:var(--data);font-weight:700;letter-spacing:.04em}
+.h-row{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px}
+.h-gone{aspect-ratio:5/7;border-radius:8px;border:1px dashed var(--line)}
+.h-tag{font-family:var(--data);font-size:.66rem;font-weight:700;letter-spacing:.1em;padding:1px 6px;border-radius:99px;background:rgba(255,255,255,.1);color:var(--ink);margin-left:6px}
+/* ---- Succès ---- */
+.achs{display:grid;grid-template-columns:repeat(auto-fill,minmax(150px,1fr));gap:8px}
+.ach{display:flex;gap:10px;align-items:center;padding:10px;border-radius:12px;border:1px solid var(--line);background:rgba(255,255,255,.03);min-width:0}
+.ach svg{width:30px;height:30px;flex:none;color:var(--muted);opacity:.45}
+.ach b{display:block;font-size:.86rem;line-height:1.2}
+.ach small{display:block;color:var(--muted);font-size:.72rem;line-height:1.25}
+.ach.on{border-color:rgba(255,210,63,.55);background:linear-gradient(120deg,rgba(255,210,63,.14),rgba(255,122,47,.06))}
+.ach.on svg{color:#FFD23F;opacity:1;filter:drop-shadow(0 0 6px rgba(255,210,63,.6))}
+.ach-pop{position:fixed;left:50%;top:calc(14px + env(safe-area-inset-top,0px));z-index:70;transform:translateX(-50%);width:min(92vw,380px);
+  display:flex;gap:12px;align-items:center;padding:12px 16px;border-radius:16px;background:linear-gradient(120deg,#2A1C02,#4A3205);border:1px solid #FFD23F;
+  box-shadow:0 12px 30px rgba(0,0,0,.5),0 0 30px rgba(255,210,63,.35);animation:achIn .5s cubic-bezier(.2,.9,.3,1.3) both;pointer-events:none}
+.ach-pop.out{animation:achOut .4s ease-in forwards}
+.ach-pop svg{width:40px;height:40px;flex:none;color:#FFD23F;filter:drop-shadow(0 0 8px rgba(255,210,63,.8));animation:spinY 1.2s ease-out}
+.ach-pop small{display:block;font-family:var(--data);font-size:.68rem;letter-spacing:.16em;text-transform:uppercase;color:#FFE97A}
+.ach-pop b{display:block;font-family:var(--display);font-weight:900;font-size:1.3rem;text-transform:uppercase;color:#fff;line-height:1.05}
+.ach-pop span{display:block;font-size:.8rem;color:#F3E6C0}
+@keyframes achIn{from{transform:translate(-50%,-140%);opacity:0}}
+@keyframes achOut{to{transform:translate(-50%,-140%);opacity:0}}
+@keyframes spinY{from{transform:rotateY(-540deg) scale(.4)}}
+.celebrate{position:absolute;inset:0;z-index:9;display:grid;place-items:center;text-align:center;background:rgba(6,12,31,.75);animation:fadeIn .4s both;cursor:pointer}
+.celebrate div{display:flex;flex-direction:column;gap:10px;align-items:center;padding:20px}
+.celebrate b{font-family:var(--display);font-weight:900;text-transform:uppercase;font-size:clamp(2.4rem,13vw,4.6rem);line-height:.95;
+  background:linear-gradient(90deg,#FFD23F,#FFF6C8,#FF7A2F,#FFD23F);background-size:200% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;
+  animation:slam .6s cubic-bezier(.2,.9,.3,1.35) both,slide 1.6s linear infinite;filter:drop-shadow(0 0 18px rgba(255,200,0,.7))}
+.celebrate span{color:var(--ink);font-weight:600}
+.celebrate small{color:var(--muted)}
+/* ---- Équipe ---- */
+.team-score{display:flex;align-items:center;gap:14px;padding:12px 16px;border-radius:16px;background:rgba(255,255,255,.04);border:1px solid var(--line)}
+.team-score b{font-family:var(--display);font-weight:900;font-size:3rem;line-height:.9;min-width:2ch}
+.team-score span{color:var(--muted);font-size:.9rem}
+.court{position:relative;border-radius:10px;padding:26px 12px 16px;
+  background:linear-gradient(180deg,#E8813F,#D9692A);border:3px solid #fff;box-shadow:0 14px 30px rgba(0,0,0,.4)}
+.court::before{content:"";position:absolute;left:-3px;right:-3px;top:-10px;height:12px;border-radius:3px;
+  background:repeating-linear-gradient(90deg,#fff 0 2px,rgba(255,255,255,.25) 2px 8px),#1B2440;border:2px solid #fff}
+.court::after{content:"";position:absolute;left:0;right:0;top:46%;border-top:2px dashed rgba(255,255,255,.85)}
+.court-grid{position:relative;z-index:1;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px 10px}
+.court-row-label{position:absolute;right:8px;font-family:var(--data);font-size:.6rem;font-weight:700;letter-spacing:.14em;color:rgba(255,255,255,.85);z-index:1}
+.tslot{position:relative;display:flex;flex-direction:column;align-items:center;gap:4px;border:0;background:none;padding:0;min-width:0;cursor:pointer}
+.tslot .tpos{font-family:var(--data);font-weight:700;font-size:.66rem;letter-spacing:.08em;color:#fff;background:rgba(10,20,48,.75);padding:1px 7px;border-radius:99px;white-space:nowrap}
+.tslot .tempty{width:100%;aspect-ratio:5/7;border-radius:8px;border:2px dashed rgba(255,255,255,.8);display:grid;place-items:center;color:#fff;font-size:2rem;font-weight:700;background:rgba(255,255,255,.12)}
+.tslot .mini{width:100%}
+.tslot .tval{font-family:var(--data);font-weight:700;font-size:.8rem;color:#fff;text-shadow:0 1px 3px rgba(0,0,0,.6)}
+.bench{display:grid;grid-template-columns:minmax(0,110px) 1fr;gap:14px;align-items:center;padding:12px;border-radius:14px;background:rgba(255,255,255,.04);border:1px solid var(--line)}
+.bench .tslot .tempty{border-color:rgba(255,255,255,.4)}
+.bench p{margin:0;color:var(--muted);font-size:.88rem}
+.pk-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:12px}
+.pk-card{position:relative;display:flex;flex-direction:column;align-items:center;gap:4px;border:0;background:none;padding:0;cursor:pointer;min-width:0}
+.pk-card .mini{width:100%}
+.pk-card b{font-family:var(--data);font-weight:700;font-size:.82rem;color:var(--ink)}
+.pk-card.cur::after{content:"Placée";position:absolute;top:-6px;left:50%;transform:translateX(-50%);font-family:var(--data);font-size:.6rem;font-weight:700;letter-spacing:.1em;background:var(--orange);color:#1B0A00;padding:1px 6px;border-radius:99px}
+/* ---- Carte du jour ---- */
+.cotd{display:grid;grid-template-columns:minmax(0,44%) 1fr;gap:16px;align-items:center;padding:14px;border-radius:18px;
+  background:radial-gradient(90% 80% at 20% 30%,rgba(255,122,47,.18),transparent 70%),rgba(255,255,255,.04);border:1px solid var(--line)}
+.cotd .hero-card{width:100%;margin:0}
+.cotd h3{margin:0;font-family:var(--display);font-weight:900;font-size:1.5rem;text-transform:uppercase;line-height:1}
+.cotd p{margin:4px 0 0;color:var(--muted);font-size:.86rem}
+.cotd .btn{margin-top:10px;padding:8px 12px;font-size:.85rem}
+/* ---- Image partagée ---- */
+.shot{position:fixed;inset:0;z-index:65;background:rgba(6,12,31,.92);display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;
+  padding:calc(16px + env(safe-area-inset-top,0px)) 16px calc(16px + env(safe-area-inset-bottom,0px))}
+.shot img{max-width:min(92vw,420px);max-height:70vh;border-radius:12px;box-shadow:0 20px 40px rgba(0,0,0,.6)}
+.shot p{margin:0;color:var(--muted);text-align:center;max-width:34ch}
 .empty-filter{color:var(--muted);text-align:center;padding:30px 10px;border:1px dashed var(--line);border-radius:14px}
 
 .fab{position:fixed;right:calc(18px + env(safe-area-inset-right,0px));bottom:calc(20px + env(safe-area-inset-bottom,0px));z-index:8;
@@ -408,12 +501,12 @@ input[type=range]::-moz-range-thumb{width:20px;height:20px;border-radius:50%;bac
 
 
 /* Onglets */
-.tabs{display:grid;grid-template-columns:repeat(3,1fr);gap:4px;background:rgba(255,255,255,.05);border:1px solid var(--line);border-radius:14px;padding:4px}
+.tabs{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:4px;background:rgba(255,255,255,.05);border:1px solid var(--line);border-radius:14px;padding:4px}
 .tab{border:0;background:transparent;border-radius:10px;padding:10px;font-family:var(--display);font-weight:900;font-size:1.15rem;letter-spacing:.06em;text-transform:uppercase;color:var(--muted);display:flex;gap:8px;justify-content:center;align-items:center}
 .tab[aria-selected="true"]{background:var(--panel-2);color:var(--ink);box-shadow:0 0 0 1px var(--line) inset}
 .tab svg{width:18px;height:18px;flex:none}
 .tab{min-width:0;overflow:hidden;white-space:nowrap}
-@media (max-width:460px){.tab{font-size:1.05rem;padding:10px 4px;gap:6px}.tab svg{width:16px;height:16px}}
+@media (max-width:460px){.tab{font-size:.98rem;padding:10px 2px;gap:6px;letter-spacing:.03em}.tab svg{width:16px;height:16px}}
 @media (max-width:420px){.tab svg{display:none}}
 .tabpane{display:flex;flex-direction:column;gap:16px}
 
@@ -633,8 +726,11 @@ input[type=range]::-moz-range-thumb{width:20px;height:20px;border-radius:50%;bac
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"><path d="M6 3h12l-1 4H7z"/><path d="M7 7h10v14H7z"/><path d="M10 13l2-2 2 2-2 3z" fill="currentColor"/></svg>Packs</button>
     <button class="tab" role="tab" type="button" id="tab-btn-binder" data-tab="binder" aria-selected="false" aria-controls="tab-binder">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"><rect x="5" y="3" width="15" height="18" rx="2"/><path d="M5 7H3M5 12H3M5 17H3"/><path d="M10 8h6M10 12h6"/></svg>Classeur</button>
+    <button class="tab" role="tab" type="button" id="tab-btn-team" data-tab="team" aria-selected="false" aria-controls="tab-team">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"><circle cx="8" cy="8" r="3"/><circle cx="16" cy="8" r="3"/><path d="M2.5 20c.7-3.5 2.8-5.5 5.5-5.5s4.8 2 5.5 5.5M10.5 20c.7-3.5 2.8-5.5 5.5-5.5s4.8 2 5.5 5.5"/></svg>Équipe</button>
   </div>
   <div class="tabpane" id="tab-cards" role="tabpanel" aria-labelledby="tab-btn-cards">
+  <div class="cotd" id="cotd" hidden></div>
   <div class="banner" id="banner" hidden>
     <span><b>Exemples</b> pour te montrer le rendu. Crée ta première carte avec le bouton « Carte » : les exemples disparaîtront.</span>
   </div>
@@ -657,6 +753,8 @@ input[type=range]::-moz-range-thumb{width:20px;height:20px;border-radius:50%;bac
     </div>
     <div class="banner" id="pack-ex" hidden><span>Tirage parmi les <b>exemples</b> tant que tu n'as pas créé de cartes.</span></div>
     <div class="banner" id="pack-few" hidden><span>Il faut au moins <b>5 cartes</b> pour ouvrir un booster : tu en as <b id="pack-few-n">0</b> (les Signature ne comptent pas). Crée-en d'autres dans l'onglet Cartes.</span></div>
+    <div class="streak" id="streak"></div>
+    <div class="section" id="bonus-sec" hidden><span class="label">Boosters bonus</span><div class="bonus-list" id="bonus-list"></div></div>
     <div class="section cycle" id="cycle">
       <div class="cycle-head"><b id="cy-now">Booster</b><span id="cy-next"></span></div>
       <div class="cycle-bar" id="cy-bar" aria-hidden="true"></div>
@@ -667,6 +765,7 @@ input[type=range]::-moz-range-thumb{width:20px;height:20px;border-radius:50%;bac
     <button class="btn primary open-btn" type="button" id="open-btn">Ouvrir le booster</button>
     <p class="lock-txt" id="pack-lock" hidden></p>
     <div class="section"><span class="label"><span id="odds-title">Chances d'apparaître dans le prochain booster</span>, de la plus rare à la plus courante</span><div class="odds" id="odds"></div></div>
+    <div class="section" id="hist-sec"><span class="label">Historique des boosters</span><div class="hist" id="hist"></div></div>
   </div>
   <div class="tabpane" id="tab-binder" role="tabpanel" aria-labelledby="tab-btn-binder" hidden>
     <div class="pack-head"><div><h2 class="pane-title">Mon classeur</h2><p class="note" id="b-sub">Chaque carte a sa place. Ouvre ton booster du jour pour le remplir.</p></div></div>
@@ -679,12 +778,23 @@ input[type=range]::-moz-range-thumb{width:20px;height:20px;border-radius:50%;bac
     </div>
     <div class="b-dots" id="b-dots"></div>
     <p class="empty-filter" id="b-empty" hidden>Crée des cartes dans l'onglet Cartes : chacune aura sa place dans le classeur.</p>
+    <div class="section"><span class="label">Doublons</span>
+      <p class="note" style="margin:0">10 doublons d'une rareté = 1 booster bonus de la même rareté. Les Full Art comptent dans leur rareté, les Signature comme icône.</p>
+      <div class="dups" id="dups"></div></div>
+    <div class="section"><span class="label">Succès <span id="ach-count"></span></span><div class="achs" id="achs"></div></div>
     <button class="btn b-clear" type="button" id="b-clear">Vider le classeur</button>
     <div class="b-confirm" id="b-confirm" hidden role="alertdialog" aria-labelledby="b-confirm-t">
       <b id="b-confirm-t">Vider le classeur ?</b>
       <p>Toutes les cartes obtenues seront retirées du classeur. Tes cartes créées restent, et le booster du jour n'est pas rendu.</p>
       <div class="row-actions"><button class="btn" type="button" id="b-cancel">Annuler</button><button class="btn danger" type="button" id="b-ok">Oui, vider</button></div>
     </div>
+  </div>
+  <div class="tabpane" id="tab-team" role="tabpanel" aria-labelledby="tab-btn-team" hidden>
+    <div class="pack-head"><div><h2 class="pane-title">Mon équipe</h2><p class="note">Aligne les cartes de ton classeur. Chaque joueur est noté selon son poste, un polyvalent peut jouer partout.</p></div></div>
+    <div class="team-score"><b id="t-score">–</b><span id="t-sub">Touche un poste pour y placer une carte.</span></div>
+    <div class="court"><span class="court-row-label" style="top:8px">AVANT</span><span class="court-row-label" style="bottom:6px">ARRIÈRE</span><div class="court-grid" id="court"></div></div>
+    <div class="bench"><div id="lib-slot"></div><p>Le libéro remplace un joueur en défense. Il est noté sur sa réception et sa défense.</p></div>
+    <div class="row-actions"><button class="btn" type="button" id="t-clear">Vider l'équipe</button><button class="btn primary" type="button" id="t-auto">Composer au mieux</button></div>
   </div>
 </main>
 
@@ -860,6 +970,14 @@ input[type=range]::-moz-range-thumb{width:20px;height:20px;border-radius:50%;bac
   <div class="op-tray" id="op-tray"></div>
 </section>
 
+<section class="sheet" id="picker" hidden aria-labelledby="pk-title">
+  <div class="sheet-bar">
+    <button class="icon-btn" type="button" data-close aria-label="Fermer"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+    <h2 id="pk-title">Choisir</h2>
+  </div>
+  <div class="inner"><p class="note" id="pk-note" style="margin:0"></p><div class="pk-grid" id="pk-grid"></div>
+    <button class="btn" type="button" id="pk-remove">Retirer la carte de ce poste</button></div>
+</section>
 <div class="toast" id="toast" role="status" hidden></div>
 
 <script>
@@ -926,20 +1044,36 @@ const shown=()=>players.length?players:EXAMPLES;
 /* ---------- Classeur et booster du jour : état ---------- */
 const LS_STATE='cartes-volley-etat';
 let state=loadState(),timeOffset=null,lockTimer=null,packStatus='checking',openBusy=false;
-function loadState(){
-  try{const j=JSON.parse(localStorage.getItem(LS_STATE)||'null');if(j&&Array.isArray(j.owned))return{owned:j.owned.map(String),lastDay:String(j.lastDay||''),lastTs:+j.lastTs||0,count:+j.count||0};}catch(e){}
-  return{owned:[],lastDay:'',lastTs:0,count:0};
+function blankState(){return{owned:[],counts:{},lastDay:'',lastTs:0,count:0,rev:0,bonus:{classic:0,silver:0,gold:0,icon:0},streak:{cur:0,best:0,lastDay:''},history:[],ach:{},team:{},exchanges:0};}
+function fixState(j){
+  const o=blankState();if(!j||typeof j!=='object')return o;
+  if(j.counts&&typeof j.counts==='object')for(const k in j.counts){const n=Math.max(0,Math.floor(+j.counts[k]||0));if(n)o.counts[String(k)]=n;}
+  (Array.isArray(j.owned)?j.owned:[]).forEach(id=>{id=String(id);if(!o.counts[id])o.counts[id]=1;});
+  o.owned=Object.keys(o.counts);
+  o.lastDay=String(j.lastDay||'');o.lastTs=+j.lastTs||0;o.count=+j.count||0;o.rev=+j.rev||0;o.exchanges=+j.exchanges||0;
+  if(j.bonus&&typeof j.bonus==='object')for(const k in o.bonus)o.bonus[k]=Math.max(0,Math.floor(+j.bonus[k]||0));
+  if(j.streak&&typeof j.streak==='object')o.streak={cur:+j.streak.cur||0,best:+j.streak.best||0,lastDay:String(j.streak.lastDay||'')};
+  o.history=Array.isArray(j.history)?j.history.filter(h=>h&&Array.isArray(h.ids)).slice(0,30):[];
+  o.ach=j.ach&&typeof j.ach==='object'?{...j.ach}:{};o.team=j.team&&typeof j.team==='object'?{...j.team}:{};
+  return o;
 }
-function mergeState(o){ // union des cartes obtenues, et on garde toujours le dernier booster ouvert
-  if(!o)return false;const before=JSON.stringify(state);const set=new Set(state.owned);
-  (Array.isArray(o.owned)?o.owned:[]).forEach(x=>set.add(String(x)));state.owned=[...set];
-  if(String(o.lastDay||'')>state.lastDay)state.lastDay=String(o.lastDay);state.count=Math.max(+state.count||0,+o.count||0);state.lastTs=Math.max(state.lastTs,+o.lastTs||0);
+function loadState(){try{return fixState(JSON.parse(localStorage.getItem(LS_STATE)||'null'));}catch(e){return blankState();}}
+function mergeState(o){
+  if(!o)return false;const before=JSON.stringify(state);const keep={lastDay:state.lastDay,lastTs:state.lastTs,count:state.count};
+  const f=fixState(o);
+  if(f.rev>(state.rev||0))state=f; // version plus récente : on la prend en entier
+  else if(!o.rev){for(const k in f.counts)state.counts[k]=Math.max(state.counts[k]||0,f.counts[k]);state.owned=Object.keys(state.counts);} // ancienne sauvegarde : on ajoute ses cartes
+  // anti-triche : on garde toujours le booster du jour le plus récent
+  if(keep.lastDay>state.lastDay)state.lastDay=keep.lastDay;state.lastTs=Math.max(state.lastTs,keep.lastTs);state.count=Math.max(state.count,keep.count);
   return JSON.stringify(state)!==before;
 }
 async function saveState(){
+  state.rev=(state.rev||0)+1;state.owned=Object.keys(state.counts);
   try{localStorage.setItem(LS_STATE,JSON.stringify(state));}catch(e){}
-  if(mode==='cloud'&&col){try{await col.doc('_state').set({owned:state.owned,lastDay:state.lastDay,lastTs:state.lastTs,count:state.count||0});}catch(e){}}
+  if(mode==='cloud'&&col){try{await col.doc('_state').set(JSON.parse(JSON.stringify(state)));}catch(e){}}
 }
+const owns=id=>(state.counts[id]||0)>0;
+function addCard(id){state.counts[id]=(state.counts[id]||0)+1;state.owned=Object.keys(state.counts);}
 /* Mode admin : boosters illimités. Seule l'empreinte du mot de passe est dans le code, jamais le mot lui-même */
 const ADMIN_HASH='2637129b8667d6edb4028eb186acdaf42233ce679c61f6ccf9e86bbb6a13110f',LS_ADMIN='cartes-volley-admin';
 let isAdmin=false;try{isAdmin=localStorage.getItem(LS_ADMIN)===ADMIN_HASH;}catch(e){}
@@ -1085,6 +1219,8 @@ function render(){
   $('empty-filter').hidden=view.length>0;
   renderPacks();
   if(!$('tab-binder').hidden)renderBinder();
+  if(!$('tab-team').hidden)renderTeam();
+  renderCotd();
 }
 $('chips').addEventListener('click',e=>{const b=e.target.closest('.chip');if(!b)return;filter=b.dataset.f;render();});
 $('sort').addEventListener('change',render);
@@ -1092,7 +1228,7 @@ $('grid').addEventListener('click',e=>{const c=e.target.closest('.card');if(c)op
 $('grid').addEventListener('pointermove',e=>{const c=e.target.closest('.card');if(!c)return;const r=c.getBoundingClientRect();c.style.setProperty('--mx',(100-((e.clientX-r.left)/r.width)*100)+'%');});
 
 /* ---------- Fiches ---------- */
-function show(id){['detail','editor','menu'].forEach(s=>$(s).hidden=s!==id);document.body.style.overflow=id?'hidden':'';if(id)$(id).scrollTop=0;}
+function show(id){['detail','editor','menu','picker'].forEach(s=>$(s).hidden=s!==id);document.body.style.overflow=id?'hidden':'';if(id)$(id).scrollTop=0;}
 function closeAll(){show(null);openId=null;}
 document.querySelectorAll('[data-close]').forEach(b=>b.addEventListener('click',()=>{
   if(b.closest('#editor')&&editing&&editing.id&&players.some(p=>p.id===editing.id)){openDetail(editing.id);return;}
@@ -1122,7 +1258,7 @@ function openDetail(id,keepScroll){
   $('d-bars').innerHTML=SKILLS.map(x=>`<div class="bar"><span>${x.l}</span><span class="track"><i style="width:${p.s[x.k]}%"></i></span><b>${p.s[x.k]}</b></div>`).join('');
   $('d-actions').innerHTML=p.example
     ?`<button class="btn primary full" type="button" id="d-template">Partir de ce modèle</button>`
-    :`<button class="btn" type="button" id="d-del">Supprimer</button><button class="btn primary" type="button" id="d-edit">Modifier</button>`;
+    :`<button class="btn full" type="button" id="d-share">Partager en image</button><button class="btn" type="button" id="d-del">Supprimer</button><button class="btn primary" type="button" id="d-edit">Modifier</button>`;
   if(!keepScroll)show('detail');
 }
 function drawDetailRadar(anim){
@@ -1138,6 +1274,7 @@ let delArm=null;
 $('d-actions').addEventListener('click',e=>{
   const b=e.target.closest('button');if(!b)return;const p=findP(openId);
   if(b.id==='d-edit')openEditor(p);
+  if(b.id==='d-share')shareCard(p);
   if(b.id==='d-template')openEditor({...p,id:null,name:'',example:false});
   if(b.id==='d-del'){
     if(!b.classList.contains('danger')){b.classList.add('danger');b.textContent='Confirmer';clearTimeout(delArm);delArm=setTimeout(()=>{b.classList.remove('danger');b.textContent='Supprimer';},4000);return;}
@@ -1365,7 +1502,7 @@ window.__back=function(){
   if(!$('opening').hidden){closeOpening();return true;}
   if(!$('cropper').hidden){closeCropper();return true;}
   if(!$('editor').hidden){if(editing&&editing.id&&players.some(p=>p.id===editing.id))openDetail(editing.id);else closeAll();return true;}
-  if(!$('detail').hidden||!$('menu').hidden){closeAll();return true;}
+  if(!$('detail').hidden||!$('menu').hidden||!$('picker').hidden){closeAll();return true;}
   return false;
 };
 if(APP||matchMedia('(display-mode: standalone)').matches||navigator.standalone)$('m-install').hidden=true;
@@ -1452,17 +1589,18 @@ function renderPacks(){
   const nNormal=pool.filter(p=>!isSigP(p)).length,few=nNormal<PACK_SIZE;
   $('pack-few').hidden=!few;$('pack-few-n').textContent=nNormal;
   renderLock();
-  renderCycle();
+  renderCycle();renderExtras();
   const od=few?null:packOdds(pool,nextType());
   const rows=pool.map(p=>({p,o:ovr(p.s),w:isSigP(p)?-1:weightOf(p),c:few?0:od.get(p.id)})).sort((a,b)=>a.w-b.w||b.o-a.o); // de la plus rare à la plus courante
   const col={icon:'#C9B8FF',gold:'#FFD23F',silver:'#DCE3EA',bronze:'#E9A877'};
   $('odds').innerHTML=rows.map(x=>`<div class="odd"><i style="background:${isSigP(x.p)?'#FFD700':col[tier(x.o)]}"></i><span>${esc(x.p.name)}${x.p.signature&&x.p.photo?' <em class="sig-tag">Signature</em>':x.p.fullart&&x.p.photo?' <em class="fa-tag">FULL ART</em>':''}</span><b>${isSigP(x.p)?'–':x.o}</b><span>${few?'–':(x.c*100).toFixed(x.c<.01?2:x.c<.1?1:0)+' %'}</span></div>`).join('');
 }
 function setTab(t){
-  ['cards','packs','binder'].forEach(k=>{$('tab-'+k).hidden=t!==k;$('tab-btn-'+k).setAttribute('aria-selected',t===k);});
+  ['cards','packs','binder','team'].forEach(k=>{$('tab-'+k).hidden=t!==k;$('tab-btn-'+k).setAttribute('aria-selected',t===k);});
   $('fab').hidden=t!=='cards';try{localStorage.setItem('cartes-volley-onglet',t);}catch(e){}
   if(t==='packs')refreshPackLock();
   if(t==='binder')renderBinder();
+  if(t==='team')renderTeam();
 }
 document.querySelectorAll('.tab').forEach(b=>b.addEventListener('click',()=>setTab(b.dataset.tab)));
 document.addEventListener('visibilitychange',()=>{if(!document.hidden&&!$('tab-packs').hidden)refreshPackLock();});
@@ -1503,7 +1641,8 @@ const SIL_D='<svg class="sil" viewBox="0 0 24 24" fill="currentColor" aria-hidde
 const faOf=p=>!p.photo?0:p.signature?2:p.fullart?1:0;
 const binderList=()=>[...players].sort((a,b)=>faOf(a)-faOf(b)||TIER_RANK[tier(ovr(a.s))]-TIER_RANK[tier(ovr(b.s))]||ovr(a.s)-ovr(b.s)||a.name.localeCompare(b.name,'fr')||a.id.localeCompare(b.id));
 function renderBinder(dir){
-  const list=binderList(),N=list.length,pages=Math.max(1,Math.ceil(N/PER_PAGE)),own=new Set(state.owned);
+  renderDups();renderAch();
+  const list=binderList(),N=list.length,pages=Math.max(1,Math.ceil(N/PER_PAGE)),own=new Set(Object.keys(state.counts).filter(owns));
   binderPage=Math.max(0,Math.min(binderPage,pages-1));
   const got=list.filter(p=>own.has(p.id)).length;
   $('b-count').textContent=`${got} / ${N}`;$('b-bar').style.width=(N?got/N*100:0)+'%';
@@ -1515,7 +1654,7 @@ function renderBinder(dir){
     if(!p){slots.push('<div class="bslot blank" aria-hidden="true"></div>');continue;}
     const num='#'+String(i+1).padStart(3,'0'),tc=isSigP(p)?'#FFD700':TIER_COL[tier(ovr(p.s))];
     slots.push(own.has(p.id)
-      ?`<button class="bslot own" type="button" data-id="${esc(p.id)}" aria-label="${num} ${esc(p.name)}">${miniHTML(p)}<span class="bnum">${num}</span></button>`
+      ?`<button class="bslot own" type="button" data-id="${esc(p.id)}" aria-label="${num} ${esc(p.name)}">${miniHTML(p)}<span class="bnum">${num}</span>${(state.counts[p.id]||0)>1?`<span class="bcount">×${state.counts[p.id]}</span>`:''}</button>`
       :`<div class="bslot miss" style="--tc:${tc}" aria-label="${num}, carte pas encore obtenue"><span class="bnum">${num}</span>${isDiv(p)?SIL_D:SIL_P}<span class="qm">?</span></div>`);
   }
   const pg=$('b-page');pg.innerHTML=slots.join('');
@@ -1528,7 +1667,7 @@ function turnPage(d){const pages=Math.max(1,Math.ceil(players.length/PER_PAGE)),
 $('b-clear').addEventListener('click',()=>{$('b-confirm').hidden=false;$('b-clear').hidden=true;$('b-confirm').scrollIntoView({block:'center',behavior:'smooth'});});
 $('b-cancel').addEventListener('click',()=>{$('b-confirm').hidden=true;$('b-clear').hidden=false;});
 $('b-ok').addEventListener('click',async()=>{ // on garde la date du dernier booster : vider ne rend pas le booster du jour
-  state.owned=[];await saveState();$('b-confirm').hidden=true;$('b-clear').hidden=false;binderPage=0;renderBinder();toast('Classeur vidé');});
+  state.owned=[];state.counts={};await saveState();$('b-confirm').hidden=true;$('b-clear').hidden=false;binderPage=0;renderBinder();toast('Classeur vidé');});
 $('b-prev').addEventListener('click',()=>turnPage(-1));$('b-next').addEventListener('click',()=>turnPage(1));
 $('b-dots').addEventListener('click',e=>{const b=e.target.closest('button');if(!b)return;const k=+b.dataset.p;if(k===binderPage)return;const d=k>binderPage?'next':'prev';binderPage=k;renderBinder(d);});
 $('b-page').addEventListener('click',e=>{const c=e.target.closest('.bslot.own');if(c&&!swiped)openDetail(c.dataset.id);});
@@ -1735,12 +1874,14 @@ async function countUp(el,to,ms,alive){
     if(k<1)requestAnimationFrame(step);else res();};step();});
 }
 
-async function openPack(){
+async function openPack(bonusType){
+  if(typeof bonusType!=='string')bonusType=null;
+  const isBonus=!!bonusType&&(state.bonus[bonusType]||0)>0;
   const pool=players;if(pool.filter(p=>!isSigP(p)).length<PACK_SIZE){renderPacks();setTab('packs');toast('Il faut au moins 5 cartes pour ouvrir un booster.');return;}
   if(openBusy)return;
   ac(); // le son doit démarrer pendant le toucher, avant toute attente
   let now=null,today='';
-  if(!isAdmin){ // l'admin n'a ni vérification d'heure ni limite
+  if(!isAdmin&&!isBonus){ // l'admin et les boosters bonus n'ont ni vérification d'heure ni limite
     openBusy=true;packStatus='checking';renderLock();
     now=await trustedNow();openBusy=false;
     if(now==null){packStatus='offline';renderLock();toast("Pas de connexion : impossible de vérifier l'heure.");return;}
@@ -1748,11 +1889,22 @@ async function openPack(){
     if(state.lastDay===today||now<state.lastTs){packStatus='locked';renderLock();toast("Tu as déjà ouvert ton booster aujourd'hui. Reviens après minuit !");return;}
   }
   const my=++run,alive=()=>my===run;
-  const ptype=nextType();
+  const ptype=isBonus?bonusType:nextType();
   const pulled=revealOrder(drawPack(pool,ptype));
   // Enregistré tout de suite : fermer l'animation ne rend pas le booster
-  const before=new Set(state.owned),fresh=new Set(pulled.filter(p=>!before.has(p.id)).map(p=>p.id));
-  if(!isAdmin){state.lastDay=today;state.lastTs=now;state.count=(+state.count||0)+1;}pulled.forEach(p=>{if(!before.has(p.id))state.owned.push(p.id);});
+  const before=new Set(Object.keys(state.counts).filter(owns)),fresh=new Set(pulled.filter(p=>!before.has(p.id)).map(p=>p.id));
+  const pagesBefore=fullPages(),allBefore=binderComplete();
+  if(isBonus)state.bonus[bonusType]--;
+  else if(!isAdmin){
+    state.lastDay=today;state.lastTs=now;state.count=(+state.count||0)+1;
+    const yest=parisDay(now-864e5),st=state.streak; // série : jours consécutifs avec le booster du jour
+    st.cur=st.lastDay===yest?st.cur+1:st.lastDay===today?st.cur:1;st.lastDay=today;st.best=Math.max(st.best,st.cur);
+  }
+  pulled.forEach(p=>addCard(p.id));
+  state.history.unshift({ts:now||Date.now(),type:ptype,how:isBonus?'bonus':isAdmin?'admin':'jour',ids:pulled.map(p=>p.id),fresh:[...fresh]});
+  state.history=state.history.slice(0,30);
+  const newPages=fullPages().filter(k=>!pagesBefore.includes(k)),allNow=!allBefore&&binderComplete();
+  const newAch=checkAch(true);
   saveState();packStatus=isAdmin?'ready':'locked';renderPacks();
   if(ptype!=='classic'){sfx.sparkle();buzz([30,40,30]);}
   const best=pulled.map(vt).reduce((m,t)=>TIER_RANK[t]>TIER_RANK[m]?t:m,'bronze'),bestR=TIER_RANK[best]; // la lueur annonce le plus haut niveau du booster
@@ -1866,21 +2018,258 @@ async function openPack(){
   $('op-count').textContent='TON BOOSTER';tray.hidden=true;
   stage.querySelectorAll('.stack-back').forEach(e=>e.remove());
   const top=pulled[4],rest=pulled.slice(0,4).reverse();
-  const tagNew=p=>fresh.has(p.id)?'<span class="newtag">NOUVELLE</span>':'';
+  const tagNew=p=>fresh.has(p.id)?'<span class="newtag">NOUVELLE</span>':'<span class="newtag dup">DOUBLON</span>';
   stage.insertAdjacentHTML('beforeend',`<div class="op-summary"><span class="best-label">Carte la plus rare</span><div class="best sum-mini">${miniHTML(top)}${tagNew(top)}</div>
     <div class="rest">${rest.map((p,i)=>`<div class="sum-mini" style="animation-delay:${i*70}ms">${miniHTML(p)}${tagNew(p)}</div>`).join('')}</div>
     <p class="note" style="margin:0;text-align:center">${fresh.size?`${fresh.size} nouvelle${fresh.size>1?'s':''} carte${fresh.size>1?'s':''} dans ton classeur`:'Aucune nouvelle carte cette fois'}</p>
-    <div class="op-actions">${isAdmin?'<button class="btn" type="button" id="op-done">Voir le classeur</button><button class="btn primary" type="button" id="op-again">Ouvrir un autre</button>':'<button class="btn" type="button" id="op-done">Terminé</button><button class="btn primary" type="button" id="op-again">Voir le classeur</button>'}</div></div>`);
+    <div class="op-actions">${(isBonus&&state.bonus[bonusType]>0)?'<button class="btn" type="button" id="op-done">Voir le classeur</button><button class="btn primary" type="button" id="op-again">Bonus suivant</button>':isAdmin?'<button class="btn" type="button" id="op-done">Voir le classeur</button><button class="btn primary" type="button" id="op-again">Ouvrir un autre</button>':'<button class="btn" type="button" id="op-done">Terminé</button><button class="btn primary" type="button" id="op-again">Voir le classeur</button>'}</div></div>`);
   $('op-done').addEventListener('click',closeOpening);
-  if(isAdmin){$('op-done').addEventListener('click',()=>{closeOpening();setTab('binder');},{once:true});$('op-again').addEventListener('click',()=>openPack());}
+  if(isBonus&&state.bonus[bonusType]>0){$('op-done').addEventListener('click',()=>{closeOpening();setTab('binder');},{once:true});$('op-again').addEventListener('click',()=>openPack(bonusType));}
+  else if(isAdmin){$('op-done').addEventListener('click',()=>{closeOpening();setTab('binder');},{once:true});$('op-again').addEventListener('click',()=>openPack());}
   else $('op-again').addEventListener('click',()=>{closeOpening();setTab('binder');});
   const[bx,by]=centerOf(stage.querySelector('.best'));burst(bx,by,TIER_FX[vt(top)].c,60,8);
+  if(newPages.length||allNow){await wait(700);if(!alive())return;await celebrate(newPages,allNow,alive);}
+  if(newAch.length)showAch(newAch);
 }
 window.addEventListener('resize',()=>{if(!$('opening').hidden)fxSize();});
 
 
-setMode('pending');render();
-try{const t=localStorage.getItem('cartes-volley-onglet');if(t==='packs'||t==='binder')setTab(t);}catch(e){}
+
+/* =================== Doublons et boosters bonus =================== */
+const DUP_TIERS=[{t:'bronze',l:'Bronze',pack:'classic',c:'#E9A877'},{t:'silver',l:'Argent',pack:'silver',c:'#DCE3EA'},{t:'gold',l:'Or',pack:'gold',c:'#FFD23F'},{t:'icon',l:'Icône',pack:'icon',c:'#C9B8FF'}];
+const dupTier=p=>isSigP(p)?'icon':tier(ovr(p.s));
+function dupStock(t){return players.filter(p=>dupTier(p)===t).reduce((n,p)=>n+Math.max(0,(state.counts[p.id]||0)-1),0);}
+function renderDups(){
+  $('dups').innerHTML=DUP_TIERS.map(d=>{const n=dupStock(d.t);return`<div class="dup-row"><i style="background:${d.c}"></i>
+    <div class="dmeta"><span>${d.l}</span><span class="track"><i style="width:${Math.min(100,n*10)}%"></i></span><small>${n} doublon${n>1?'s':''}${n>=10?` · ${Math.floor(n/10)} échange${n>=20?'s':''} possible${n>=20?'s':''}`:` · encore ${10-n}`}</small></div>
+    <button class="btn primary" type="button" data-ex="${d.t}" ${n>=10?'':'disabled'}>Échanger</button></div>`;}).join('');
+}
+$('dups').addEventListener('click',async e=>{
+  const b=e.target.closest('[data-ex]');if(!b||b.disabled)return;const d=DUP_TIERS.find(x=>x.t===b.dataset.ex);
+  if(dupStock(d.t)<10)return;
+  for(let k=0;k<10;k++){ // on retire un exemplaire en trop aux cartes qui en ont le plus
+    const c=players.filter(p=>dupTier(p)===d.t&&(state.counts[p.id]||0)>1).sort((a,b)=>state.counts[b.id]-state.counts[a.id])[0];
+    if(!c)break;state.counts[c.id]--;
+  }
+  state.bonus[d.pack]=(state.bonus[d.pack]||0)+1;state.exchanges=(state.exchanges||0)+1;
+  await saveState();renderBinder();renderPacks();sfx.sparkle();buzz([30,40,60]);
+  toast(`10 doublons ${d.l.toLowerCase()} échangés : 1 ${PACK_TYPES[d.pack].l.toLowerCase()} bonus dans l'onglet Packs`);
+  const na=checkAch(true);if(na.length)showAch(na);
+});
+function renderExtras(){
+  // Boosters bonus
+  const types=Object.keys(PACK_TYPES).filter(t=>(state.bonus[t]||0)>0),few=players.filter(p=>!isSigP(p)).length<PACK_SIZE;
+  $('bonus-sec').hidden=!types.length;
+  $('bonus-list').innerHTML=types.map(t=>`<button class="bonus-btn t-${t}" type="button" data-bonus="${t}" ${few?'disabled':''}><span><b>${PACK_TYPES[t].l}</b><br><small>Bonus · s'ouvre quand tu veux</small></span><small>×${state.bonus[t]}</small></button>`).join('');
+  // Série
+  const n=estNow()||Date.now(),today=parisDay(n),yest=parisDay(n-864e5),st=state.streak;
+  const alive=st.lastDay===today||st.lastDay===yest,cur=alive?st.cur:0;
+  const fire='<svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2c1 4 5 5.5 5 10a5 5 0 01-10 0c0-2 1-3.5 2-4.5 0 2 1 3 2 3 0-3-1-5 1-8.5z" fill="#FF7A2F"/><path d="M12 12c.6 1.8 2.5 2.4 2.5 4.5a2.5 2.5 0 01-5 0c0-1.2.8-2 1.5-2.5.2 1 .6 1.5 1 1.5 0-1.3-.5-2.2 0-3.5z" fill="#FFD23F"/></svg>';
+  const el=$('streak');el.classList.toggle('off',!cur);
+  el.innerHTML=`${fire}<div><b>${cur} jour${cur>1?'s':''} d'affilée</b><br><span>${!cur?(st.best?`Série perdue. Record : ${st.best} jours. Ouvre ton booster du jour pour repartir.`:'Ouvre un booster chaque jour pour lancer ta série.'):st.lastDay===today?`Booster du jour ouvert. Record : ${st.best} jour${st.best>1?'s':''}.`:`Ouvre ton booster aujourd'hui pour garder ta série !`}</span></div>`;
+  // Historique
+  const fmt=new Intl.DateTimeFormat('fr-FR',{timeZone:'Europe/Paris',weekday:'short',day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'});
+  $('hist-sec').hidden=!state.history.length;
+  $('hist').innerHTML=state.history.slice(0,12).map(h=>`<div class="h-item"><div class="h-head"><b>${PACK_TYPES[h.type]?PACK_TYPES[h.type].l:'Booster'}${h.how==='bonus'?'<span class="h-tag">BONUS</span>':h.how==='admin'?'<span class="h-tag">ADMIN</span>':''}</b><span>${fmt.format(new Date(h.ts))}</span></div>
+    <div class="h-row">${h.ids.map(id=>{const c=players.find(p=>p.id===id);return c?`<div class="sum-mini">${miniHTML(c)}${(h.fresh||[]).includes(id)?'<span class="newtag">NEW</span>':''}</div>`:'<div class="h-gone" title="Carte supprimée"></div>';}).join('')}</div></div>`).join('');
+}
+$('bonus-list').addEventListener('click',e=>{const b=e.target.closest('[data-bonus]');if(b&&!b.disabled)openPack(b.dataset.bonus);});
+
+/* =================== Classeur : pages complètes =================== */
+function fullPages(){const l=binderList(),out=[];for(let k=0;k*PER_PAGE<l.length;k++){const pg=l.slice(k*PER_PAGE,k*PER_PAGE+PER_PAGE);if(pg.length===PER_PAGE&&pg.every(p=>owns(p.id)))out.push(k);}return out;}
+const binderComplete=()=>players.length>0&&players.every(p=>owns(p.id));
+async function celebrate(pages,all,alive){
+  const O=$('opening');
+  const txt=all?'<b>Classeur complet !</b><span>Tu as obtenu toutes les cartes.</span>':`<b>Page ${pages.map(k=>k+1).join(' et ')} complète !</b><span>${pages.length>1?'Deux pages':'Une page'} entière de ton classeur.</span>`;
+  O.insertAdjacentHTML('beforeend',`<div class="celebrate" id="op-cel"><div>${txt}<small>Touche pour continuer</small></div></div>`);
+  sfx.fanfare();buzz([100,60,100,60,240]);flash('rgba(255,233,122,.6)');
+  const C=['#FFD23F','#FF7A2F','#FFF6C8','#FFFFFF','#8CFFB0','#7AD8FF'];rain(C,all?260:160);fireworks(C,all?4000:2200,alive);
+  await nextTap();const c=$('op-cel');if(c)c.remove();
+}
+
+/* =================== Succès =================== */
+const TROPHY='<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M7 3h10v2h3v3a4 4 0 01-4 4h-.4A5 5 0 0113 14.9V18h3v3H8v-3h3v-3.1A5 5 0 018.4 12H8a4 4 0 01-4-4V5h3zm-1 4v1a2 2 0 002 2V7zm12 0v3a2 2 0 002-2V7z"/></svg>';
+const tierCards=t=>players.filter(p=>!isSigP(p)&&tier(ovr(p.s))===t);
+const tierDone=t=>{const l=tierCards(t);return l.length>0&&l.every(p=>owns(p.id));};
+const realHist=()=>state.history.filter(h=>h.how!=='admin');
+const ACH=[
+  {k:'pack1',t:'Premier booster',d:'Ouvre ton premier booster',ok:()=>state.history.length>0},
+  {k:'gold1',t:"De l'or !",d:'Obtiens une carte or',ok:()=>tierCards('gold').some(p=>owns(p.id))},
+  {k:'icon1',t:'Légende',d:'Obtiens une carte icône',ok:()=>tierCards('icon').some(p=>owns(p.id))},
+  {k:'fa1',t:'Premier Full Art',d:'Obtiens une carte Full Art',ok:()=>players.some(p=>p.fullart&&p.photo&&!isSigP(p)&&owns(p.id))},
+  {k:'sig1',t:'Première Signature',d:'Obtiens une carte Signature',ok:()=>players.some(p=>isSigP(p)&&owns(p.id))},
+  {k:'page1',t:'Page complète',d:'Remplis une page entière du classeur',ok:()=>fullPages().length>0},
+  {k:'cBronze',t:'Classeur bronze complet',d:'Toutes les cartes bronze',ok:()=>tierDone('bronze')},
+  {k:'cSilver',t:'Classeur argent complet',d:'Toutes les cartes argent',ok:()=>tierDone('silver')},
+  {k:'cGold',t:'Classeur or complet',d:'Toutes les cartes or',ok:()=>tierDone('gold')},
+  {k:'cIcon',t:'Classeur icône complet',d:'Toutes les cartes icône',ok:()=>tierDone('icon')},
+  {k:'cAll',t:'Classeur complet',d:'Obtiens toutes les cartes',ok:()=>binderComplete()},
+  {k:'s3',t:"3 jours d'affilée",d:'Une série de 3 jours',ok:()=>state.streak.best>=3},
+  {k:'s7',t:"7 jours d'affilée",d:'Une série de 7 jours',ok:()=>state.streak.best>=7},
+  {k:'s30',t:"30 jours d'affilée",d:'Une série de 30 jours',ok:()=>state.streak.best>=30},
+  {k:'pIcon',t:'Booster Icône',d:'Ouvre ton premier booster Icône du jour',ok:()=>realHist().some(h=>h.type==='icon'&&h.how==='jour')},
+  {k:'ex1',t:'Premier échange',d:'Échange 10 doublons contre un booster',ok:()=>state.exchanges>0},
+  {k:'team',t:'Équipe au complet',d:'Place 7 cartes dans ton équipe',ok:()=>teamFull()},
+  {k:'team80',t:'Équipe de choc',d:'Une équipe complète notée 80 ou plus',ok:()=>teamFull()&&teamScore()>=80},
+];
+function checkAch(save){
+  const out=[];ACH.forEach(a=>{if(!state.ach[a.k]&&a.ok()){state.ach[a.k]=Date.now();out.push(a);}});
+  if(out.length&&save)saveState();return out;
+}
+function renderAch(){
+  const n=ACH.filter(a=>state.ach[a.k]).length;$('ach-count').textContent=`· ${n} / ${ACH.length}`;
+  $('achs').innerHTML=ACH.map(a=>`<div class="ach${state.ach[a.k]?' on':''}">${TROPHY}<div><b>${a.t}</b><small>${a.d}</small></div></div>`).join('');
+}
+let achQueue=[],achBusy=false;
+function showAch(list){achQueue.push(...list);if(!achBusy)nextAch();renderAch();}
+function nextAch(){
+  const a=achQueue.shift();if(!a){achBusy=false;return;}achBusy=true;
+  const el=document.createElement('div');el.className='ach-pop';el.setAttribute('role','status');
+  el.innerHTML=`${TROPHY}<div><small>Succès débloqué</small><b>${a.t}</b><span>${a.d}</span></div>`;document.body.appendChild(el);
+  sfx.sparkle();sfx.ding('gold');buzz([40,40,80]);
+  setTimeout(()=>{el.classList.add('out');setTimeout(()=>{el.remove();nextAch();},400);},2800);
+}
+
+/* =================== Équipe =================== */
+const TEAM_SLOTS=[
+  {k:'R4a',p:'R4',l:'R4',row:0},{k:'CEN1',p:'CEN',l:'Central',row:0},{k:'PTU',p:'PTU',l:'Pointu',row:0},
+  {k:'R4b',p:'R4',l:'R4',row:1},{k:'CEN2',p:'CEN',l:'Central',row:1},{k:'PAS',p:'PAS',l:'Passeur',row:1},
+  {k:'LIB',p:'LIB',l:'Libéro',row:2}];
+const POSTE_W={PAS:{pas:.5,def:.15,ser:.15,rec:.1,blo:.05,att:.05},PTU:{att:.45,blo:.2,ser:.2,def:.1,rec:.05},
+  R4:{rec:.3,att:.3,def:.2,ser:.15,blo:.05},CEN:{blo:.45,att:.3,ser:.15,pas:.05,def:.05},LIB:{rec:.45,def:.45,pas:.1}};
+const fitsSlot=(p,sl)=>!!p&&owns(p.id)&&!isDiv(p)&&!isSigP(p)&&(p.poste===sl.p||p.poste==='POL');
+const slotScore=(p,sl)=>p.poste==='POL'?ovr(p.s):Math.round(Object.entries(POSTE_W[sl.p]).reduce((t,[k,v])=>t+(+p.s[k]||0)*v,0));
+const teamCard=sl=>{const p=players.find(x=>x.id===state.team[sl.k]);return fitsSlot(p,sl)?p:null;};
+const teamFull=()=>TEAM_SLOTS.every(sl=>teamCard(sl));
+function teamScore(){const v=TEAM_SLOTS.map(sl=>{const p=teamCard(sl);return p?slotScore(p,sl):null;}).filter(x=>x!=null);return v.length?Math.round(v.reduce((a,b)=>a+b,0)/v.length):0;}
+function slotHTML(sl){
+  const p=teamCard(sl);
+  return`<button class="tslot" type="button" data-slot="${sl.k}" aria-label="${sl.l}${p?', '+esc(p.name):', vide'}"><span class="tpos">${sl.l}</span>${p?miniHTML(p):'<span class="tempty">+</span>'}<span class="tval">${p?slotScore(p,sl):'–'}</span></button>`;
+}
+function renderTeam(){
+  $('court').innerHTML=TEAM_SLOTS.filter(sl=>sl.row<2).map(slotHTML).join('');
+  $('lib-slot').innerHTML=slotHTML(TEAM_SLOTS[6]);
+  const n=TEAM_SLOTS.filter(sl=>teamCard(sl)).length,sc=teamScore();
+  $('t-score').textContent=n?sc:'–';$('t-score').style.color=n?TIER_COL[tier(sc)]:'';
+  $('t-sub').textContent=n===7?`Équipe complète · ${TIER_L[tier(sc)].replace('Carte','Niveau')}`:n?`${n} / 7 postes remplis. La note compte les postes remplis.`:'Touche un poste pour y placer une carte de ton classeur.';
+}
+let pickSlot=null;
+function openPicker(k){
+  const sl=TEAM_SLOTS.find(x=>x.k===k);pickSlot=sl;
+  const list=players.filter(p=>fitsSlot(p,sl)).sort((a,b)=>slotScore(b,sl)-slotScore(a,sl));
+  $('pk-title').textContent=sl.l;
+  $('pk-note').textContent=list.length?'Cartes de ton classeur qui peuvent jouer à ce poste, avec leur note au poste.':`Aucune carte de ton classeur ne peut jouer ${sl.p==='LIB'?'libéro':'à ce poste'} pour l'instant. Il faut une carte ${posteL(sl.p)} ou Polyvalent.`;
+  $('pk-grid').innerHTML=list.map(p=>{const where=TEAM_SLOTS.find(x=>state.team[x.k]===p.id);return`<button class="pk-card${where&&where.k===sl.k?' cur':''}" type="button" data-id="${esc(p.id)}">${miniHTML(p)}<b>${slotScore(p,sl)}${where&&where.k!==sl.k?` · ${where.l}`:''}</b></button>`;}).join('');
+  $('pk-remove').hidden=!teamCard(sl);show('picker');
+}
+async function setSlot(k,id){
+  for(const x of TEAM_SLOTS)if(state.team[x.k]===id&&x.k!==k)delete state.team[x.k]; // une carte ne joue qu'à un poste
+  if(id)state.team[k]=id;else delete state.team[k];
+  await saveState();renderTeam();const na=checkAch(true);if(na.length)showAch(na);
+}
+$('court').addEventListener('click',e=>{const b=e.target.closest('.tslot');if(b)openPicker(b.dataset.slot);});
+$('lib-slot').addEventListener('click',e=>{const b=e.target.closest('.tslot');if(b)openPicker(b.dataset.slot);});
+$('pk-grid').addEventListener('click',async e=>{const b=e.target.closest('.pk-card');if(!b||!pickSlot)return;await setSlot(pickSlot.k,b.dataset.id);closeAll();sfx.whoosh();});
+$('pk-remove').addEventListener('click',async()=>{if(!pickSlot)return;await setSlot(pickSlot.k,null);closeAll();});
+$('t-clear').addEventListener('click',async()=>{state.team={};await saveState();renderTeam();});
+$('t-auto').addEventListener('click',async()=>{ // les postes les plus exigeants d'abord, puis la meilleure carte disponible
+  const used=new Set(),team={};
+  for(const k of ['PAS','LIB','CEN1','CEN2','PTU','R4a','R4b']){const sl=TEAM_SLOTS.find(x=>x.k===k);
+    const best=players.filter(p=>fitsSlot(p,sl)&&!used.has(p.id)).sort((a,b)=>(slotScore(b,sl)+(b.poste===sl.p?.5:0))-(slotScore(a,sl)+(a.poste===sl.p?.5:0)))[0];
+    if(best){team[k]=best.id;used.add(best.id);}}
+  if(!Object.keys(team).length){toast("Aucune carte de ton classeur ne peut encore jouer. Ouvre des boosters !");return;}
+  state.team=team;await saveState();renderTeam();sfx.sparkle();const na=checkAch(true);if(na.length)showAch(na);
+});
+
+/* =================== Carte du jour =================== */
+let cotdId=null,gyroOn=false;
+function renderCotd(){
+  const own=players.filter(p=>owns(p.id)).sort((a,b)=>a.id.localeCompare(b.id)),el=$('cotd');
+  if(!own.length){el.hidden=true;cotdId=null;return;}
+  const day=parisDay(estNow()||Date.now());let h=0;for(const ch of day)h=(h*31+ch.charCodeAt(0))>>>0;
+  const p=own[h%own.length];el.hidden=false;
+  if(cotdId===p.id+day&&el.innerHTML)return;cotdId=p.id+day;
+  const needPerm=typeof DeviceOrientationEvent!=='undefined'&&typeof DeviceOrientationEvent.requestPermission==='function'&&!gyroOn;
+  el.innerHTML=`<div class="hero-card" id="cotd-card">${cardHTML(p,0,false)}</div><div><span class="label">Carte du jour</span><h3>${esc(p.name)}</h3>
+    <p>${isSigP(p)?'Signature':TIER_L[tier(ovr(p.s))]}${p.fullart&&p.photo&&!isSigP(p)?' · Full Art':''} · ${esc(posteL(p.poste))}</p><p>Une nouvelle carte de ta collection chaque jour. Penche ton téléphone pour la faire bouger.</p>
+    ${needPerm?'<button class="btn" type="button" id="cotd-gyro">Activer l\'inclinaison</button>':''}</div>`;
+  const g=$('cotd-gyro');if(g)g.addEventListener('click',async()=>{try{if((await DeviceOrientationEvent.requestPermission())==='granted'){gyroOn=true;g.remove();}}catch(e){g.remove();}});
+}
+function tiltCotd(rx,ry,mx){const c=document.querySelector('#cotd-card .card');if(!c)return;c.style.setProperty('--rx',rx+'deg');c.style.setProperty('--ry',ry+'deg');c.style.setProperty('--mx',mx+'%');}
+window.addEventListener('deviceorientation',e=>{if(e.gamma==null||$('tab-cards').hidden)return;gyroOn=true;
+  const ry=Math.max(-20,Math.min(20,e.gamma*.6)),rx=Math.max(-16,Math.min(16,((e.beta||45)-45)*-.4));tiltCotd(rx,ry,50-ry*2.5);});
+$('cotd').addEventListener('pointermove',e=>{const c=$('cotd-card');if(!c)return;const r=c.getBoundingClientRect(),x=(e.clientX-r.left)/r.width-.5,y=(e.clientY-r.top)/r.height-.5;tiltCotd(-y*18,x*18,100-(x+.5)*100);});
+$('cotd').addEventListener('pointerleave',()=>tiltCotd(0,0,50));
+$('cotd').addEventListener('click',e=>{if(e.target.closest('#cotd-gyro'))return;const c=e.target.closest('.card');if(c)openDetail(c.dataset.id);});
+
+/* =================== Partager une carte en image =================== */
+const loadImg=src=>new Promise((res,rej)=>{const im=new Image();im.onload=()=>res(im);im.onerror=rej;im.src=src;});
+function cardPath(ctx,x,y,w,h){ctx.beginPath();[[0,.07],[.09,0],[.91,0],[1,.07],[1,.87],[.5,1],[0,.87]].forEach(([a,b],i)=>i?ctx.lineTo(x+a*w,y+b*h):ctx.moveTo(x+a*w,y+b*h));ctx.closePath();}
+function artPath(ctx,x,y,w,h){ctx.beginPath();[[0,.065],[.085,0],[.915,0],[1,.065],[1,.875],[.5,1],[0,.875]].forEach(([a,b],i)=>i?ctx.lineTo(x+a*w,y+b*h):ctx.moveTo(x+a*w,y+b*h));ctx.closePath();}
+async function drawCardImage(p){
+  try{await document.fonts.ready;}catch(e){}
+  const W=1080,H=1350,cv=document.createElement('canvas');cv.width=W;cv.height=H;const g=cv.getContext('2d');
+  const t=vt(p),o=ovr(p.s),fa=p.fullart&&p.photo,sg=isSigP(p),dv=isDiv(p);
+  // fond
+  let bg=g.createRadialGradient(W/2,H*.42,50,W/2,H*.42,H*.8);bg.addColorStop(0,'#1C3580');bg.addColorStop(1,'#060C1F');g.fillStyle=bg;g.fillRect(0,0,W,H);
+  g.save();g.translate(W/2,H*.44);for(let i=0;i<36;i++){g.rotate(Math.PI/18);g.fillStyle=i%2?'rgba(255,210,63,.05)':'rgba(255,255,255,.03)';g.beginPath();g.moveTo(0,0);g.lineTo(-60,-H);g.lineTo(60,-H);g.closePath();g.fill();}g.restore();
+  const cw=780,ch=1092,cx=(W-cw)/2,cy=82;
+  const METAL={bronze:['#E9B489','#A8643A','#6E3B1E'],silver:['#F4F7FA','#B9C3CE','#7D8896'],gold:['#FFF0A8','#E3B23C','#A97818'],icon:['#FFD6F5','#B8E6FF','#C9FFD9','#FFF3B0']}[t];
+  g.save();g.shadowColor='rgba(0,0,0,.6)';g.shadowBlur=60;g.shadowOffsetY=30;cardPath(g,cx,cy,cw,ch);g.fillStyle='#000';g.fill();g.restore();
+  g.save();cardPath(g,cx,cy,cw,ch);g.clip();
+  let mg=g.createLinearGradient(cx,cy,cx+cw*.6,cy+ch);METAL.forEach((c,i)=>mg.addColorStop(i/(METAL.length-1),c));g.fillStyle=mg;g.fillRect(cx,cy,cw,ch);
+  let hl=g.createRadialGradient(cx+cw*.75,cy,10,cx+cw*.75,cy,cw*.9);hl.addColorStop(0,'rgba(255,255,255,.6)');hl.addColorStop(1,'rgba(255,255,255,0)');g.fillStyle=hl;g.fillRect(cx,cy,cw,ch);
+  g.strokeStyle='rgba(255,255,255,.08)';g.lineWidth=3;for(let i=-ch;i<cw;i+=26){g.beginPath();g.moveTo(cx+i,cy);g.lineTo(cx+i+ch,cy+ch);g.stroke();}
+  let ink='#20120A';
+  if(fa){
+    ink='#FFFFFF';
+    if(sg){const rx=cx+cw*.028,ry=cy+ch*.017;let rg=g.createLinearGradient(rx,ry,rx+cw,ry+ch);['#7A4E00','#FFE97A','#B8860B','#FFF6C8','#C99700','#7A4E00'].forEach((c,i,a)=>rg.addColorStop(i/(a.length-1),c));artPath(g,rx,ry,cw*.944,ch*.966);g.fillStyle=rg;g.fill();}
+    const ax=cx+cw*.042,ay=cy+ch*.03,aw=cw*.916,ah=ch*.94;
+    g.save();artPath(g,ax,ay,aw,ah);g.clip();
+    try{const im=await loadImg(p.photo),k=Math.max(aw/im.width,ah/im.height),iw=im.width*k,ih=im.height*k;g.drawImage(im,ax+(aw-iw)/2,ay+(ah-ih)*.3,iw,ih);}catch(e){}
+    let sh=g.createLinearGradient(0,ay,0,ay+ah);sh.addColorStop(0,'rgba(0,0,0,.5)');sh.addColorStop(.24,'rgba(0,0,0,0)');sh.addColorStop(.46,'rgba(0,0,0,0)');sh.addColorStop(.74,'rgba(0,0,0,.72)');sh.addColorStop(1,'rgba(0,0,0,.9)');g.fillStyle=sh;g.fillRect(ax,ay,aw,ah);
+    g.globalCompositeOperation='color-dodge';let ho=g.createLinearGradient(ax,ay,ax+aw,ay+ah*.6);
+    [['rgba(255,80,200,0)',0],['rgba(255,80,200,.45)',.3],['rgba(80,220,255,.45)',.42],['rgba(120,255,160,.45)',.54],['rgba(255,240,100,.45)',.66],['rgba(255,240,100,0)',.8]].forEach(([c,s2])=>ho.addColorStop(s2,c));
+    g.fillStyle=ho;g.fillRect(ax,ay,aw,ah);g.globalCompositeOperation='source-over';
+    g.fillStyle='rgba(255,255,255,.35)';for(let i=0;i<260;i++){g.beginPath();g.arc(ax+Math.random()*aw,ay+Math.random()*ah,Math.random()*2.2,0,7);g.fill();}
+    g.restore();
+  }
+  const sh2=fa?{c:'rgba(0,0,0,.9)',b:14}:{c:'transparent',b:0};const txt=(s2,x,y,font,al='left',col=ink)=>{g.save();g.font=font;g.textAlign=al;g.fillStyle=col;g.shadowColor=sh2.c;g.shadowBlur=sh2.b;g.fillText(s2,x,y);g.restore();};
+  if(!sg)txt(String(o),cx+cw*.09,cy+ch*.17,'900 150px "Big Shoulders Display","Arial Narrow",Impact,sans-serif');
+  txt(p.poste,cx+cw*.095,cy+ch*(sg?.1:.215),'700 44px "Chakra Petch",monospace,sans-serif');
+  if(!fa){ // médaillon photo
+    const r0=cw*.25,mx0=cx+cw/2,my0=cy+ch*.44;g.save();g.beginPath();g.arc(mx0,my0,r0,0,7);g.fillStyle='rgba(0,0,0,.14)';g.fill();g.clip();
+    if(p.photo){try{const im=await loadImg(p.photo),k=Math.max(2*r0/im.width,2*r0/im.height);g.drawImage(im,mx0-im.width*k/2,my0-im.height*k*.42,im.width*k,im.height*k);}catch(e){}}
+    else txt(initials(p.name),mx0,my0+50,'900 150px "Big Shoulders Display",Impact,sans-serif','center');
+    g.restore();g.beginPath();g.arc(mx0,my0,r0,0,7);g.strokeStyle='rgba(0,0,0,.2)';g.lineWidth=6;g.stroke();
+  }
+  txt(p.name.toUpperCase(),cx+cw/2,cy+ch*.74,'900 92px "Big Shoulders Display","Arial Narrow",Impact,sans-serif','center');
+  g.fillStyle=fa?'rgba(255,255,255,.5)':'rgba(0,0,0,.28)';g.fillRect(cx+cw*.12,cy+ch*.76,cw*.76,3);
+  if(sg)txt('Édition signée',cx+cw/2,cy+ch*.83,'400 72px "Great Vibes","Brush Script MT",cursive','center','#FFE97A');
+  else if(dv){txt('DIVERS',cx+cw/2,cy+ch*.815,'700 38px "Chakra Petch",monospace','center');txt(p.desc||'',cx+cw/2,cy+ch*.865,'italic 600 38px Barlow,sans-serif','center');}
+  else SKILLS.forEach((x,i)=>{const col=i%3,row=Math.floor(i/3),xx=cx+cw*(.25+col*.25),yy=cy+ch*(.825+row*.075);
+    txt(String(p.s[x.k]),xx,yy,'700 54px "Chakra Petch",monospace','center');txt(x.a,xx,yy+30,'600 24px "Chakra Petch",monospace','center');});
+  g.restore();
+  g.save();g.font='900 46px "Big Shoulders Display",Impact,sans-serif';const w1=g.measureText('CARTES ').width,w2=g.measureText('VOLLEY').width,x0=(W-w1-w2)/2;
+  g.textAlign='left';g.fillStyle='#F3F5FF';g.fillText('CARTES ',x0,H-56);g.fillStyle='#FF7A2F';g.fillText('VOLLEY',x0+w1,H-56);g.restore();
+  return cv;
+}
+async function shareCard(p){
+  toast("Préparation de l'image…");
+  let cv;try{cv=await drawCardImage(p);}catch(e){toast("L'image n'a pas pu être créée.");return;}
+  const name=`carte-${p.name.toLowerCase().replace(/[^a-z0-9]+/gi,'-')}.png`,url=cv.toDataURL('image/png');
+  if(APP&&AndroidBridge.shareImage){let r='error';try{r=AndroidBridge.shareImage(url.split(',')[1],name);}catch(e){}if(r==='ok')return;}
+  const blob=await new Promise(res=>cv.toBlob(res,'image/png'));
+  if(blob&&window.STANDALONE_WEB&&navigator.canShare){const f=new File([blob],name,{type:'image/png'});if(navigator.canShare({files:[f]})){try{await navigator.share({files:[f],title:p.name});return;}catch(e){if(e&&e.name==='AbortError')return;}}}
+  if(blob&&downloads){try{await downloads.save({filename:name,data:blob});return;}catch(e){if(e&&e.code==='declined')return;}}
+  // dernier recours : afficher l'image pour l'enregistrer à la main
+  const ov=document.createElement('div');ov.className='shot';ov.innerHTML=`<img src="${url}" alt="Carte ${esc(p.name)}"><p>Appuie longuement sur l'image pour l'enregistrer ou la partager.</p><button class="btn" type="button">Fermer</button>`;
+  ov.querySelector('button').addEventListener('click',()=>ov.remove());document.body.appendChild(ov);
+}
+
+setMode('pending');render();renderAch();renderDups();
+setTimeout(()=>{const na=checkAch(true);if(na.length)showAch(na);},1500);
+try{const t=localStorage.getItem('cartes-volley-onglet');if(t==='packs'||t==='binder'||t==='team')setTab(t);}catch(e){}
 connect();
 </script>
 
