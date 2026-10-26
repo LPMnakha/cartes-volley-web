@@ -3530,7 +3530,7 @@ function renderCamp(){
   let poster='';
   if(done){poster=`<div class="cp-champ">${TROPHY}<b>Qualifié pour les Régionales</b><p>30 étapes, ${c.tries} tentative${c.tries>1?'s':''}. Ton équipe est entrée dans la légende.</p></div>`;}
   else{
-    const op=cpTeam(st),me=myTeam(),myLv=me?teamAvg(me):null,ch=me?cpChance(me,st):null,rew=CP_REW[st],ko=rd.ko;
+    const op=cpTeam(st),me=myTeam(),myLv=me?teamAvg(me):null,rew=CP_REW[st],ko=rd.ko;
     const prev=c.res[st],tryN=prev&&!prev.w?prev.tries+1:1;
     let btn='',note='';
     if(!me){btn=`<button class="btn primary big" type="button" disabled>Jouer le match</button>`;note=`Complète ton équipe dans l'onglet <b>Équipe</b> pour jouer.`;}
@@ -3538,11 +3538,9 @@ function renderCamp(){
     else if(cpStatus==='offline'){btn=`<button class="btn primary big" type="button" id="cp-retry">Réessayer</button>`;note="Connecte-toi à internet : l'heure est vérifiée en ligne avant chaque tentative.";}
     else if(cpStatus==='locked'){btn=`<button class="btn primary big" type="button" disabled>Tentative du jour jouée</button>`;note=`<span id="cp-left">Prochaine tentative demain</span>`;}
     else btn=`<button class="btn primary big cp-go${ko>=3?' hot':''}" type="button" id="cp-play">${tryN>1?`Retenter (essai n°${tryN})`:'Jouer le match'}</button>${isAdmin?'<small class="cp-adm">Mode admin : tentatives illimitées</small>':''}`;
-    const fav=ch==null?'':ch>=70?'Tu es favori':ch>=45?'Match serré':ch>=20?'Outsider':'Énorme défi';
     poster=`<div class="cp-poster ko${ko}" style="--c:${T.col}">
       <div class="cp-p-top"><small>${esc(T.venue)} · ${esc(T.n)}</small><b class="cp-round">${esc(rd.r)}</b></div>
       <div class="cp-p-vs"><div><span>${esc(state.pseudo||'Ton équipe')}</span><b>${myLv??'–'}</b><small>note d'équipe</small></div><i>VS</i><div><span>${esc(op.name)}</span><b>${op.lv}</b><small>note d'équipe</small></div></div>
-      ${ch!=null?`<div class="cp-prono"><div><span>Pronostic</span><b>${fav}</b></div><div class="cp-gauge"><i style="width:${Math.max(3,ch)}%"></i></div><b class="cp-pct">${ch} %</b></div>`:''}
       <div class="cp-tac"><div><span>Leur jeu :</span> <b>${esc(tacTxt(op.tac))}</b></div><div><span>Tes consignes :</span> <b>${esc(tacTxt(state.tac))}</b> · <a data-go-team>modifier</a></div></div>
       <div class="cp-chips"><span>${cpFmtL(T.fmt)}</span>${rew?cpReward(rew):''}</div>
       <p class="cp-stake">${esc(cpStake(st))}</p>
@@ -3596,7 +3594,7 @@ async function cpPlay(){
     if(t==null){cpStatus='offline';renderCamp();cpBusy=false;return;}
     if(c.day===parisDay(t)||t<c.ts){cpStatus='locked';renderCamp();cpBusy=false;return;}now=t;}
   ac();
-  const st=c.st,T=cpTier(st),rd=cpRound(st),op=cpTeam(st),chance=cpChance(me,st);
+  const st=c.st,T=cpTier(st),rd=cpRound(st),op=cpTeam(st);
   const seed=crypto.getRandomValues(new Uint32Array(1))[0];
   const sim=simulateMatch(me,op,seed,T.fmt),win=sim.winner===0,rew=win?CP_REW[st]:null;
   // tout est enregistré avant l'animation : fermer l'appli ne rend pas la tentative
@@ -3610,7 +3608,7 @@ async function cpPlay(){
   const na=checkAch(false);await saveState();cpStatus=isAdmin?'ready':'locked';netCamp();
   cpBusy=false;
   const disp=[dispCards(me),op.cards.map((x,i)=>({...x,id:'o'+i,kind:'joueur',photo:null}))];
-  await cpArenaIntro(sim,disp,st,me,op,chance);
+  await cpArenaIntro(sim,disp,st,me,op);
   const pm=playMatch(sim,disp,[state.pseudo,op.name],0,
     {fmt:T.fmt,title:`${rd.r} · ${T.n}`,tier:T.id,arena:true,hall:HALLS[T.id],tc:[AR_TC[0],cpOpCol(op.name)],camp:{st,win,rew,rd,T,op,next:win&&st<CP_N?st+1:null}});
   arFade();await pm;
@@ -3642,8 +3640,7 @@ function cpIntro(st,me,op,chance){
       sfx.boom();buzz(ko>=3?[80,40,160]:60);if(ko>=3)setTimeout(()=>run.on&&sfx.chord(),500);
       await wait(ko>=3?2300:ko>=1?1500:1100);if(!run.on)return;
       // 3. le face-à-face
-      show(`<div class="cpi-vs"><div class="me"><b>${esc(state.pseudo||'Ton équipe')}</b><small>niveau ${teamAvg(me)}</small></div><i>VS</i><div class="op"><b>${esc(op.name)}</b><small>niveau ${op.lv}</small></div></div>
-        <p class="cpi-prono">Tes chances : <b>${chance} %</b></p>`);
+      show(`<div class="cpi-vs"><div class="me"><b>${esc(state.pseudo||'Ton équipe')}</b><small>niveau ${teamAvg(me)}</small></div><i>VS</i><div class="op"><b>${esc(op.name)}</b><small>niveau ${op.lv}</small></div></div>`);
       sfx.thump();setTimeout(()=>run.on&&sfx.thump(),250);await wait(1900);if(!run.on)return;
       // 4. l'enjeu
       show(`<p class="cpi-stake">${esc(cpStake(st))}</p>${rew?`<div class="cpi-rew">En jeu ${cpReward(rew,true)}</div>`:''}`);
@@ -4010,7 +4007,7 @@ async function arLights(C,HL){
   for(const d of [.72,.42,HL.dark||.12]){await arWait(380);if(AR.skip)return;C.dim=d;tone('square',72,55,.1,.16);hiss(.14,.22,900,280,'lowpass');buzz(15);}
   C.sweep=HL.lights==='sweep'?1:.35;
 }
-async function cpArenaIntro(sim,disp,st,meT,op,chance){
+async function cpArenaIntro(sim,disp,st,meT,op){
   const T=cpTier(st),rd=cpRound(st),ko=rd.ko,fin=ko>=3,HL=HALLS[T.id]||HALLS.defi,rew=CP_REW[st],names=[state.pseudo||'Ton équipe',op.name],tc=[AR_TC[0],cpOpCol(op.name)],cap=cpCapIdx(disp[0]);
   const C=arOpen(disp,0,'in',{hall:HL,tc,led:`${T.n.toUpperCase()}  ·  ${T.venue.toUpperCase()}  ·  `,chant:HL.banners?names:null});AR.cap=cap;
   if(AR.cards[0][cap])AR.cards[0][cap].insertAdjacentHTML('beforeend','<i class="ar-capb">C</i>');
@@ -4042,7 +4039,7 @@ async function cpArenaIntro(sim,disp,st,meT,op,chance){
     AR.cards[sd].forEach(x=>x.classList.remove('on'));});
   S.push(async()=>{C.spots=[];AR.cards.flat().forEach(e=>e.classList.remove('on','off'));C.dim=HL.dark||.05;if(HL.lights!=='neon')C.sweep=.5;
     top.innerHTML=`<div class="ar-in ar-vs"><span class="ar-kick">${esc(rd.r)}</span><b class="ar-h s" style="--tc:${tc[0]}">${esc(names[0])}</b><i>contre</i><b class="ar-h s" style="--tc:${tc[1]}">${esc(names[1])}</b></div>`;
-    stage.innerHTML=`<div class="ar-face ar-in"><div><small>Ton équipe</small><b>${teamAvg(meT)}</b></div><div class="mid"><small>Tes chances</small><b>${chance} %</b></div><div><small>Adversaire</small><b>${op.lv}</b></div><p>${esc(cpStake(st))}</p>${rew&&!fin?`<p class="rw">En jeu ${cpReward(rew,true)}</p>`:''}</div>`;
+    stage.innerHTML=`<div class="ar-face ar-in"><div><small>Ton équipe</small><b>${teamAvg(meT)}</b></div><div class="mid"><b>VS</b></div><div><small>Adversaire</small><b>${op.lv}</b></div><p>${esc(cpStake(st))}</p>${rew&&!fin?`<p class="rw">En jeu ${cpReward(rew,true)}</p>`:''}</div>`;
     sfx.thump();setTimeout(()=>{if(!AR.skip)sfx.thump();},250);if(rew&&!fin)setTimeout(()=>{if(!AR.skip)sfx.sparkle();},600);await arWait(3200);});
   if(fin&&(HL.tifo||HL.k==='dep'||HL.k==='l1'))S.push(async()=>{stage.innerHTML='';C.tifo={t:performance.now(),txt:names[0].toUpperCase(),c:tc[0]};C.dim=.08;C.ex=.9;
     top.innerHTML='';stage.innerHTML=`<div class="ar-in ar-sm"><small>Dans les tribunes</small><b>Le public déploie un tifo !</b></div>`;CrowdSnd.cheer(1.3*HL.vol);CrowdSnd.chant(2);C.flash(20);await arWait(3000);C.tifo=null;stage.innerHTML='';});
