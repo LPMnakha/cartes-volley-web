@@ -538,6 +538,7 @@ input[type=range]::-moz-range-thumb{width:20px;height:20px;border-radius:50%;bac
 .flipper.rise{transform:scale(1.08);transition:transform .8s ease}
 .walk.rainbow .beams{background:repeating-conic-gradient(#FF8BE0 0 5deg,transparent 5deg 13deg,#7AD8FF 13deg 18deg,transparent 18deg 26deg,#8CFFB0 26deg 31deg,transparent 31deg 39deg,#FFF07A 39deg 44deg,transparent 44deg 52deg);
   opacity:.55;animation:spin 2.6s linear infinite,hue 3s linear infinite}
+.walk-txt .w.gd{color:#FFE97A}
 .walk-txt .w.huge{font-size:clamp(3.2rem,19vw,7.5rem);letter-spacing:.02em}
 .walk-txt .w.cnt{font-size:clamp(5rem,34vw,11rem);font-family:var(--data);font-variant-numeric:tabular-nums;animation:none}
 .walk-txt .w.rb{background:linear-gradient(90deg,#FF8BE0,#7AD8FF,#8CFFB0,#FFF07A,#FF8BE0);background-size:200% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;
@@ -1715,7 +1716,7 @@ $('op-close').addEventListener('click',closeOpening);
 $('open-btn').addEventListener('click',()=>{if(packStatus==='offline')refreshPackLock();else openPack();});
 $('pack').addEventListener('click',()=>{if(packStatus==='ready')openPack();});
 
-const CHARGE_MS={bronze:1300,silver:1700,gold:2400,icon:3300};
+const CHARGE_MS={bronze:1300,silver:1700,gold:3000,icon:3000}; // or et icône identiques : on ne peut pas les distinguer
 function fireworks(colors,ms,alive){
   const end=performance.now()+(RM?300:ms);
   const shot=()=>{if(!alive()||performance.now()>end||!FX.w)return;
@@ -1762,23 +1763,23 @@ async function openPack(){
   await nextTap();if(!alive())return;
   hint('',false);
   // 1. Charge : plus le booster est rare, plus elle dure, et la lueur change de couleur en chemin
-  const CM=CHARGE_MS[best];
+  const CM=CHARGE_MS[best],seen=bestR===3?'gold':best; // ce que le joueur voit : une icône se fait passer pour une or
   pack.style.animationDuration=CM+'ms';pack.classList.add('charge');sfx.riser(CM/1000);
   buzz([30,120,30,90,40,60,50,40,60,20,80,20,100]);
   const setGlow=t=>{pack.style.setProperty('--glow',TIER_FX[t].glow);glow.style.setProperty('--wc',TIER_FX[t].glow);glow.classList.add('on');};
   if(bestR>=1)setTimeout(()=>alive()&&setGlow(bestR>=2?'silver':best),CM*.35);
   if(bestR>=2)setTimeout(()=>alive()&&setGlow('gold'),CM*.6);
   if(pulled.some(isSigP))setTimeout(()=>{if(!alive())return;pack.style.setProperty('--glow','rgba(255,215,0,.95)');glow.style.setProperty('--wc','rgba(255,215,0,.95)');glow.classList.add('on');O.classList.add('dark');burst(...centerOf(pack),GOLD_C,60,6,{spark:1});},CM*.92);
-  if(bestR===3)setTimeout(()=>{if(!alive())return;setGlow('icon');glow.style.animation='pulseGlow .6s ease-in-out infinite, hue 1.2s linear infinite';O.classList.add('dark');heartbeat(2,500,alive);},CM*.82);
-  const sparkT=setInterval(()=>{if(!alive()||!FX.w)return;const[x,y]=centerOf(pack);burst(x,y,TIER_FX[best].c,bestR>=2?12:4,4+bestR,{up:1,spark:1,big:3});},140);
+  if(bestR>=2)setTimeout(()=>{if(!alive())return;O.classList.add('dark');heartbeat(2,500,alive);},CM*.82);
+  const sparkT=setInterval(()=>{if(!alive()||!FX.w)return;const[x,y]=centerOf(pack);burst(x,y,TIER_FX[seen].c,bestR>=2?12:4,4+Math.min(bestR,2),{up:1,spark:1,big:3});},140);
   await wait(CM);clearInterval(sparkT);if(!alive())return;
   // 2. Explosion
   const[cx,cy]=centerOf(pack);
   const ptl=$('op-ptitle');if(ptl)ptl.remove();
   pack.classList.add('tear');sfx.boom();buzz(bestR>=2?[200,60,140]:160);flash(bestR>=2?'#FFF6D0':'#FFFFFF');shake();
-  burst(cx,cy,TIER_FX[best].c.concat(['#FF7A2F','#FFD23F']),RM?20:[160,220,300,380][bestR],13+bestR*2,{up:3});
-  if(bestR===3)setTimeout(()=>{if(!alive())return;sfx.boom();flash('#E9DDFF');shake();burst(cx,cy,TIER_FX.icon.c,240,18,{up:4});},380);
-  await wait(bestR===3?900:650);if(!alive())return;
+  burst(cx,cy,TIER_FX[seen].c.concat(['#FF7A2F','#FFD23F']),RM?20:[160,220,320,320][bestR],13+Math.min(bestR,2)*2,{up:3});
+  if(bestR>=2)setTimeout(()=>{if(!alive())return;sfx.boom();flash('#FFF6D0');shake();burst(cx,cy,TIER_FX.gold.c,240,18,{up:4});},380);
+  await wait(bestR>=2?900:650);if(!alive())return;
   O.classList.remove('dark');pack.remove();glow.classList.remove('on');glow.style.animation='';
   // 3. Révélation carte par carte, la meilleure en dernier
   const walk=$('walk'),txt=$('walk-txt'),tease=$('op-tease');
@@ -1794,13 +1795,13 @@ async function openPack(){
     fl.classList.remove('enter');
     // Indice avant de toucher : lueur et tremblement selon la rareté
     tease.className='tease';tease.style.removeProperty('--tc');
-    if(R>=1){tease.style.setProperty('--tc',fx.glow);tease.classList.add('on');if(t==='icon')tease.classList.add('icon');}
-    if(R===2)fl.classList.add('trem');if(R===3)fl.classList.add('trem2');
+    if(R>=1){tease.style.setProperty('--tc',R===3?TIER_FX.gold.glow:fx.glow);tease.classList.add('on');}
+    if(R>=2)fl.classList.add('trem');
     const isFA=!!(p.fullart&&p.photo),isSig=isSigP(p);let sigEmit=0;
     if(isSig){fl.classList.remove('trem','trem2');fl.classList.add('sig-back','levitate');tease.className='tease on goldaura';
       sigEmit=setInterval(()=>{if(!alive())return;const[x,y]=centerOf(fl);burst(x,y+40,GOLD_C,3,2,{up:2.5,spark:1,big:2,g:-.02});},120);}
     else if(isFA){fl.classList.add('holo-back');if(R<2)tease.classList.add('on','prismatic');}
-    hint(isSig?'Une aura dorée… touche pour révéler':isFA&&R<2?'Un reflet arc-en-ciel… touche pour révéler':['Touche pour révéler','Touche pour révéler','Ça brille… touche pour révéler','Attention… touche pour révéler'][R]);
+    hint(isSig?'Une aura dorée… touche pour révéler':isFA&&R<2?'Un reflet arc-en-ciel… touche pour révéler':['Touche pour révéler','Touche pour révéler','Ça brille… touche pour révéler','Ça brille… touche pour révéler'][R]);
     await nextTap();if(!alive())return;hint('',false);
     fl.classList.remove('trem','trem2','levitate');clearInterval(sigEmit);
     if(isSig){fl.querySelector('.front').innerHTML=cardHTML(p,0,false);tease.className='tease';await sigReveal(fl,p,t,alive);if(!alive())return;}
@@ -1811,13 +1812,19 @@ async function openPack(){
     if(R>=2){ // Or et icône : extinction des lumières puis walkout
       O.classList.add('dark');tease.classList.remove('on');
       stage.querySelectorAll('.stack-back').forEach(e=>e.style.opacity='0');fl.classList.add('hide');
-      heartbeat(R===3?3:2,R===3?700:600,alive);
-      await wait(R===3?2000:1100);if(!alive())return;
+      heartbeat(3,650,alive);
+      await wait(1800);if(!alive())return;
       const gold=TIER_FX.gold.glow;
       walk.classList.remove('rainbow');walk.style.setProperty('--wc',gold);txt.style.setProperty('--wc',gold);
       walk.classList.add('on');sfx.thump();buzz(60);
-      if(R===3){ // fausse piste : on croit à une carte or…
-        txt.innerHTML='<span class="w q">Carte or ?</span>';await wait(1100);if(!alive())return;
+      // fausse piste pour les deux : « Carte or ? »… puis l'or se confirme, ou c'est une icône
+      txt.innerHTML='<span class="w q">Carte or ?</span>';await wait(1400);if(!alive())return;
+      if(R===2){
+        txt.innerHTML='';flash('#FFF6D0');shake();sfx.boom();buzz([100,50,150]);
+        const[x,y]=centerOf(txt);burst(x,y,fx.c,140,12,{up:2});
+        txt.innerHTML='<span class="w huge gd">OR</span>';sfx.sparkle();await wait(1300);if(!alive())return;
+      }
+      if(R===3){
         txt.innerHTML='';flash('#FFFFFF');shake();sfx.boom();buzz([120,50,200]);
         walk.classList.add('rainbow');txt.style.setProperty('--wc',fx.glow);
         const[x,y]=centerOf(txt);burst(x,y,fx.c,200,15,{up:2});
@@ -1825,7 +1832,6 @@ async function openPack(){
       }
       const show=async st=>{txt.innerHTML=st;sfx.thump();buzz(40);const[x,y]=centerOf(txt);burst(x,y,fx.c,R===3?70:40,7,{spark:.8});await wait(R===3?1000:900);};
       await show(`<span class="w mid">${esc(posteL(p.poste))}</span>`);if(!alive())return;
-      if(R===2){await show(`<span class="w mid">${TIER_L[t]}</span>`);if(!alive())return;}
       // la note défile jusqu'à la vraie valeur, avant l'image
       txt.innerHTML='<span class="w cnt" id="op-cnt">0</span>';await countUp($('op-cnt'),o,R===3?1800:1300,alive);if(!alive())return;
       sfx.boom();shake();flash(R===3?'#F3E8FF':'#FFF6D0');{const[x,y]=centerOf(txt);burst(x,y,fx.c,R===3?160:110,12,{up:2});}
