@@ -1171,6 +1171,17 @@ body.player .tabs{grid-template-columns:repeat(4,minmax(0,1fr))} /* sans l'ongle
 @keyframes arMedal{from{opacity:0;transform:translateY(-120%) scale(.5)}}
 @keyframes arFlash{from{opacity:1}to{opacity:0}}
 .tcap{position:absolute;top:18px;right:-2px;z-index:2;width:20px;height:20px;border-radius:50%;display:grid;place-items:center;background:#FFD23F;color:#1A1200;font-family:var(--display);font-weight:900;font-size:.8rem;border:2px solid #fff;box-shadow:0 2px 6px rgba(0,0,0,.4)}
+.tadv{display:flex;flex-direction:column;gap:8px;padding:12px 14px;border-radius:14px;background:linear-gradient(135deg,rgba(255,210,63,.12),rgba(92,214,255,.08));border:1px solid rgba(255,210,63,.35);margin:4px 0 2px}
+.tadv-h{display:flex;justify-content:space-between;align-items:baseline;gap:8px;flex-wrap:wrap}.tadv-h b{font-family:var(--data);font-size:.74rem;letter-spacing:.1em;text-transform:uppercase;color:#FFD23F}.tadv-h small{color:var(--muted);font-size:.76rem}
+.tadv-t{margin:0;font-weight:700;font-size:.95rem}.tadv-l{margin:0;padding-left:18px;color:var(--muted);font-size:.82rem;line-height:1.4}
+.tadv .row-actions{display:flex;gap:8px;flex-wrap:wrap}.tadv .row-actions .btn{flex:1;min-width:0;padding:10px 8px;font-size:.86rem}
+.tac .mseg button.adv{position:relative}.tac .mseg button.adv::after{content:"★";position:absolute;top:-7px;right:-3px;font-size:.78rem;color:#FFD23F;text-shadow:0 0 6px rgba(255,210,63,.8)}
+.cp-adv{padding-top:4px;border-top:1px dashed rgba(255,255,255,.12)}.cp-adv b{color:#FFD23F!important}.cp-adv i{font-style:normal;color:#3EE08F;font-weight:700}
+.gd .gd-card{display:flex;flex-direction:column;gap:8px;padding:14px 16px;border-radius:16px;background:rgba(255,255,255,.04);border:1px solid var(--line)}
+.gd .gd-card>b{font-family:var(--display);font-weight:900;font-size:1.35rem;text-transform:uppercase}
+.gd .gd-card.intro{border-color:rgba(255,210,63,.4);background:linear-gradient(135deg,rgba(255,210,63,.1),transparent)}
+.gd p{margin:0;font-size:.9rem;line-height:1.45}.gd dl{margin:0;display:grid;gap:6px}.gd dt{font-weight:800;color:#FFD23F;font-size:.88rem}.gd dd{margin:0;font-size:.88rem;line-height:1.4;color:var(--ink)}
+.gd .gd-tip{color:var(--muted);font-size:.82rem;padding-left:10px;border-left:3px solid var(--cyan)}
 </style>
 
 <header class="appbar">
@@ -1259,7 +1270,8 @@ body.player .tabs{grid-template-columns:repeat(4,minmax(0,1fr))} /* sans l'ongle
     <div class="bench"><div id="lib-slot"></div><p id="t-lib-txt">Le libéro remplace un central en défense. Il est noté sur sa réception et sa défense.</p></div>
     <div class="row-actions"><button class="btn" type="button" id="t-clear">Vider l'équipe</button><button class="btn primary" type="button" id="t-auto">Composer au mieux</button></div>
     <div class="section" id="t-tac-sec"><span class="label">Consignes de jeu</span>
-      <p class="note" style="margin:0">Elles servent en campagne et dans tes défis. Bien choisies, elles font basculer un match serré ; mal choisies, elles te coûtent cher.</p>
+      <p class="note" style="margin:0">Elles servent en campagne et dans tes défis. Chacune a un avantage et un défaut : elle ne rapporte que si elle colle à tes cartes et à celles d'en face. L'option marquée d'une étoile est conseillée pour ton équipe.</p>
+      <div class="tadv" id="t-adv"></div>
       <div class="tacs" id="t-tac"></div></div>
     <div class="section" id="t-chem-sec"><span class="label">Complicité du passeur</span>
       <p class="note" style="margin:0">Plus ton passeur joue avec un attaquant, meilleures sont ses passes pour lui : +1 tous les 5 matchs ensemble (campagne et défis), jusqu'à +5.</p>
@@ -1546,6 +1558,44 @@ body.player .tabs{grid-template-columns:repeat(4,minmax(0,1fr))} /* sans l'ongle
     <button class="icon-btn" type="button" id="sh-share" aria-label="Partager en image"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="M8.6 13.5l6.8 4M15.4 6.5l-6.8 4"/></svg></button>
   </div>
   <div class="sh-body" id="sh-body"></div>
+</section>
+<section class="msheet" id="guide" hidden aria-label="Guide des consignes">
+  <div class="sh-bar">
+    <button class="icon-btn" type="button" id="gd-close" aria-label="Fermer"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+    <h2>Guide des consignes</h2>
+  </div>
+  <div class="sh-body gd">
+    <div class="gd-card intro"><b>Le principe</b>
+      <p>Chaque consigne a <b>un avantage et un défaut</b>. Elle ne rapporte que si elle colle à <b>tes cartes</b> et à <b>celles d'en face</b>. Sinon, elle te coûte des points.</p>
+      <p>Le jeu normal ne prend aucun risque. Une consigne bien choisie rapporte en général 1 à 3 % de chances de gagner ; toutes bien choisies ensemble, souvent 5 à 10 %. Mal choisies, c'est autant en moins.</p></div>
+    <div class="gd-card"><b>Où regarder</b>
+      <p><b>Campagne :</b> l'affiche du match montre l'équipe adverse, ses notes et son jeu. Le « conseil pour ce match » compare tes cartes aux siennes.</p>
+      <p><b>Défis :</b> tu ne vois pas l'équipe de ton ami avant le match. Le conseil de l'onglet Équipe imagine une équipe de ton niveau : il te dit surtout comment jouer avec tes points forts.</p>
+      <p>Pour comparer, regarde les <b>moyennes</b> : tes serveurs, tes centraux, tes ailiers (R4 et pointu), tes défenseurs, ton libéro.</p></div>
+    <div class="gd-card"><b>Service</b>
+      <dl><dt>Fort</dt><dd>Plus d'aces, un peu plus de fautes. À choisir quand tes serveurs ont nettement plus en service que leurs réceptionneurs en réception.</dd>
+      <dt>Sûr</dt><dd>Moins de fautes, mais presque plus d'aces. Pour des serveurs fragiles, ou face à une très bonne réception.</dd></dl>
+      <p class="gd-tip">C'est la consigne qui pèse le plus quand l'écart est grand : avec de gros serveurs contre une réception faible, Fort peut rapporter 10 %.</p></div>
+    <div class="gd-card"><b>Attaque</b>
+      <dl><dt>Centre</dt><dd>Plus de ballons pour tes centraux. Si tes centraux attaquent mieux que tes ailiers, ou si leurs centraux contrent mal.</dd>
+      <dt>Ailes</dt><dd>Plus de ballons pour tes R4 et ton pointu. Si tes ailiers sont tes meilleurs attaquants, ou face à de grands contreurs au centre.</dd></dl>
+      <p class="gd-tip">Compare l'attaque de tes joueurs au contre de ceux qui leur font face : centre contre centre, aile contre aile. Une attaque trop prévisible se fait un peu plus contrer.</p></div>
+    <div class="gd-card"><b>Feintes</b>
+      <dl><dt>Beaucoup</dt><dd>Des feintes dans le dos du contre. Payant face à un grand contre, surtout si leur défense est moyenne.</dd>
+      <dt>Peu</dt><dd>On frappe presque toujours. Face à une bonne défense qui ramasse les feintes, ou quand tes attaquants dominent leur contre.</dd></dl>
+      <p class="gd-tip">Regarde leur contre et leur défense : si le contre est le plus fort, feinte ; si la défense est la plus forte, frappe.</p></div>
+    <div class="gd-card"><b>Contre</b>
+      <dl><dt>Agressif</dt><dd>Tes contreurs sautent pour bloquer : plus de contres gagnants, mais la défense est moins couverte. Si tes contreurs sont plus forts que leurs attaquants.</dd>
+      <dt>Défense placée</dt><dd>Moins de contres gagnants, mais les ballons sont freinés et ta défense pèse plus lourd. Si tes défenseurs (et ton libéro) sont plus forts que leurs attaquants.</dd></dl>
+      <p class="gd-tip">Choisis ton meilleur atout : contreurs (centraux surtout) ou défenseurs. Si les deux se valent, reste en normal.</p></div>
+    <div class="gd-card"><b>Réception</b>
+      <dl><dt>Libéro partout</dt><dd>Ton libéro prend presque tous les services : s'il réceptionne nettement mieux que tes R4.</dd>
+      <dt>Partagée</dt><dd>Tes trois réceptionneurs prennent autant de services : si tes R4 réceptionnent aussi bien que ton libéro.</dd></dl>
+      <p class="gd-tip">Sans libéro, cette consigne n'existe pas.</p></div>
+    <div class="gd-card"><b>Le conseil automatique</b>
+      <p>L'étoile et le bouton « Appliquer les conseils » viennent d'un calcul fait sur des milliers de matchs simulés avec le même moteur que le jeu. Le conseil ne propose une consigne que si elle rapporte vraiment ; sinon il laisse le jeu normal.</p>
+      <p>Les adversaires de la campagne choisissent aussi leur jeu selon leurs points forts. Leur jeu est affiché sur l'affiche : à toi de t'adapter.</p></div>
+  </div>
 </section>
 <div class="toast" id="toast" role="status" hidden></div>
 
@@ -2085,6 +2135,7 @@ window.__back=function(){
   if(!$('chp').hidden){$('chp-later').click();return true;}
   if(!$('frp').hidden){$('frp-later').click();return true;}
   if(!$('upd').hidden){if(upd.step!=='dl')$('upd-later').click();return true;}
+  if(!$('guide').hidden){closeGuide();return true;}
   if(!$('sheet').hidden){closeSheet();return true;}
   if(!$('arena').hidden){arBack();return true;}
   if(!$('cp-intro').hidden){$('cp-intro').click();return true;}
@@ -2767,16 +2818,44 @@ function renderTeam(){
 }
 /* consignes de jeu */
 const TAC_DEF=[
-  {k:'ser',l:'Service',o:[['sur','Sûr','Moins de fautes, mais presque plus d\'aces. Utile si tes serveurs sont faibles.'],['','Normal','Le service habituel de tes joueurs.'],['fort','Fort','Plus d\'aces, mais plus de fautes. Utile avec de bons serveurs face à une réception faible.']]},
-  {k:'zone',l:'Attaque',o:[['centre','Centre','Plus de ballons pour tes centraux : redoutable s\'ils attaquent bien, risqué sur une mauvaise réception.'],['','Variée','Les ballons vont à tes meilleurs attaquants, un peu partout.'],['ailes','Ailes','Plus de ballons pour tes réceptionneurs-attaquants et ton pointu.']]},
-  {k:'feinte',l:'Feintes',o:[['peu','Peu','Presque toujours frapper fort.'],['','Normal','Des feintes de temps en temps, surtout sur les passes difficiles.'],['beaucoup','Beaucoup','Évite les grands contres, mais une bonne défense les ramasse.']]},
-  {k:'bloc',l:'Contre',o:[['place','Défense placée','Moins de contres gagnants, mais tes défenseurs ramassent plus de ballons. D\'autant mieux qu\'ils sont bons.'],['','Normal','Un contre classique.'],['agressif','Agressif','Plus de contres gagnants avec de bons contreurs, mais la défense est moins couverte.']]},
-  {k:'rec',l:'Réception',o:[['partage','Partagée','Tes trois réceptionneurs prennent autant de services.'],['','Normale','Le libéro prend un peu plus de services.'],['libero','Libéro partout','Ton libéro prend presque tous les services : idéal s\'il est très bon.']]}];
+  {k:'ser',l:'Service',o:[['sur','Sûr','Moins de fautes, mais moins d\'aces. Pour des serveurs fragiles, ou face à une très bonne réception.'],['','Normal','Le service habituel de tes joueurs.'],['fort','Fort','Plus d\'aces, un peu plus de fautes. Quand tes serveurs sont plus forts que la réception d\'en face.']]},
+  {k:'zone',l:'Attaque',o:[['centre','Centre','Plus de ballons pour tes centraux. Si tes centraux attaquent mieux que tes ailiers, ou si leurs centraux contrent mal.'],['','Variée','Les ballons vont à tes meilleurs attaquants, un peu partout.'],['ailes','Ailes','Plus de ballons pour tes R4 et ton pointu. Si tes ailiers sont tes meilleurs attaquants, ou face à de grands contreurs au centre.']]},
+  {k:'feinte',l:'Feintes',o:[['peu','Peu','On frappe presque toujours. Face à une bonne défense qui ramasse les feintes, ou si tes attaquants dominent leur contre.'],['','Normal','Des feintes de temps en temps, surtout sur les passes difficiles.'],['beaucoup','Beaucoup','Des feintes dans le dos du contre. Face à un grand contre et une défense moyenne.']]},
+  {k:'bloc',l:'Contre',o:[['place','Défense placée','On contre moins, mais les ballons sont freinés et ta défense pèse plus lourd. Si tes défenseurs sont ton point fort.'],['','Normal','Un contre classique.'],['agressif','Agressif','Plus de contres gagnants, mais la défense est moins couverte. Si tes contreurs sont plus forts que leurs attaquants.']]},
+  {k:'rec',l:'Réception',o:[['partage','Partagée','Tes trois réceptionneurs prennent autant de services. Si tes R4 réceptionnent aussi bien que ton libéro.'],['','Normale','Le libéro prend un peu plus de services.'],['libero','Libéro partout','Ton libéro prend presque tous les services : s\'il réceptionne nettement mieux que tes R4.']]}];
 const tacTxt=t=>TAC_DEF.map(d=>{const o=d.o.find(x=>x[0]&&x[0]===(t||{})[d.k]);return o?`${d.l.toLowerCase()} ${o[1].toLowerCase()}`:null;}).filter(Boolean).join(' · ')||'jeu normal';
+/* conseil de consignes : un petit modèle appris sur des milliers de matchs simulés avec le moteur.
+   Il compare tes cartes à celles de l'adversaire (ou à une équipe de ton niveau si tu ne la connais pas). */
+const TAC_MODEL={"sur":[-1.1423,-0.1582,0.0152],"fort":[1.3898,0.1607,0.0019],"centre":[-0.4671,0.1355,-0.0104],"ailes":[-2.6916,-0.175,0.0193],"peu":[0.1889,-0.0343,0.0432,0.0924],"beaucoup":[0.3876,0.1165,-0.1071,-0.1504],"place":[0.0448,-0.0623,0.2085,-0.0201],"agressif":[0.2833,0.1986,-0.0377,-0.0882],"partage":[0.0545,-0.0812],"libero":[-0.1227,0.1155]};
+const TAC_F={ser:['dS','lv'],zone:['dZ','lv'],feinte:['BA','DA','lv'],bloc:['BO','DO','lv'],rec:['dl']},TAC_O={ser:['sur','fort'],zone:['centre','ailes'],feinte:['peu','beaucoup'],bloc:['place','agressif'],rec:['partage','libero']};
+function tacFeat(A,B){const C=A.cards,O=B.cards,lA=!!C[6],lB=!!O[6],av=(T,idx,k)=>{const v=idx.filter(i=>T[i]).map(i=>+T[i].s[k]||0);return v.length?v.reduce((a,b)=>a+b,0)/v.length:0;};
+  const lv=C.reduce((t,c)=>t+['ser','rec','pas','att','blo','def'].reduce((u,k)=>u+(+c.s[k]||0),0)/6,0)/C.length;
+  return{lv:lv-65,dS:av(C,[0,1,2,3,4,5],'ser')-av(O,lB?[0,3,6]:[0,3,1,4],'rec'),dZ:(av(C,[1,4],'att')-av(O,[1,4],'blo'))-(av(C,[0,2,3],'att')-av(O,[0,2,3],'blo')),
+    BA:av(O,[0,1,2,3,4],'blo')-av(C,[0,1,2,3,4],'att'),DA:av(O,lB?[6,0,3,5]:[0,3,5],'def')-av(C,[0,1,2,3,4],'att'),
+    BO:av(C,[1,4,2],'blo')-av(O,[0,1,2,3,4],'att'),DO:av(C,lA?[6,0,3,5]:[0,3,5],'def')-av(O,[0,1,2,3,4],'att'),dl:lA?(+C[6].s.rec||0)-av(C,[0,3],'rec'):0};}
+function tacAdvice(A,B,th=1){const f=tacFeat(A,B),tac={},gain={};for(const k in TAC_O){if(k==='rec'&&!A.cards[6])continue;let best=null,bv=th;
+  for(const o of TAC_O[k]){const m=TAC_MODEL[o],v=m[0]+TAC_F[k].reduce((t,x,j)=>t+m[j+1]*f[x],0);gain[o]=v;if(v>bv){bv=v;best=o;}}if(best)tac[k]=best;}return{tac,gain,f};}
+// une équipe « de ton niveau » quand on ne connaît pas l'adversaire (défis)
+const tacMirror=T=>{const n=Math.round(teamNote(T));return{cards:T.cards.map(()=>({s:{ser:n,rec:n,pas:n,att:n,blo:n,def:n}}))};};
+const TAC_WHY={fort:f=>`tes serveurs sont plus forts que leur réception`,sur:f=>f.dS<-4?`leur réception est plus forte que ton service`:`tes serveurs font trop de fautes en forçant`,
+  centre:f=>`tes centraux trouvent moins de contre que tes ailiers`,ailes:f=>`tes ailiers trouvent moins de contre que tes centraux`,
+  beaucoup:f=>`leur contre est plus redoutable que leur défense`,peu:f=>`leur défense ramasserait tes feintes`,
+  agressif:f=>`tes contreurs dominent leurs attaquants`,place:f=>`tes défenseurs dominent leurs attaquants`,
+  libero:f=>`ton libéro réceptionne mieux que tes R4`,partage:f=>`tes R4 réceptionnent aussi bien que ton libéro`};
+const tacLbl=(k,o)=>{const d=TAC_DEF.find(x=>x.k===k),x=d&&d.o.find(y=>y[0]===o);return x?`${d.l} ${x[1].toLowerCase()}`:'';};
+function tacAdvTxt(ad){const ks=Object.keys(ad.tac);return ks.length?ks.map(k=>tacLbl(k,ad.tac[k])).join(' · '):'jeu normal partout';}
+const tacSame=(a,b)=>TAC_DEF.every(d=>((a||{})[d.k]||'')===((b||{})[d.k]||''));
+async function applyTac(t,src){state.tac={...t};if(state.noLib&&state.tac.rec)delete state.tac.rec;await saveState();renderTac();if(typeof netTeamSoon==='function')netTeamSoon();toast(src||'Consignes appliquées');sfx.ding('silver');}
 function renderTac(){
-  const box=$('t-tac');if(!box)return;const t=state.tac||{};
-  box.innerHTML=TAC_DEF.filter(d=>!(d.k==='rec'&&state.noLib)).map(d=>{const cur=d.o.find(x=>x[0]===(t[d.k]||''))||d.o[1];
-    return`<div class="tac"><b>${d.l}</b><div class="mseg small" role="group" aria-label="${d.l}">${d.o.map(o=>`<button type="button" data-tk="${d.k}" data-tv="${o[0]}" aria-pressed="${o===cur}">${o[1]}</button>`).join('')}</div><small>${cur[2]}</small></div>`;}).join('');
+  const box=$('t-tac');if(!box)return;const t=state.tac||{},me=myTeam(),ad=me?tacAdvice(me,tacMirror(me)):null;
+  const ab=$('t-adv');if(ab){if(!ad)ab.innerHTML=`<p class="note" style="margin:0">Complète ton équipe pour voir les consignes conseillées.</p>`;
+    else{const ks=Object.keys(ad.tac),same=tacSame(ad.tac,t);
+      ab.innerHTML=`<div class="tadv-h"><b>Conseil pour ton équipe</b><small>face à une équipe de ton niveau</small></div>
+        <p class="tadv-t">${esc(tacAdvTxt(ad))}</p>${ks.length?`<ul class="tadv-l">${ks.map(k=>`<li>${esc(tacLbl(k,ad.tac[k]))} : ${TAC_WHY[ad.tac[k]](ad.f)}.</li>`).join('')}</ul>`:'<p class="note" style="margin:0">Ton équipe est équilibrée : le jeu normal est le plus sûr.</p>'}
+        <div class="row-actions"><button class="btn" type="button" data-guide>Comment choisir ?</button><button class="btn primary" type="button" id="t-adv-go"${same?' disabled':''}>${same?'Tu suis les conseils':'Appliquer les conseils'}</button></div>`;
+      const go=$('t-adv-go');if(go)go.onclick=()=>applyTac(ad.tac,'Consignes conseillées appliquées');}}
+  box.innerHTML=TAC_DEF.filter(d=>!(d.k==='rec'&&state.noLib)).map(d=>{const cur=d.o.find(x=>x[0]===(t[d.k]||''))||d.o[1],rec=ad?(ad.tac[d.k]||''):null;
+    return`<div class="tac"><b>${d.l}</b><div class="mseg small" role="group" aria-label="${d.l}">${d.o.map(o=>`<button type="button" data-tk="${d.k}" data-tv="${o[0]}" aria-pressed="${o===cur}"${rec===o[0]?' class="adv" title="Conseillé pour ton équipe"':''}>${o[1]}</button>`).join('')}</div><small>${cur[2]}</small></div>`;}).join('');
 }
 function renderChem(){
   const setter=teamCard(TEAM_SLOTS.find(x=>x.k==='PAS')),box=$('t-chem');
@@ -2907,7 +2986,8 @@ async function shareCanvas(cv,name,title,alt){
 }
 
 /* Moteur de match Cartes Volley : simulation déterministe (même graine = même match sur les deux téléphones).
-   Équipe = 7 cartes dans l'ordre des postes : R4a, CEN1, PTU, R4b, CEN2, PAS, LIB.
+   Équipe = 7 cartes dans l'ordre des postes : R4a, CEN1, PTU, R4b, CEN2, PAS, LIB (ou 6, sans libéro).
+   Consignes (équipe.tac) : ser fort|sur, zone centre|ailes, feinte peu|beaucoup, bloc agressif|place, rec libero|partage. Absente = jeu normal.
    Rotation : tableau des positions 1 à 6 (index 0 = position 1, service). Départ : passeur en 1. */
 function mulberry32(a){return function(){a|=0;a=a+0x6D2B79F5|0;let t=Math.imul(a^a>>>15,1|a);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296;};}
 function hashStr(s){let h=1779033703^s.length;for(let i=0;i<s.length;i++){h=Math.imul(h^s.charCodeAt(i),3432918353);h=h<<13|h>>>19;}h=Math.imul(h^h>>>16,2246822507);h=Math.imul(h^h>>>13,3266489909);return(h^h>>>16)>>>0;}
@@ -2920,7 +3000,7 @@ const ME_PW=[{rec:.3,att:.3,def:.2,ser:.15,blo:.05},{blo:.45,att:.3,ser:.15,pas:
   {rec:.3,att:.3,def:.2,ser:.15,blo:.05},{blo:.45,att:.3,ser:.15,pas:.05,def:.05},{pas:.5,def:.15,ser:.15,rec:.1,blo:.05,att:.05},{rec:.45,def:.45,pas:.1}]; // R4, CEN, PTU, R4, CEN, PAS, LIB
 const teamNoteE=T=>T.cards.reduce((t,c,i)=>t+Object.entries(ME_PW[i]).reduce((u,[k,v])=>u+(+c.s[k]||0)*v,0),0)/T.cards.length;
 // réglages des consignes (chaque consigne : un avantage et un défaut)
-const ME_T={sF:1.3,sA:.7,sG:.07,uF:.75,uA:-.9,uG:-.12,pred:.03,fM:2.2,fP:.35,tipPen:1.1,tipD:14,tipE:.08,aM:1.4,aK:.25,pM:.6,pK:-.15,cW:2,wW:1.6,wC:.35};
+const ME_T={sF:.045,sA:.7,sG:.07,uF:-.04,uA:-.9,uG:-.12,pred:.05,fM:2.6,fP:.35,tipK:-1.4,tipD:10,tipE:.8,tipQ:.35,tipB:4,rL:4,rP:.5,aS:.45,aG:1.3,aK:.18,pS:-.3,pT:.8,pG:1.3,cW:2,wW:1.6,wC:.35,cE:.02};
 // taux de ratés selon la stat (0 à 100) : même à 100, on rate de temps en temps
 const ME_SFT=[[0,.40],[20,.30],[30,.25],[60,.15],[87,.11],[100,.07]]; // fautes de service
 const ME_AFT=[[0,.40],[20,.30],[30,.25],[60,.12],[87,.08],[100,.05]]; // attaques dehors ou dans le filet
@@ -2955,11 +3035,11 @@ function simulateMatch(A,B,seed,opts){
     const srv=serve,rcv=1-serve,oc=[onCourt(0,srv===0),onCourt(1,srv===1)],acts=[];let winner=null;
     const server=oc[srv][0],sv=st(srv,server,'ser');
     // service : un mauvais serveur rate souvent
-    const tS=tac[srv].ser,sF=tS==='fort'?ME_T.sF:tS==='sur'?ME_T.uF:1,sA=tS==='fort'?ME_T.sA:tS==='sur'?ME_T.uA:0,sG=tS==='fort'?ME_T.sG:tS==='sur'?ME_T.uG:0;
-    if(R()<serveFaultP(sv)*sF){winner=rcv;acts.push({k:'serveFault',t:srv,p:server,net:R()<.55});}
+    const tS=tac[srv].ser,sF=tS==='fort'?ME_T.sF:tS==='sur'?ME_T.uF:0,sA=tS==='fort'?ME_T.sA:tS==='sur'?ME_T.uA:0,sG=tS==='fort'?ME_T.sG:tS==='sur'?ME_T.uG:0;
+    if(R()<Math.max(.02,serveFaultP(sv)+sF)){winner=rcv;acts.push({k:'serveFault',t:srv,p:server,net:R()<.55});}
     else{
       // réception : libéro et réceptionneurs-attaquants ; sans libéro, les joueurs de la ligne arrière aident (sauf le passeur)
-      const tR=tac[rcv].rec,wL=tR==='libero'?3.5:tR==='partage'?1:1.4;
+      const tR=tac[rcv].rec,wL=tR==='libero'?ME_T.rL:tR==='partage'?ME_T.rP:1.4;
       const recvs=hasLib[rcv]?oc[rcv].filter(i=>i===6||i===0||i===3):oc[rcv].filter(i=>i===0||i===3||(back(oc[rcv]).includes(i)&&i!==5));
       const rc=pick(recvs.length?recvs:back(oc[rcv]),i=>i===6?wL:1);
       const rs=st(rcv,rc,'rec'),gap=gp(sv-rs),lvl=(sv+rs)/2;
@@ -2992,23 +3072,25 @@ function simulateMatch(A,B,seed,opts){
           const tF=tac[T].feinte,fM=tF==='beaucoup'?ME_T.fM:tF==='peu'?ME_T.fP:1;
           const isBack=!fr.includes(at),as=st(T,at,'att'),tip=R()<(sq<.45?.25:.08)*fM;
           // faute d'attaque : stat attaque + passe pourrie
-          if(tip&&R()<ME_T.tipE){winner=O;acts.push({k:'attErr',t:T,p:at,net:true,back:isBack});break;}
-          if(!tip&&R()<cl(lerpT(ME_AFT,as)+Math.max(0,.45-sq)*.35+(isBack?.03:0)+(tZ==='centre'&&cen(at)&&sq<.45?.04:0),.03,.6)){winner=O;acts.push({k:'attErr',t:T,p:at,net:R()<.6,back:isBack});break;}
+          if(tip&&R()<lerpT(ME_AFT,as)*ME_T.tipE){winner=O;acts.push({k:'attErr',t:T,p:at,net:true,back:isBack});break;}
+          if(!tip&&R()<cl(lerpT(ME_AFT,as)+Math.max(0,.45-sq)*.35+(isBack?.03:0)+(tZ==='centre'&&cen(at)&&sq<.45?ME_T.cE:0),.03,.6)){winner=O;acts.push({k:'attErr',t:T,p:at,net:R()<.6,back:isBack});break;}
           const pw=as-(isBack?.08:0)+(sq-.5)*.3; // force réelle de l'attaque
           // duel attaque contre contre
           // le contreur le plus probable est celui en face de l'attaquant (aile contre aile, centre contre centre)
           const ap=ocT.indexOf(at),col=ap===1||ap===0?'R':ap===2||ap===5?'M':'L',face=col==='R'?ocO[3]:col==='M'?ocO[2]:ocO[1];
           const bl=front(ocO).filter(i=>i!==6),b1=pick(bl,i=>Math.pow(st(O,i,'blo')+.1,2)*(i===face?3:i===ocO[2]?1.6:1)),bs=st(O,b1,'blo');
           const tB=tac[O].bloc,pred=tZ==='centre'||tZ==='ailes'?ME_T.pred:0; // une attaque concentrée est plus facile à lire
-          const bM=tB==='agressif'?ME_T.aM:tB==='place'?ME_T.pM:1,bS=pred,bT=(tB==='place'?ME_T.pT:0)+pred*.7,bK=tB==='agressif'?ME_T.aK:tB==='place'?ME_T.pK:0;
-          if(!tip&&R()<Math.max(.02,Math.min(.65,sg(-2.6+5*gp(bs-pw)+bS)*bM))){winner=O;acts.push({k:'stuff',t:T,p:at,b:b1,back:isBack});break;}
+          // contre agressif : on saute pour bloquer (plus de contres si on est plus grand), mais la défense est moins couverte
+          // défense placée : on accompagne le ballon (il est souvent ralenti) et la défense pèse plus lourd, mais on contre moins
+          const bG=tB==='agressif'?ME_T.aG:1,bS=(tB==='agressif'?ME_T.aS:tB==='place'?ME_T.pS:0)+pred,bT=(tB==='place'?ME_T.pT:0)+pred*.7,dG=tB==='place'?ME_T.pG:1,bK=tB==='agressif'?ME_T.aK:0;
+          if(!tip&&R()<Math.max(.02,Math.min(.65,sg(-2.6+5*gp(bs-pw)*bG+bS)))){winner=O;acts.push({k:'stuff',t:T,p:at,b:b1,back:isBack});break;}
           const touchB=!tip&&R()<sg(-.8+4*gp(bs-pw)+bT);
           // duel attaque contre défense
           const dfs=back(ocO).concat(tip?front(ocO):[]),d=pick(dfs,i=>i===6?2:i===5?.6:1),ds=st(O,d,'def');
           const aq=cl(.5+(pw-.6)*.8+nz(.3)-(tip?.3:0),0,1);
           acts.push({k:tip?'tip':'attack',t:T,p:at,b:touchB?b1:null,d,q:aq,back:isBack});
-          if(R()<Math.max(.04,Math.min(.88,tip?sg(-.6-ME_T.tipPen+ME_T.tipD*gp(.6-ds)):sg(-.6+5.5*gp(pw-ds)-(touchB?1:0)+(tB==='place'?bK*Math.pow(ds/.6,3):bK))))){winner=T;acts.push({k:'kill',t:T,p:at,d,tip});break;}
-          const dq=cl(.5+gp(ds-pw)*.8+(touchB?.15:0)+(tip?.15:0)+nz(.4),0,.95);
+          if(R()<Math.max(.04,Math.min(.88,tip?sg(ME_T.tipK+ME_T.tipD*gp(as-ds)*dG+ME_T.tipB*gp(bs-as)):sg(-.6+5.5*gp(pw-ds)*dG-(touchB?1:0)+bK)))){winner=T;acts.push({k:'kill',t:T,p:at,d,tip});break;}
+          const dq=cl(.5+gp(ds-pw)*.8+(touchB?.15:0)+(tip?ME_T.tipQ:0)+nz(.4),0,.95);
           acts.push({k:dq>.55?'digGood':'dig',t:O,p:d,q:dq,save:aq>.75});
           atk=O;qual=dq;touch=d;
         }
@@ -3025,10 +3107,6 @@ function simulateMatch(A,B,seed,opts){
   si++;
   }
 }
-
-
-
-
 
 /* =================== Mise à jour de l'appli Android =================== */
 // Au lancement (et au retour dans l'appli), on regarde sur le serveur s'il existe une version plus récente.
@@ -3343,7 +3421,7 @@ const RANKS=[[0,'Débutant'],[450,'Amateur'],[500,'Régional'],[560,'National'],
 const rankName=e=>RANKS.filter(r2=>e>=r2[0]).pop()[1];
 const eloExp=(a,b)=>1/(1+Math.pow(10,(b-a)/400));
 const ELO_K=32;
-const ENGINE_VER=11; // à augmenter à chaque changement du moteur : le serveur et les téléphones doivent avoir le même
+const ENGINE_VER=12; // à augmenter à chaque changement du moteur : le serveur et les téléphones doivent avoir le même
 /* complicité : le passeur (place PAS) et chaque attaquant (places 1 à 5) ; +1 en passe tous les 5 matchs ensemble, jusqu'à +5 */
 const CHEM_STEP=5,CHEM_MAX=5;
 const teamIds=()=>SLOT_ORDER.slice(0,activeSlots().length).map(k=>{const c=teamCard(TEAM_SLOTS.find(x=>x.k===k));return c?c.id:null;});
@@ -3423,6 +3501,12 @@ function openSheet(m){
   $('sheet').hidden=false;$('sh-body').scrollTop=0;
 }
 function closeSheet(){$('sheet').hidden=true;curSheet=null;}
+/* guide des consignes */
+function openGuide(){$('guide').hidden=false;document.querySelector('#guide .sh-body').scrollTop=0;}
+function closeGuide(){$('guide').hidden=true;}
+$('gd-close').addEventListener('click',closeGuide);
+document.addEventListener('click',e=>{if(e.target.closest('[data-guide]')){e.preventDefault();openGuide();}});
+
 $('sh-close').addEventListener('click',closeSheet);
 $('sh-share').addEventListener('click',async()=>{const m=curSheet;if(!m)return;toast("Préparation de l'image…");
   let cv;try{cv=await drawSheetImage(m);}catch(e){toast("L'image n'a pas pu être créée.");return;}
@@ -3528,12 +3612,8 @@ function cpTeam(n){
   const cards=SLOT_ORDER.map(k=>{const base=lv+(R()-.5)*8,s={};SKILLS.forEach((x,j)=>s[x.k]=base+CP_PROF[k][j]*sc+(R()-.5)*10);return{name:nm(),poste:CP_POSTE[k],s};});
   for(let it=0;it<8;it++){const d=lv-teamNote({cards});cards.forEach(c=>SKILLS.forEach(x=>c.s[x.k]=Math.max(1,Math.min(99,c.s[x.k]+d))));}
   cards.forEach(c=>SKILLS.forEach(x=>c.s[x.k]=Math.round(c.s[x.k])));
-  // leur tactique dépend de leurs points forts (visible sur l'affiche : à toi de t'adapter)
-  const avg=(idx,k)=>idx.reduce((u,i)=>u+cards[i].s[k],0)/idx.length,ref=lv,tac={};
-  if(avg([0,1,2,3,4,5],'ser')>ref+4)tac.ser='fort';else if(avg([0,1,2,3,4,5],'ser')<ref-6)tac.ser='sur';
-  if(avg([1,4],'att')>avg([0,2,3],'att')+4)tac.zone='centre';else if(avg([0,2,3],'att')>avg([1,4],'att')+10)tac.zone='ailes';
-  if(avg([1,2,4],'blo')>ref+10)tac.bloc='agressif';else if(avg([0,3,6],'def')>ref+8)tac.bloc='place';
-  if(cards[6].s.rec>ref+14)tac.rec='libero';if(R()<.25)tac.feinte='beaucoup';
+  // leur tactique : ce que le conseiller leur dirait face à une équipe de leur niveau (visible sur l'affiche : à toi de t'adapter)
+  const tac=tacAdvice({cards},tacMirror({cards})).tac;
   return cpCache[n]={name:t.teams[n-t.a],cards,tac,lv:payloadTeamScore({cards})};
 }
 // note d'équipe (comme dans l'onglet Équipe) : chaque joueur noté selon son poste
@@ -3593,7 +3673,8 @@ function renderCamp(){
     poster=`<div class="cp-poster ko${ko}" style="--c:${T.col}">
       <div class="cp-p-top"><small>${esc(T.venue)} · ${esc(T.n)}</small><b class="cp-round">${esc(rd.r)}</b></div>
       <div class="cp-p-vs"><div><span>${esc(state.pseudo||'Ton équipe')}</span><b>${myLv??'–'}</b><small>note d'équipe</small></div><i>VS</i><div><span>${esc(op.name)}</span><b>${op.lv}</b><small>note d'équipe</small></div></div>
-      <div class="cp-tac"><div><span>Leur jeu :</span> <b>${esc(tacTxt(op.tac))}</b></div><div><span>Tes consignes :</span> <b>${esc(tacTxt(state.tac))}</b> · <a data-go-team>modifier</a></div></div>
+      <div class="cp-tac"><div><span>Leur jeu :</span> <b>${esc(tacTxt(op.tac))}</b></div><div><span>Tes consignes :</span> <b>${esc(tacTxt(state.tac))}</b> · <a data-go-team>modifier</a></div>
+        ${me?(()=>{const ad=tacAdvice(me,op),same=tacSame(ad.tac,state.tac);return`<div class="cp-adv"><span>Conseil pour ce match :</span> <b>${esc(tacAdvTxt(ad))}</b>${same?' <i>✓ suivi</i>':` · <a data-adv-go>appliquer</a>`} · <a data-guide>comment choisir ?</a></div>`;})():''}</div>
       <div class="cp-chips"><span>${cpFmtL(T.fmt)}</span>${rew?cpReward(rew):''}</div>
       <p class="cp-stake">${esc(cpStake(st))}</p>
       <div class="cp-opp">${op.cards.map((x,i)=>miniHTML({...x,id:'cpo'+i,kind:'joueur',photo:null})).join('')}</div>
@@ -3614,6 +3695,7 @@ function renderCamp(){
   renderCampRank();if(net.on)netRank();
   const pb=$('cp-play');if(pb)pb.addEventListener('click',cpPlay);
   root.querySelectorAll('[data-go-team]').forEach(a=>a.addEventListener('click',()=>{setTab('team');$('t-tac-sec').scrollIntoView({block:'start',behavior:'smooth'});}));
+  root.querySelectorAll('[data-adv-go]').forEach(a=>a.addEventListener('click',async()=>{const me=myTeam();if(!me)return;await applyTac(tacAdvice(me,cpTeam(state.camp.st)).tac,'Consignes conseillées pour ce match appliquées');renderCamp();}));
   const rb=$('cp-retry');if(rb)rb.addEventListener('click',cpRefresh);
   const sb=$('cp-sheet');if(sb)sb.addEventListener('click',()=>openSheet(state.camp.last));
   if(cpStatus==='locked'&&!done){const l=$('cp-left');const tick=()=>{const n=estNow();if(n==null||!l)return;const ms=msToMidnight(n);
