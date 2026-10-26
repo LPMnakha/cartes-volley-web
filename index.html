@@ -262,6 +262,9 @@ textarea.text-in{font-size:1rem;font-weight:500;resize:none;line-height:1.35}
 .b-confirm{display:flex;flex-direction:column;gap:10px;border:1px solid rgba(255,90,90,.5);background:rgba(255,90,90,.08);border-radius:16px;padding:16px}
 .b-confirm b{font-family:var(--display);font-weight:900;font-size:1.3rem;text-transform:uppercase}
 .b-confirm p{margin:0;color:var(--muted)}
+.adm-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px}
+.adm-row .btn{padding:12px 16px}
+.sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
 .empty-filter{color:var(--muted);text-align:center;padding:30px 10px;border:1px dashed var(--line);border-radius:14px}
 
 .fab{position:fixed;right:calc(18px + env(safe-area-inset-right,0px));bottom:calc(20px + env(safe-area-inset-bottom,0px));z-index:8;
@@ -752,6 +755,21 @@ input[type=range]::-moz-range-thumb{width:20px;height:20px;border-radius:50%;bac
         <div class="row-actions"><button class="btn" type="button" id="mi-cancel">Annuler</button><button class="btn primary" type="button" id="mi-ok">Mettre à jour</button></div>
       </div>
     </div>
+    <div class="section" id="m-admin">
+      <span class="label">Authentification admin</span>
+      <div id="adm-off">
+        <form class="adm-row" id="adm-form" novalidate>
+          <label class="sr" for="adm-pw">Mot de passe admin</label>
+          <input class="text-in" type="password" id="adm-pw" placeholder="Mot de passe" autocomplete="off" enterkeyhint="done">
+          <button class="btn primary" type="submit">Valider</button>
+        </form>
+        <p class="err" id="adm-err" hidden>Mot de passe incorrect.</p>
+      </div>
+      <div id="adm-on" class="stack" hidden>
+        <p class="note" style="color:var(--ink);margin:0">Mode admin activé : boosters illimités sur cet appareil.</p>
+        <button class="btn" type="button" id="adm-quit">Quitter le mode admin</button>
+      </div>
+    </div>
     <div class="section" id="m-install">
       <span class="label">Installer sur ton téléphone</span>
       <p class="note" style="color:var(--ink)"><b>iPhone</b>, dans Safari :</p>
@@ -874,6 +892,20 @@ async function saveState(){
   try{localStorage.setItem(LS_STATE,JSON.stringify(state));}catch(e){}
   if(mode==='cloud'&&col){try{await col.doc('_state').set({owned:state.owned,lastDay:state.lastDay,lastTs:state.lastTs});}catch(e){}}
 }
+/* Mode admin : boosters illimités. Seule l'empreinte du mot de passe est dans le code, jamais le mot lui-même */
+const ADMIN_HASH='2637129b8667d6edb4028eb186acdaf42233ce679c61f6ccf9e86bbb6a13110f',LS_ADMIN='cartes-volley-admin';
+let isAdmin=false;try{isAdmin=localStorage.getItem(LS_ADMIN)===ADMIN_HASH;}catch(e){}
+async function sha256(t){const b=await crypto.subtle.digest('SHA-256',new TextEncoder().encode(t));return[...new Uint8Array(b)].map(x=>x.toString(16).padStart(2,'0')).join('');}
+function renderAdmin(){$('adm-off').hidden=isAdmin;$('adm-on').hidden=!isAdmin;}
+$('adm-form').addEventListener('submit',async e=>{
+  e.preventDefault();const pw=$('adm-pw').value.trim();if(!pw)return;
+  let h='';try{h=await sha256(pw);}catch(err){toast("Vérification impossible dans cette vue.");return;}
+  if(h===ADMIN_HASH){isAdmin=true;try{localStorage.setItem(LS_ADMIN,h);}catch(err){}$('adm-pw').value='';$('adm-err').hidden=true;$('adm-pw').blur();
+    renderAdmin();packStatus='ready';renderLock();toast('Mode admin activé : boosters illimités');}
+  else{$('adm-err').hidden=false;$('adm-pw').select();}
+});
+$('adm-quit').addEventListener('click',()=>{isAdmin=false;try{localStorage.removeItem(LS_ADMIN);}catch(e){}renderAdmin();refreshPackLock();toast('Mode admin désactivé');});
+renderAdmin();
 /* Heure fiable : elle vient d'internet, jamais de l'horloge du téléphone */
 async function trustedNow(){
   let n=0;
@@ -1364,7 +1396,9 @@ document.querySelectorAll('.tab').forEach(b=>b.addEventListener('click',()=>setT
 document.addEventListener('visibilitychange',()=>{if(!document.hidden&&!$('tab-packs').hidden)refreshPackLock();});
 
 async function refreshPackLock(){
-  if(openBusy)return;packStatus='checking';renderLock();
+  if(openBusy)return;
+  if(isAdmin){packStatus='ready';renderLock();return;}
+  packStatus='checking';renderLock();
   const n=await trustedNow();
   packStatus=n==null?'offline':(state.lastDay===parisDay(n)||n<state.lastTs)?'locked':'ready';
   renderLock();
@@ -1382,6 +1416,7 @@ function renderLock(){
       const h=Math.floor(ms/3.6e6),m=Math.floor(ms%3.6e6/6e4),sec=Math.floor(ms%6e4/1e3),z=v=>String(v).padStart(2,'0');
       l.innerHTML=`Prochain booster dans <b>${z(h)}:${z(m)}:${z(sec)}</b>`;};
     tick();lockTimer=setInterval(tick,1000);}
+  else if(isAdmin){b.disabled=false;b.textContent='Ouvrir un booster';l.hidden=false;l.textContent='Mode admin : boosters illimités';}
   else{b.disabled=false;b.textContent='Ouvrir le booster du jour';l.hidden=true;}
   $('pack').disabled=packStatus!=='ready'||few;
   $('pack-zone').classList.toggle('off',few||packStatus==='locked');
@@ -1608,17 +1643,20 @@ async function openPack(){
   const pool=players;if(pool.filter(p=>!isSigP(p)).length<PACK_SIZE){renderPacks();setTab('packs');toast('Il faut au moins 5 cartes pour ouvrir un booster.');return;}
   if(openBusy)return;
   ac(); // le son doit démarrer pendant le toucher, avant toute attente
-  openBusy=true;packStatus='checking';renderLock();
-  const now=await trustedNow();openBusy=false;
-  if(now==null){packStatus='offline';renderLock();toast("Pas de connexion : impossible de vérifier l'heure.");return;}
-  const today=parisDay(now);
-  if(state.lastDay===today||now<state.lastTs){packStatus='locked';renderLock();toast("Tu as déjà ouvert ton booster aujourd'hui. Reviens après minuit !");return;}
+  let now=null,today='';
+  if(!isAdmin){ // l'admin n'a ni vérification d'heure ni limite
+    openBusy=true;packStatus='checking';renderLock();
+    now=await trustedNow();openBusy=false;
+    if(now==null){packStatus='offline';renderLock();toast("Pas de connexion : impossible de vérifier l'heure.");return;}
+    today=parisDay(now);
+    if(state.lastDay===today||now<state.lastTs){packStatus='locked';renderLock();toast("Tu as déjà ouvert ton booster aujourd'hui. Reviens après minuit !");return;}
+  }
   const my=++run,alive=()=>my===run;
   const pulled=revealOrder(drawPack(pool));
   // Enregistré tout de suite : fermer l'animation ne rend pas le booster
   const before=new Set(state.owned),fresh=new Set(pulled.filter(p=>!before.has(p.id)).map(p=>p.id));
-  state.lastDay=today;state.lastTs=now;pulled.forEach(p=>{if(!before.has(p.id))state.owned.push(p.id);});
-  saveState();packStatus='locked';renderLock();
+  if(!isAdmin){state.lastDay=today;state.lastTs=now;}pulled.forEach(p=>{if(!before.has(p.id))state.owned.push(p.id);});
+  saveState();packStatus=isAdmin?'ready':'locked';renderLock();
   const best=pulled.map(vt).reduce((m,t)=>TIER_RANK[t]>TIER_RANK[m]?t:m,'bronze'),bestR=TIER_RANK[best]; // la lueur annonce le plus haut niveau du booster
   const O=$('opening'),stage=$('op-stage'),tray=$('op-tray');
   O.hidden=false;O.classList.remove('dark');document.body.style.overflow='hidden';fxSize();FX.parts=[];
@@ -1728,9 +1766,10 @@ async function openPack(){
   stage.insertAdjacentHTML('beforeend',`<div class="op-summary"><span class="best-label">Carte la plus rare</span><div class="best sum-mini">${miniHTML(top)}${tagNew(top)}</div>
     <div class="rest">${rest.map((p,i)=>`<div class="sum-mini" style="animation-delay:${i*70}ms">${miniHTML(p)}${tagNew(p)}</div>`).join('')}</div>
     <p class="note" style="margin:0;text-align:center">${fresh.size?`${fresh.size} nouvelle${fresh.size>1?'s':''} carte${fresh.size>1?'s':''} dans ton classeur`:'Aucune nouvelle carte cette fois'}</p>
-    <div class="op-actions"><button class="btn" type="button" id="op-done">Terminé</button><button class="btn primary" type="button" id="op-again">Voir le classeur</button></div></div>`);
+    <div class="op-actions">${isAdmin?'<button class="btn" type="button" id="op-done">Voir le classeur</button><button class="btn primary" type="button" id="op-again">Ouvrir un autre</button>':'<button class="btn" type="button" id="op-done">Terminé</button><button class="btn primary" type="button" id="op-again">Voir le classeur</button>'}</div></div>`);
   $('op-done').addEventListener('click',closeOpening);
-  $('op-again').addEventListener('click',()=>{closeOpening();setTab('binder');});
+  if(isAdmin){$('op-done').addEventListener('click',()=>{closeOpening();setTab('binder');},{once:true});$('op-again').addEventListener('click',()=>openPack());}
+  else $('op-again').addEventListener('click',()=>{closeOpening();setTab('binder');});
   const[bx,by]=centerOf(stage.querySelector('.best'));burst(bx,by,TIER_FX[vt(top)].c,60,8);
 }
 window.addEventListener('resize',()=>{if(!$('opening').hidden)fxSize();});
