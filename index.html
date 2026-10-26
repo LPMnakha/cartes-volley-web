@@ -427,6 +427,17 @@ body.player #tab-btn-cards,body.player #fab,body.player #m-export-cards,body.pla
 .vs-stake{text-align:center;color:var(--muted);font-size:.9rem;margin:0}
 .vs-stake b{color:var(--ink)}
 .rank{display:grid;gap:6px}
+.fcode{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:12px;background:rgba(255,255,255,.04);border:1px solid var(--line)}
+.fcode span{color:var(--muted);font-size:.85rem}.fcode b{flex:1;font-family:var(--data);font-size:1.15rem;letter-spacing:.08em;color:var(--ball)}.fcode .btn{padding:6px 12px;font-size:.82rem}
+.rank-row.act{grid-template-columns:2ch minmax(0,1fr) auto auto auto}
+.rank-row .rb{padding:6px 10px;font-size:.78rem;border-radius:9px}
+.rank-row .rb.def{background:linear-gradient(135deg,#FFD23F,#FF7A2F);color:#1A1200;border:0;font-weight:800}
+.rank-row .rb:disabled{opacity:.45}
+.rank-row em{font-style:normal;font-family:var(--data);font-size:.66rem;color:var(--muted)}
+.mh-row small.am{color:#7FE0B0}
+.chem{display:grid;gap:6px}.chem-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;align-items:center;font-size:.88rem}
+.chem-row span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.chem-row b{font-family:var(--data);font-size:.8rem}
+.chem-pips{display:inline-flex;gap:3px;margin-left:6px;vertical-align:middle}.chem-pips i{width:8px;height:8px;border-radius:2px;background:rgba(255,255,255,.12)}.chem-pips i.on{background:#7FE0B0;box-shadow:0 0 5px #7FE0B0}
 .rank-head{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:8px}
 .mseg.small{padding:3px;border-radius:11px}.mseg.small button{padding:6px 12px;font-size:.82rem;border-radius:8px}
 .rank-row.top b:first-child{color:#FFD23F}
@@ -1091,13 +1102,16 @@ body.player .tabs{grid-template-columns:repeat(4,minmax(0,1fr))} /* sans l'ongle
     <div class="court"><span class="court-row-label" style="top:8px">AVANT</span><span class="court-row-label" style="bottom:6px">ARRIÈRE</span><div class="court-grid" id="court"></div></div>
     <div class="bench"><div id="lib-slot"></div><p>Le libéro remplace un joueur en défense. Il est noté sur sa réception et sa défense.</p></div>
     <div class="row-actions"><button class="btn" type="button" id="t-clear">Vider l'équipe</button><button class="btn primary" type="button" id="t-auto">Composer au mieux</button></div>
+    <div class="section" id="t-chem-sec"><span class="label">Complicité du passeur</span>
+      <p class="note" style="margin:0">Plus ton passeur joue avec un attaquant, meilleures sont ses passes pour lui : +1 tous les 5 matchs ensemble (campagne et défis), jusqu'à +5.</p>
+      <div class="chem" id="t-chem"></div></div>
   </div>
   <div class="tabpane" id="tab-match" role="tabpanel" aria-labelledby="tab-btn-match" hidden>
     <div class="pack-head"><div><h2 class="pane-title">Match</h2><p class="note">La campagne : 30 étapes jusqu'aux Régionales, une tentative par jour. Ou un match contre un pote.</p></div></div>
     <div class="mseg" id="m-seg" role="group" aria-label="Mode de jeu"><button type="button" data-m="camp" aria-pressed="true">Campagne</button><button type="button" data-m="pvp" aria-pressed="false">Contre un pote</button></div>
     <div class="cp-root" id="m-camp"><div class="cp-root" id="cp-root"></div></div>
     <div class="stack" id="m-pvp" hidden style="gap:16px">
-    <p class="note" style="margin:0">Affronte un pote : 10 points gagnants avec 2 points d'écart. Un seul scan suffit : le match se lance aussi sur le téléphone de ton pote, et votre élo est mis à jour en ligne.</p>
+    <p class="note" style="margin:0">Défie tes amis à distance : le match se joue avec vos équipes enregistrées et s'affiche chez ton ami à sa prochaine ouverture. Le premier match du jour contre chaque ami compte pour l'élo, les suivants sont amicaux.</p>
     <div class="section prof">
       <div class="prof-row">
         <div class="prof-name"><label class="label" for="m-pseudo">Ton pseudo</label><input class="text-in" type="text" id="m-pseudo" maxlength="16" autocomplete="off" enterkeyhint="done"></div>
@@ -1106,29 +1120,12 @@ body.player .tabs{grid-template-columns:repeat(4,minmax(0,1fr))} /* sans l'ongle
       <p class="note" id="m-record" style="margin:0"></p>
     </div>
     <div class="net" id="m-net"><i></i><span id="m-net-txt">Connexion au serveur…</span><button class="btn" type="button" id="m-net-retry" hidden>Réessayer</button></div>
-    <div class="banner" id="m-noteam" hidden><span>Complète ton équipe (7 cartes) dans l'onglet <b>Équipe</b> pour pouvoir jouer.</span></div>
-    <div class="section" id="m-prep">
-      <button class="btn primary" type="button" id="m-start">Préparer un match</button>
-      <div class="stack" id="m-qrbox" hidden>
-        <div class="banner" id="m-played" hidden><span><b>Match joué.</b> Pour un nouveau match, touche « Nouveau QR ».</span></div>
-        <span class="label">1. Montre ce QR à ton pote</span>
-        <div class="qr" id="m-qr"></div>
-        <div class="row-actions"><button class="btn" type="button" id="m-copy">Copier mon code</button><button class="btn" type="button" id="m-new">Nouveau QR</button></div>
-        <span class="label">2. Scanne le sien</span>
-        <div class="row-actions"><button class="btn primary" type="button" id="m-scan">Scanner</button><label class="btn" for="m-photo" style="text-align:center;cursor:pointer">Photo du QR<input type="file" id="m-photo" accept="image/*" hidden></label></div>
-        <div id="m-scanslot"></div><div class="scan" id="m-scanbox" hidden><video id="m-video" playsinline muted autoplay></video><div class="scan-frame"></div><button class="btn" type="button" id="m-scan-stop">Arrêter</button></div>
-        <details class="m-paste"><summary>Coller le code de ton pote</summary><textarea class="text-in" id="m-code" rows="3" placeholder="CV1|…"></textarea><button class="btn" type="button" id="m-code-ok">Valider le code</button></details>
-        <p class="err" id="m-err" hidden></p>
-      </div>
-    </div>
-    <div class="section vs" id="m-vs" hidden></div>
+    <div class="banner" id="m-noteam" hidden><span>Complète ton équipe (7 cartes) dans l'onglet <b>Équipe</b> : c'est elle qui joue tes défis.</span></div>
     <div class="section" id="f-sec">
-      <span class="label">Mes amis</span>
-      <div class="row-actions"><button class="btn" type="button" id="f-show">Mon QR d'ami</button><button class="btn primary" type="button" id="f-scan">Scanner un ami</button></div>
-      <div class="stack" id="f-qrbox" hidden><div class="qr" id="f-qr"></div><p class="note" style="margin:0;text-align:center">Ton pote touche « Scanner un ami » et vise ce QR. Vous serez amis tous les deux.</p>
-        <button class="btn" type="button" id="f-copy">Copier mon code ami</button></div>
-      <div id="f-scanhost"></div>
-      <details class="m-paste"><summary>Entrer un code ami</summary><input class="text-in" type="text" id="f-code" placeholder="Code ami" autocomplete="off" enterkeyhint="done"><button class="btn" type="button" id="f-code-ok">Ajouter</button></details>
+      <span class="label">Ajouter un ami</span>
+      <div class="fcode"><span>Ton code ami</span><b id="f-mycode"></b><button class="btn" type="button" id="f-copy">Copier</button></div>
+      <form class="adm-row" id="f-form" novalidate><label class="sr" for="f-q">Pseudo ou code ami</label><input class="text-in" type="search" id="f-q" placeholder="Pseudo ou code" autocomplete="off" enterkeyhint="search"><button class="btn primary" type="submit">Chercher</button></form>
+      <div class="rank" id="f-res"></div>
       <p class="err" id="f-err" hidden></p>
     </div>
     <div class="section"><div class="rank-head"><span class="label">Classement</span><div class="mseg small" id="r-seg" role="group" aria-label="Classement"><button type="button" data-r="friends" aria-pressed="true">Amis</button><button type="button" data-r="all" aria-pressed="false">Général</button></div></div>
@@ -1343,7 +1340,7 @@ body.player .tabs{grid-template-columns:repeat(4,minmax(0,1fr))} /* sans l'ongle
   <div class="mt-actions"><button class="btn" type="button" id="mt-skipset" hidden>Fin du set</button><button class="btn" type="button" id="mt-skip">Aller au résultat</button></div>
 </section>
 <section class="cpi" id="cp-intro" hidden aria-label="Avant le match"><div class="cpi-stage" id="cpi-stage"></div><p class="cpi-skip">Touche pour passer</p></section>
-<section class="cpi k2" id="ch-intro" hidden aria-label="Défi reçu"><div class="cpi-stage" id="chi-stage"></div></section>
+<section class="cpi k2" id="ch-intro" hidden aria-label="Défi"><div class="cpi-stage" id="chi-stage"></div></section>
 <section class="upd" id="upd" hidden role="dialog" aria-modal="true" aria-labelledby="upd-t">
   <div class="upd-box">
     <span class="upd-ic" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12m0 0l-5-5m5 5l5-5M5 21h14"/></svg></span>
@@ -1430,7 +1427,7 @@ const shown=()=>players.length?players:EXAMPLES;
 const LS_STATE='cartes-volley-etat';
 const ELO_START=400; // élo de départ de tout le monde
 let state=loadState(),timeOffset=null,lockTimer=null,packStatus='checking',openBusy=false;
-function blankState(){return{owned:[],counts:{},lastDay:'',lastTs:0,pkT:0,count:0,rev:0,bonus:{classic:0,silver:0,gold:0,icon:0},streak:{cur:0,best:0,lastDay:''},history:[],ach:{},team:{},exchanges:0,pid:'',key:'',pseudo:'',elo:ELO_START,eloBase:ELO_START,matches:[],opps:{},played:[],camp:{st:1,day:'',ts:0,res:{},last:null,tries:0}};}
+function blankState(){return{owned:[],counts:{},lastDay:'',lastTs:0,pkT:0,count:0,rev:0,bonus:{classic:0,silver:0,gold:0,icon:0},streak:{cur:0,best:0,lastDay:''},history:[],ach:{},team:{},exchanges:0,pid:'',key:'',pseudo:'',elo:ELO_START,eloBase:ELO_START,matches:[],opps:{},played:[],chem:{},chemPend:[],camp:{st:1,day:'',ts:0,res:{},last:null,tries:0}};}
 function fixState(j){
   const o=blankState();if(!j||typeof j!=='object')return o;
   if(j.counts&&typeof j.counts==='object')for(const k in j.counts){const n=Math.max(0,Math.floor(+j.counts[k]||0));if(n)o.counts[String(k)]=n;}
@@ -1448,6 +1445,7 @@ function fixState(j){
   if(j.eloBase!==ELO_START&&j.elo!=null&&j.elo!==''){const sh=ELO_START-500;o.elo+=sh;for(const k in o.opps)if(o.opps[k]&&Number.isFinite(+o.opps[k].e))o.opps[k]={...o.opps[k],e:Math.round(+o.opps[k].e)+sh};}
   {const c=j.camp&&typeof j.camp==='object'?j.camp:{};o.camp={st:Math.max(1,Math.min(31,Math.floor(+c.st||1))),day:String(c.day||''),ts:+c.ts||0,
     res:c.res&&typeof c.res==='object'?{...c.res}:{},last:c.last&&c.last.sh?c.last:null,tries:Math.max(0,Math.floor(+c.tries||0))};}
+  o.chem=j.chem&&typeof j.chem==='object'?{...j.chem}:{};o.chemPend=Array.isArray(j.chemPend)?j.chemPend.filter(k=>typeof k==='string').slice(-500):[];
   o.ach=j.ach&&typeof j.ach==='object'?{...j.ach}:{};o.team=j.team&&typeof j.team==='object'?{...j.team}:{};
   return o;
 }
@@ -2002,7 +2000,7 @@ function setTab(t){
   if(t==='packs')refreshPackLock();
   if(t==='binder')renderBinder();
   if(t==='team')renderTeam();
-  if(t==='match')renderMatchTab();else stopScan();
+  if(t==='match')renderMatchTab();
 }
 document.querySelectorAll('.tab').forEach(b=>b.addEventListener('click',()=>setTab(b.dataset.tab)));
 document.addEventListener('visibilitychange',()=>{if(!document.hidden&&!$('tab-packs').hidden)refreshPackLock();});
@@ -2572,7 +2570,16 @@ function renderTeam(){
   $('lib-slot').innerHTML=slotHTML(TEAM_SLOTS[6]);
   const n=TEAM_SLOTS.filter(sl=>teamCard(sl)).length,sc=teamScore();
   $('t-score').textContent=n?sc:'–';$('t-score').style.color=n?TIER_COL[tier(sc)]:'';
+  renderChem();if(typeof netTeamSoon==='function')netTeamSoon(); // l'équipe enregistrée en ligne sert pour les défis
   $('t-sub').textContent=n===7?`Équipe complète · ${TIER_L[tier(sc)].replace('Carte','Niveau')}`:n?`${n} / 7 postes remplis. La note compte les postes remplis.`:'Touche un poste pour y placer une carte de ton classeur.';
+}
+function renderChem(){
+  const setter=teamCard(TEAM_SLOTS.find(x=>x.k==='PAS')),box=$('t-chem');
+  if(!setter){box.innerHTML='<p class="note" style="margin:0">Place un passeur pour voir sa complicité avec tes attaquants.</p>';return;}
+  const rows=SLOT_ORDER.slice(0,5).map(k=>teamCard(TEAM_SLOTS.find(x=>x.k===k))).filter(Boolean).map(a=>{
+    const n=(state.chem||{})[setter.id+'>'+a.id]||0,b=Math.min(5,Math.floor(n/5));
+    return`<div class="chem-row"><span>${esc(setter.name)} → ${esc(a.name)}</span><b>${n} match${n>1?'s':''} · ${b?'+'+b+' passe':'aucun bonus'}<span class="chem-pips">${Array.from({length:5},(_,i)=>`<i class="${i<b?'on':''}"></i>`).join('')}</span></b></div>`;});
+  box.innerHTML=rows.join('')||'<p class="note" style="margin:0">Place des attaquants pour voir la complicité.</p>';
 }
 let pickSlot=null;
 function openPicker(k){
@@ -2758,11 +2765,13 @@ function simulateMatch(A,B,seed,opts){
           const setter=ocT.includes(5)&&touch!==5?5:pick(ocT.filter(i=>i!==touch),i=>Math.pow(st(T,i,'pas')+.1,2));
           const ps=st(T,setter,'pas');
           if(R()<cl(lerpT(ME_PFT,ps)+Math.max(0,.3-qual)*.8*(1.2-ps),.01,.45)){winner=O;acts.push({k:'setFault',t:T,p:setter});break;}
-          const sq=cl(.5+(ps-.6)*.8+(qual-.5)*.7+nz(.35),0,1);
+          let sq=cl(.5+(ps-.6)*.8+(qual-.5)*.7+nz(.35),0,1);
           acts.push({k:sq<.4?'setBad':'set',t:T,p:setter,q:sq});
           const fr=front(ocT).filter(i=>i!==setter&&i!==6),bk=back(ocT).filter(i=>i!==setter&&i!==6&&(i===0||i===2||i===3));
           let cands=fr.slice();if(sq>.5&&bk.length&&R()<.18)cands=bk;if(!cands.length)cands=ocT.filter(i=>i!==setter&&i!==6);
           const at=pick(cands,i=>{let w=Math.pow(st(T,i,'att')+.15,2.5);if((i===1||i===4)&&sq<.4)w*=.2;return w;});
+          // complicité : le passeur titulaire (carte 5) connaît bien cet attaquant → passe un peu meilleure (bonus = points de passe, 0 à 5)
+          const ch=setter===5&&teams[T].chem?+teams[T].chem[at]||0:0;if(ch)sq=cl(sq+Math.min(5,ch)/100*.8,0,1);
           const isBack=!fr.includes(at),as=st(T,at,'att'),tip=sq<.45?R()<.25:R()<.08;
           // faute d'attaque : stat attaque + passe pourrie
           if(!tip&&R()<cl(lerpT(ME_AFT,as)+Math.max(0,.45-sq)*.35+(isBack?.03:0),.03,.6)){winner=O;acts.push({k:'attErr',t:T,p:at,net:R()<.6,back:isBack});break;}
@@ -2862,9 +2871,10 @@ async function applyOfficial(list,ver){
   if(mode==='cloud'){const keep=new Set(norm.map(p=>p.id));for(const p of players.filter(p=>!keep.has(p.id)))await remove(p.id);for(const p of norm){const u=p.updatedAt;await persist(p);p.updatedAt=u;}}
   players=norm;writeLocal();
   off={ver,snap:snapOf(norm)};saveOff();
-  if(cleanOwned())await saveState();
-  if(myNonce&&$('m-played').hidden&&!$('m-qrbox').hidden){ // QR refait avec les cartes à jour, ou retiré si l'équipe n'est plus complète
-    if(teamFull()){myCode=null;showMyQR();}else{myNonce=null;myCode=null;oppData=null;$('m-qrbox').hidden=true;$('m-start').hidden=false;$('m-vs').hidden=true;toast("Ton équipe a perdu des cartes retirées de la liste officielle : complète-la dans l'onglet Équipe.");}}
+  if(cleanOwned())await saveState();netTeamSoon();
+  if(false){ // QR refait avec les cartes à jour, ou retiré si l'équipe n'est plus complète
+  }
+  if(!teamFull()&&Object.keys(state.team).length)toast("Ton équipe a perdu des cartes retirées de la liste officielle : complète-la dans l'onglet Équipe.");
   if(!$('tab-match').hidden)renderMatchTab();
   render();renderPacks();if(!$('tab-binder').hidden)renderBinder();if(!$('tab-team').hidden)renderTeam();renderDups();if(isAdmin)renderOfficial();
 }
@@ -2940,7 +2950,8 @@ async function netHello1(){
   ensureProfile();
   if(state.resetPending){try{await api('reset',{pseudo:state.pseudo});state.resetPending=false;await saveState();}catch(e){}}
   try{const w=state.matches.filter(m=>m.win).length,j=await api('hello',{pseudo:state.pseudo,elo:state.elo,w,l:state.matches.length-w});
-    net.on=true;net.err='';netApplyMe(j.me);netStartPoll();if(j.inbox)netPoll();netRank(true);netCards();if(isAdmin&&!admTok())renderOfficial();}
+    net.on=true;net.err='';netApplyMe(j.me);if(j.chem)setChem(j.chem);netStartPoll();if(j.inbox)netPoll();netRank(true);netCards();teamSent='';netTeamSoon();
+    if((state.chemPend||[]).length||j.me.cst!==state.camp.st||j.me.ctr!==state.camp.tries)netCamp();if(isAdmin&&!admTok())renderOfficial();}
   catch(e){net.on=false;net.err=e.code;if(e.code==='net'||e.code==='server'||e.code==='http'){clearTimeout(net.retry);net.retry=setTimeout(netHello,15000);}}
   renderNet();
 }
@@ -2954,39 +2965,57 @@ async function netPoll(){
   finally{net.polling=false;}
   netDrain();
 }
-const netBusy=()=>!$('match').hidden||!$('opening').hidden||!$('cp-intro').hidden||!$('ch-intro').hidden||openBusy||cpBusy;
+const netBusy=()=>defiBusy||!$('match').hidden||!$('opening').hidden||!$('cp-intro').hidden||!$('ch-intro').hidden||openBusy||cpBusy;
 let draining=false;
 async function netDrain(){if(draining||netBusy())return;const m=net.queue.shift();if(!m)return;draining=true;try{await playOnline(m,true);}finally{draining=false;}if(net.queue.length)setTimeout(netDrain,800);}
 async function netAck(id){net.acks.add(id);if(!net.on)return;const ids=[...net.acks];try{await api('ack',{ids});ids.forEach(x=>net.acks.delete(x));}catch(e){}}
 async function netRank(force){
   if(!net.on)return;if(!force&&Date.now()-net.rankTs<20000)return;net.rankTs=Date.now();
-  try{const j=await api('rank');net.rank=j;netApplyMe(j.me);if(!$('tab-match').hidden)renderMatchTab();}catch(e){}
+  try{const j=await api('rank');net.rank=j;netApplyMe(j.me);if(!$('tab-match').hidden){if(mMode==='pvp')renderMatchTab();else renderCampRank();}}catch(e){}
 }
 function renderNet(){
   const el=$('m-net');if(!el)return;el.className='net '+(net.on?'on':net.err?'off':'');
-  $('m-net-txt').textContent=net.on?`En ligne · ton élo et tes matchs sont synchronisés`:net.err==='off'?'Serveur pas encore installé : les matchs entre potes arrivent bientôt.':net.err?'Hors ligne : il faut internet pour jouer contre un pote.':'Connexion au serveur…';
+  $('m-net-txt').textContent=net.on?`En ligne · ton élo, ton équipe et tes défis sont synchronisés`:net.err==='off'?'Serveur pas encore installé.':net.err?'Hors ligne : il faut internet pour défier tes amis.':'Connexion au serveur…';
   $('m-net-retry').hidden=net.on||!net.err||net.err==='off';
-  $('f-sec').hidden=!net.on&&net.err==='off';
+  $('f-sec').hidden=!net.on;
 }
 $('m-net-retry').addEventListener('click',()=>{net.err='';renderNet();netHello();});
-/* amis */
+/* amis : code ami ou recherche par pseudo */
 function fErr(t){const e=$('f-err');e.textContent=t||'';e.hidden=!t;}
-const friendCode=()=>`CVF1|${state.pid}|${encodeURIComponent(state.pseudo)}`;
-$('f-show').addEventListener('click',async()=>{ensureProfile();stopScan();const box=$('f-qrbox');box.hidden=!box.hidden;if(box.hidden)return;fErr('');
-  const q=$('f-qr');q.innerHTML='<p>Création du QR…</p>';
-  try{const lib=await loadLib('qr');const qr=lib(0,'M');qr.addData(friendCode());qr.make();q.innerHTML=`<img alt="Ton QR d'ami" src="${qr.createDataURL(6,2)}">`;}
-  catch(e){q.innerHTML=`<p>QR indisponible sans connexion. Donne plutôt ton code ami : <b>${esc(state.pid)}</b></p>`;}});
-$('f-copy').addEventListener('click',async()=>{try{await navigator.clipboard.writeText(state.pid);toast('Code ami copié : '+state.pid);}catch(e){toast('Ton code ami : '+state.pid);}});
-$('f-code-ok').addEventListener('click',()=>{const v=$('f-code').value.trim().toLowerCase();if(v)gotFriend(v);});
-async function gotFriend(str){
-  str=String(str||'').trim();const parts=str.split('|'),code=parts[0]==='CVF1'?parts[1]:str;
-  stopScan();if(!code)return;
-  if(code===state.pid){fErr("C'est ton propre code ami.");return;}
+$('f-copy').addEventListener('click',async()=>{ensureProfile();try{await navigator.clipboard.writeText(state.pid);toast('Code ami copié : '+state.pid);}catch(e){toast('Ton code ami : '+state.pid);}});
+$('f-form').addEventListener('submit',async e=>{e.preventDefault();const q=$('f-q').value.trim();fErr('');$('f-res').innerHTML='';if(q.length<2){fErr('Tape au moins 2 lettres du pseudo, ou le code ami.');return;}
   if(!net.on){fErr("Pas de connexion au serveur : réessaie avec internet.");return;}
-  fErr('');try{const j=await api('friend',{code});$('f-code').value='';$('f-qrbox').hidden=true;
-    toast(j.already?`${j.friend.pseudo} est déjà ton ami`:`${j.friend.pseudo} est maintenant ton ami !`);if(!j.already){sfx.ding('gold');buzz([40,40,80]);}netRank(true);}
-  catch(e){fErr(e.code==='unknown_friend'?"Ce code ne correspond à aucun joueur connecté. Ton pote doit ouvrir la dernière version de l'appli avec internet.":netMsg(e));}
+  try{const j=await api('search',{q:q.toLowerCase()});
+    if(!j.players.length){fErr("Personne ne correspond. Ton pote doit avoir ouvert la dernière version de l'appli avec internet.");return;}
+    $('f-res').innerHTML=j.players.map(x=>`<div class="rank-row act"><b>·</b><span>${esc(x.pseudo)}</span><small>${x.elo} élo</small><b></b>${x.friend?'<button class="btn rb" type="button" disabled>Ami ✓</button>':`<button class="btn rb" type="button" data-add="${esc(x.pid)}">Ajouter</button>`}</div>`).join('');}
+  catch(err){fErr(netMsg(err));}});
+async function addFriend(code,btn){
+  code=String(code||'').trim().toLowerCase();if(!code)return;
+  if(code===state.pid){fErr("C'est toi !");return;}
+  if(!net.on){toast("Pas de connexion au serveur : réessaie avec internet.");return;}
+  if(btn)btn.disabled=true;
+  try{const j=await api('friend',{code});toast(j.already?`${j.friend.pseudo} est déjà ton ami`:`${j.friend.pseudo} est maintenant ton ami !`);if(!j.already){sfx.ding('gold');buzz([40,40,80]);}
+    if(btn){btn.textContent='Ami ✓';}netRank(true);}
+  catch(e){if(btn)btn.disabled=false;fErr(e.code==='unknown_friend'?"Ce code ne correspond à aucun joueur.":netMsg(e));}
 }
+/* défis : le serveur joue le match avec les équipes enregistrées */
+let teamSent='',teamTimer=null;
+function netTeamSoon(){clearTimeout(teamTimer);teamTimer=setTimeout(netTeam,1200);}
+async function netTeam(){if(!net.on)return;const ids=teamFull()?teamIds():null,k=JSON.stringify(ids);if(k===teamSent)return;
+  try{await api('team',{ids});teamSent=k;}catch(e){if(e.code==='cards')netCards();}}
+let defiBusy=false;
+async function challenge(pid,btn){
+  if(defiBusy)return;if(!teamFull()){toast("Complète ton équipe dans l'onglet Équipe pour défier tes amis.");return;}
+  if(!net.on){toast("Pas de connexion au serveur.");return;}
+  defiBusy=true;if(btn){btn.disabled=true;btn.textContent='…';}ac();
+  try{teamSent='';await netTeam();const j=await api('challenge',{to:pid});if(j.chem)setChem(j.chem);await playOnline(j.match,false);}
+  catch(e){toast(e.code==='no_team'?(e.data&&e.data.who==='mine'?"Ton équipe contient une carte retirée de la liste officielle : refais-la dans l'onglet Équipe.":"Ton ami n'a pas encore d'équipe complète enregistrée."):e.code==='not_friend'?"Vous n'êtes plus amis.":netMsg(e));}
+  finally{defiBusy=false;if(btn){btn.disabled=false;btn.textContent='Défier';}}
+}
+/* complicité reçue du serveur, plus ce qui n'est pas encore envoyé */
+function setChem(srv){const c={...(srv||{})};(state.chemPend||[]).forEach(k=>c[k]=(c[k]||0)+1);state.chem=c;saveState();}
+async function netCamp(){if(!net.on)return;const pend=(state.chemPend||[]).slice();
+  try{const j=await api('camp',{st:state.camp.st,tries:state.camp.tries,duos:pend});state.chemPend=(state.chemPend||[]).slice(pend.length);setChem(j.chem);if(net.me){net.me.cst=j.me.cst;net.me.ctr=j.me.ctr;}}catch(e){}}
 document.querySelectorAll('#r-seg button').forEach(b=>b.addEventListener('click',()=>{rankView=b.dataset.r;try{localStorage.setItem('cartes-volley-rank',rankView);}catch(e){}renderMatchTab();}));
 function rankRows(){
   const R=net.rank,me=state.pid;
@@ -2994,131 +3023,54 @@ function rankRows(){
     const w=state.matches.filter(m=>m.win).length,l=state.matches.length-w;
     return{rows:[{pid:me,pseudo:state.pseudo,elo:state.elo,w,l}].concat(Object.entries(state.opps).map(([pid,o])=>({pid,pseudo:o.n,elo:o.e,w:o.w,l:o.l}))).sort((a,b)=>b.elo-a.elo),note:'Hors ligne : classement de ton dernier passage.'};}
   if(rankView==='friends'){const rows=[R.me].concat(R.friends).sort((a,b)=>b.elo-a.elo||b.w-a.w);
-    return{rows,note:R.friends.length?'':'Ajoute tes potes avec leur QR d\'ami pour les voir ici. Un match joué ensemble vous rend amis aussi.'};}
+    return{rows,note:R.friends.length?'':'Ajoute tes potes avec leur code ami ou leur pseudo pour les voir ici et les défier.'};}
   const rows=R.all.slice();if(!rows.some(x=>x.pid===me))rows.push({...R.me,pos:R.pos});
   return{rows,note:`${R.total} joueur${R.total>1?'s':''} classé${R.total>1?'s':''}`};
 }
 
-/* =================== Match : profil, QR, élo =================== */
+/* =================== Match : profil, élo, défis =================== */
 const SLOT_ORDER=['R4a','CEN1','PTU','R4b','CEN2','PAS','LIB'];
-const LIBS={qr:['lib/qrcode.js','https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.js','qrcode'],scan:['lib/jsQR.js','https://cdn.jsdelivr.net/npm/jsqr@1.4.0/dist/jsQR.js','jsQR']};
-function loadLib(k){return new Promise((res,rej)=>{const[loc,cdn,g]=LIBS[k];if(window[g])return res(window[g]);
-  const tryU=(u,next)=>{const sc=document.createElement('script');sc.src=u;sc.onload=()=>window[g]?res(window[g]):next();sc.onerror=next;document.head.appendChild(sc);};
-  tryU(loc,()=>tryU(cdn,()=>rej(new Error('lib'))));});}
 const rid=n=>{let s2='';const a='abcdefghijkmnopqrstuvwxyz23456789';const r2=crypto.getRandomValues(new Uint8Array(n));r2.forEach(x=>s2+=a[x%a.length]);return s2;};
 function ensureProfile(){let ch=false;if(!state.pid){state.pid=rid(10);ch=true;}if(!state.key){state.key=rid(24);ch=true;}if(!state.pseudo){state.pseudo='Joueur '+Math.floor(1000+Math.random()*9000);ch=true;}if(ch)saveState();}
 const RANKS=[[0,'Débutant'],[450,'Amateur'],[500,'Régional'],[560,'National'],[620,'Pro'],[700,'Élite'],[800,'Légende']];
 const rankName=e=>RANKS.filter(r2=>e>=r2[0]).pop()[1];
 const eloExp=(a,b)=>1/(1+Math.pow(10,(b-a)/400));
 const ELO_K=32;
-const ENGINE_VER=8; // à augmenter à chaque changement du moteur : deux versions différentes ne donnent pas le même match
-let myCode=null,myNonce=null,oppData=null,oppRaw=null;
-function teamPayload(nonce){
-  const cards=SLOT_ORDER.map(k=>{const sl=TEAM_SLOTS.find(x=>x.k===k),c=teamCard(sl);return[encodeURIComponent(c.name),c.s.ser,c.s.rec,c.s.pas,c.s.att,c.s.blo,c.s.def,c.poste].join(',');});
-  return['CV1',state.pid,encodeURIComponent(state.pseudo),state.elo,nonce,cards.join(';'),'m'+ENGINE_VER].join('|');
-}
-function parsePayload(str){
-  try{const parts=String(str||'').trim().split('|');if(parts[0]!=='CV1')return null;
-    if(parts.length===6)return{ver:0};if(parts.length!==7)return null;
-    const ver=parseInt(String(parts[6]).slice(1),10)||0;if(ver!==ENGINE_VER)return{ver};
-    const[,pid,ps,elo,nonce,cs]=parts;const cards=cs.split(';').map(c=>{const f=c.split(',');if(f.length<8)return null;
-      const s2={};['ser','rec','pas','att','blo','def'].forEach((k,i)=>s2[k]=Math.max(0,Math.min(100,Math.round(+f[i+1]||0))));
-      return{name:Array.from(decodeURIComponent(f[0])).slice(0,18).join('')||'?',s:s2,poste:POSTES.some(q=>q.v===f[7])?f[7]:'POL'};});
-    if(cards.length!==7||cards.some(c=>!c)||!pid||!nonce)return null;
-    return{pid,pseudo:Array.from(decodeURIComponent(ps)).slice(0,16).join('')||'Pote',elo:Math.round(+elo)||ELO_START,nonce,cards,ver};
-  }catch(e){return null;}
-}
+const ENGINE_VER=9; // à augmenter à chaque changement du moteur : le serveur et les téléphones doivent avoir le même
+/* complicité : le passeur (place PAS) et chaque attaquant (places 1 à 5) ; +1 en passe tous les 5 matchs ensemble, jusqu'à +5 */
+const CHEM_STEP=5,CHEM_MAX=5;
+const teamIds=()=>SLOT_ORDER.map(k=>{const c=teamCard(TEAM_SLOTS.find(x=>x.k===k));return c?c.id:null;});
+const duosOf=ids=>ids.slice(0,5).map(a=>ids[5]+'>'+a);
+const chemArr=ids=>ids.map((id,i)=>i<5?Math.min(CHEM_MAX,Math.floor(((state.chem||{})[ids[5]+'>'+id]||0)/CHEM_STEP)):0);
+// mon équipe, telle qu'elle joue (campagne et défis)
+function myTeam(){if(!teamFull())return null;const ids=teamIds();return{ids,chem:chemArr(ids),cards:ids.map(id=>{const p=players.find(x=>x.id===id);return{id,name:p.name,s:{...p.s},poste:p.poste};})};}
 function payloadTeamScore(d){return Math.round(d.cards.reduce((t,c,i)=>{const sl=TEAM_SLOTS.find(x=>x.k===SLOT_ORDER[i]);return t+Math.round(Object.entries(POSTE_W[sl.p]).reduce((u,[k,v])=>u+c.s[k]*v,0));},0)/7);}
 function renderMatchTab(){
   ensureProfile();setMMode(mMode);
   if(document.activeElement!==$('m-pseudo'))$('m-pseudo').value=state.pseudo;
   $('m-elo').textContent=state.elo;$('m-rankname').textContent=rankName(state.elo);
-  const w=state.matches.filter(m=>m.win).length,l=state.matches.length-w;
-  $('m-record').textContent=state.matches.length?`${w} victoire${w>1?'s':''} · ${l} défaite${l>1?'s':''}`:'Tout le monde commence à '+ELO_START+' d\'élo. Gagner contre plus fort que toi rapporte plus.';
-  const ok=teamFull();$('m-noteam').hidden=ok;$('m-prep').hidden=!ok;if(!ok){$('m-vs').hidden=true;stopScan();}
+  const rk=state.matches.filter(m=>!m.friendly),w=rk.filter(m=>m.win).length,l=rk.length-w;
+  $('m-record').textContent=rk.length?`${w} victoire${w>1?'s':''} · ${l} défaite${l>1?'s':''}`:'Tout le monde commence à '+ELO_START+' d\'élo. Gagner contre plus fort que toi rapporte plus.';
+  $('m-noteam').hidden=teamFull();$('f-mycode').textContent=state.pid;
   // classement : amis ou général, depuis le serveur
   renderNet();document.querySelectorAll('#r-seg button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.r===rankView));$('r-seg').hidden=!net.rank;
   const RR=rankRows();
+  const frIds=new Set(net.rank?net.rank.friends.map(f=>f.pid):[]);
   $('m-rank').innerHTML=RR.rows.map((x,i)=>{const meRow=x.pid===state.pid,pos=x.pos||i+1,sep=x.pos&&x.pos>RR.rows.length?'<div class="rank-sep">…</div>':'';
-    return`${sep}<div class="rank-row${meRow?' me':''}${pos<=3?' top':''}"><b>${pos}</b><span>${esc(meRow?state.pseudo:x.pseudo)}${meRow?' (toi)':''}</span><small>${x.w}V ${x.l}D</small><b>${x.elo}</b></div>`;}).join('')+
+    const act=meRow||!net.on?'':frIds.has(x.pid)?`<button class="btn rb def" type="button" data-defi="${esc(x.pid)}"${x.team?'':' disabled title="Pas encore d\'équipe enregistrée"'}>Défier</button>`:`<button class="btn rb" type="button" data-add="${esc(x.pid)}">Ajouter</button>`;
+    return`${sep}<div class="rank-row${meRow?' me':''}${pos<=3?' top':''}${act?' act':''}"><b>${pos}</b><span>${esc(meRow?state.pseudo:x.pseudo)}${meRow?' (toi)':''}${!meRow&&frIds.has(x.pid)&&!x.team?' <em>sans équipe</em>':''}</span><small>${x.w}V ${x.l}D</small><b>${x.elo}</b>${act}</div>`;}).join('')+
     (RR.note?`<p class="note" style="margin:4px 0 0">${RR.note}</p>`:'');
-  if(mMode==='pvp')netRank();
+  netRank();
   const fmt=new Intl.DateTimeFormat('fr-FR',{day:'numeric',month:'short'});
   $('m-hist-sec').hidden=!state.matches.length;
-  $('m-hist').innerHTML=state.matches.slice(0,10).map((m,i)=>`<div class="mh-row${m.sh?' has':''}" data-i="${i}"${m.sh?' role="button" tabindex="0" aria-label="Voir la feuille de match"':''}><i class="${m.win?'w':'l'}">${m.win?'V':'D'}</i><span>contre ${esc(m.opp)}</span><b>${m.my}-${m.op}</b><small>${m.d>=0?'+':''}${m.d} · ${fmt.format(new Date(m.ts))}</small></div>`).join('');
+  $('m-hist').innerHTML=state.matches.slice(0,10).map((m,i)=>`<div class="mh-row${m.sh?' has':''}" data-i="${i}"${m.sh?' role="button" tabindex="0" aria-label="Voir la feuille de match"':''}><i class="${m.win?'w':'l'}">${m.win?'V':'D'}</i><span>contre ${esc(m.opp)}</span><b>${m.my}-${m.op}</b><small${m.friendly?' class="am"':''}>${m.friendly?'amical':(m.d>=0?'+':'')+m.d} · ${fmt.format(new Date(m.ts))}</small></div>`).join('');
 }
 $('m-hist').addEventListener('click',e=>{const r=e.target.closest('.mh-row.has');if(r)openSheet(state.matches[+r.dataset.i]);});
-$('m-pseudo').addEventListener('change',async()=>{const v=cleanPseudo($('m-pseudo').value);if(!v){$('m-pseudo').value=state.pseudo;return;}if(v===state.pseudo){$('m-pseudo').value=v;return;}state.pseudo=v;$('m-pseudo').value=v;await saveState();renderMatchTab();netSyncPseudo();if(myNonce&&$('m-played').hidden){myCode=null;showMyQR();}});
+$('m-pseudo').addEventListener('change',async()=>{const v=cleanPseudo($('m-pseudo').value);if(!v){$('m-pseudo').value=state.pseudo;return;}if(v===state.pseudo){$('m-pseudo').value=v;return;}state.pseudo=v;$('m-pseudo').value=v;await saveState();renderMatchTab();netSyncPseudo();});
 $('m-pseudo').setAttribute('maxlength','40'); // la vraie limite (16 caractères, emojis compris) est appliquée à la validation
 $('m-pseudo').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();e.target.blur();}});
-function mErr(t){const e=$('m-err');e.textContent=t||'';e.hidden=!t;}
-async function showMyQR(){
-  if(!myCode)myCode=teamPayload(myNonce);const box=$('m-qr');box.innerHTML='<p>Création du QR…</p>';
-  try{const q=await loadLib('qr');try{q.stringToBytes=q.stringToBytesFuncs&&q.stringToBytesFuncs['UTF-8']||q.stringToBytes;}catch(e){}
-    const qr=q(0,'L');qr.addData(myCode);qr.make();box.innerHTML=`<img alt="QR code de ton équipe" src="${qr.createDataURL(6,2)}">`;}
-  catch(e){box.innerHTML="<p>QR indisponible sans connexion. Utilise « Copier mon code » et envoie-le à ton pote.</p>";}
-}
-$('m-start').addEventListener('click',()=>{ensureProfile();myNonce=rid(8);myCode=null;oppData=null;$('m-vs').hidden=true;$('m-qrbox').hidden=false;$('m-start').hidden=true;mErr('');showMyQR();});
-$('m-new').addEventListener('click',()=>{myNonce=rid(8);myCode=null;$('m-played').hidden=true;oppData=null;$('m-vs').hidden=true;mErr('');showMyQR();});
-$('m-copy').addEventListener('click',async()=>{if(!myCode)return;try{await navigator.clipboard.writeText(myCode);toast('Code copié : envoie-le à ton pote');}
-  catch(e){const t=$('m-code');t.closest('details').open=true;t.value=myCode;t.select();toast('Code sélectionné : copie-le à la main');}});
-$('m-code-ok').addEventListener('click',()=>onCode($('m-code').value));
-function gotCode(str){
-  if(!$('m-played').hidden){mErr('Tu as déjà joué avec ce QR. Touche « Nouveau QR » pour un autre match.');return false;}
-  const d=parsePayload(str);
-  if(!d){mErr("Ce code n'est pas un QR Cartes Volley valide.");return false;}
-  // versions différentes = matchs différents : on bloque
-  if(d.ver!==ENGINE_VER){mErr(d.ver<ENGINE_VER?"Ton pote a une ancienne version de l'appli : il doit la mettre à jour avant de jouer, sinon vous n'aurez pas le même match.":"Ton pote a une version plus récente de l'appli : mets la tienne à jour avant de jouer, sinon vous n'aurez pas le même match.");buzz(120);return false;}
-  if(d.nonce===myNonce||d.pid===state.pid){mErr("C'est ton propre QR : scanne celui de ton pote.");return false;}
-  // un QR ne sert qu'une fois : impossible de rejouer un ancien QR pour gagner de l'élo
-  if(state.played.includes('n:'+d.nonce)){mErr('Ce QR a déjà servi pour un match. Demande à ton pote d\'en préparer un nouveau.');return false;}
-  const mid=matchId(myNonce,d.nonce);if(state.played.includes(mid)){mErr('Ce match a déjà été joué. Préparez chacun un nouveau QR.');return false;}
-  mErr('');oppData=d;oppRaw=String(str).trim();stopScan();renderVS();sfx.ding('silver');buzz(60);return true;
-}
-const matchId=(a,b)=>String(hashStr([a,b].sort().join('|')));
-function renderVS(){
-  const d=oppData,me=parsePayload(myCode);if(!d||!me)return;
-  const myS=payloadTeamScore(me),opS=payloadTeamScore(d),E=eloExp(state.elo,d.elo),win=Math.round(ELO_K*(1-E)),lose=Math.round(ELO_K*E);
-  const vsCards=dd=>dd.cards.map(c=>miniHTML({...c,id:'x',kind:'joueur',photo:null})).join('');
-  const el=$('m-vs');el.hidden=false;
-  el.innerHTML=`<span class="label">Prêts à jouer</span>
-    <div class="vs-grid"><div><b>${esc(state.pseudo)}</b><small>${state.elo} élo · équipe ${myS}</small></div><span class="vs">VS</span><div><b>${esc(d.pseudo)}</b><small>${d.elo} élo · équipe ${opS}</small></div></div>
-    <div class="vs-teams">${vsCards(me)}</div><div class="vs-teams">${vsCards(d)}</div>
-    <p class="vs-stake">Victoire : <b>+${win}</b> élo · Défaite : <b>−${lose}</b> élo</p>
-    <p class="note" style="margin:0;text-align:center">Le match se lancera aussi tout seul sur le téléphone de ${esc(d.pseudo)}.</p>
-    <button class="btn primary" type="button" id="m-go">Lancer le match</button>`;
-  $('m-go').addEventListener('click',launchMatch);el.scrollIntoView({block:'center',behavior:'smooth'});
-}
-/* scan : caméra en direct, ou photo */
-let scanStream=null,scanTimer=null;
-function stopScan(){clearInterval(scanTimer);scanTimer=null;if(scanStream){scanStream.getTracks().forEach(t=>t.stop());scanStream=null;}$('m-scanbox').hidden=true;}
-$('m-scan-stop').addEventListener('click',stopScan);
-const onCode=str=>/^CVF1\|/.test(String(str||'').trim())?gotFriend(str):gotCode(str);
-let scanFor=null;
-async function startScan(host,errFn,onData){
-  stopScan();errFn('');let jsQR_;try{jsQR_=await loadLib('scan');}catch(e){errFn('Le lecteur de QR ne se charge pas sans connexion. Entre le code à la main.');return;}
-  try{scanStream=await navigator.mediaDevices.getUserMedia({video:{facingMode:'environment'},audio:false});}
-  catch(e){errFn("La caméra n'est pas accessible ici. Prends une photo du QR, ou entre le code à la main.");return;}
-  const box=$('m-scanbox');host.appendChild(box);scanFor=onData;
-  const v=$('m-video');v.srcObject=scanStream;box.hidden=false;try{await v.play();}catch(e){}
-  const cv=document.createElement('canvas'),cx=cv.getContext('2d',{willReadFrequently:true});
-  scanTimer=setInterval(()=>{if(!v.videoWidth)return;const k=Math.min(1,640/Math.max(v.videoWidth,v.videoHeight));cv.width=v.videoWidth*k;cv.height=v.videoHeight*k;
-    cx.drawImage(v,0,0,cv.width,cv.height);const im=cx.getImageData(0,0,cv.width,cv.height),res=jsQR_(im.data,cv.width,cv.height,{inversionAttempts:'dontInvert'});
-    if(res&&res.data&&/^CVF?1\|/.test(res.data))scanFor(res.data);},220);
-}
-$('m-scan').addEventListener('click',()=>startScan($('m-scanslot'),mErr,onCode));
-$('f-scan').addEventListener('click',()=>{$('f-qrbox').hidden=true;startScan($('f-scanhost'),fErr,onCode);});
-$('m-photo').addEventListener('change',async e=>{
-  const f=e.target.files[0];e.target.value='';if(!f)return;mErr('');
-  let jsQR_;try{jsQR_=await loadLib('scan');}catch(err){mErr('Le lecteur de QR ne se charge pas sans connexion. Colle plutôt le code de ton pote.');return;}
-  const url=URL.createObjectURL(f);try{const im=await loadImg(url);
-    for(const size of [1000,700,1400,500]){const k=Math.min(1,size/Math.max(im.width,im.height)),cv=document.createElement('canvas');cv.width=Math.round(im.width*k);cv.height=Math.round(im.height*k);
-      const cx=cv.getContext('2d');cx.drawImage(im,0,0,cv.width,cv.height);const d=cx.getImageData(0,0,cv.width,cv.height),res=jsQR_(d.data,cv.width,cv.height);
-      if(res&&res.data){onCode(res.data);return;}}
-    mErr("Aucun QR trouvé sur la photo. Recommence en cadrant bien le QR.");}catch(err){mErr("Cette photo n'a pas pu être lue.");}finally{URL.revokeObjectURL(url);}
-});
-
-
+$('m-rank').addEventListener('click',e=>{const d=e.target.closest('[data-defi]'),a=e.target.closest('[data-add]');if(d&&!d.disabled)challenge(d.dataset.defi,d);else if(a)addFriend(a.dataset.add,a);});
+$('f-res').addEventListener('click',e=>{const a=e.target.closest('[data-add]'),d=e.target.closest('[data-defi]');if(a)addFriend(a.dataset.add,a);else if(d&&!d.disabled)challenge(d.dataset.defi,d);});
 /* =================== Feuille de match =================== */
 // colonnes : points, aces, attaques gagnantes, contres gagnants, défenses, fautes
 const SH_COLS=[['PTS','Points'],['ACE','Aces'],['ATT','Attaques gagnantes'],['CTR','Contres gagnants'],['DÉF','Défenses'],['FT','Fautes']];
@@ -3275,13 +3227,13 @@ const teamNote=T=>T.cards.reduce((t,c,i)=>{const sl=TEAM_SLOTS.find(x=>x.k===SLO
 const teamAvg=T=>payloadTeamScore(T);
 const cpChCache={};
 function cpChance(me,n){
-  const key=n+'|'+me.cards.map(c=>SKILLS.map(x=>c.s[x.k]).join(',')).join(';');if(cpChCache[key]!=null)return cpChCache[key];
+  const key=n+'|'+me.cards.map(c=>SKILLS.map(x=>c.s[x.k]).join(',')).join(';')+'|'+(me.chem||[]).join('');if(cpChCache[key]!=null)return cpChCache[key];
   const op=cpTeam(n),f=cpTier(n).fmt;let w=0;const N=100;
   for(let i=0;i<N;i++)if(simulateMatch(me,op,hashStr('prono|'+n+'|'+i),f).winner===0)w++;
   return cpChCache[key]=Math.round(w/N*100);
 }
-function myPayloadTeam(){try{ensureProfile();return teamFull()?parsePayload(teamPayload('campagne')):null;}catch(e){return null;}}
-function myDispCards(me){return SLOT_ORDER.map((k,i)=>{const c=teamCard(TEAM_SLOTS.find(x=>x.k===k));return c&&c.name===me.cards[i].name?c:{...me.cards[i],id:'m'+i,kind:'joueur',photo:null};});}
+// cartes à afficher : la vraie carte (avec sa photo) si elle est dans la liste, sinon une carte sans photo
+const dispCards=T=>T.cards.map((c,i)=>players.find(p=>p.id===c.id)||{...c,id:'x'+i,kind:'joueur',photo:null});
 
 /* ---------- état du jour ---------- */
 let cpStatus='checking',cpTimer=null,cpBusy=false,mMode='camp';
@@ -3316,7 +3268,7 @@ function renderCamp(){
   let poster='';
   if(done){poster=`<div class="cp-champ">${TROPHY}<b>Qualifié pour les Régionales</b><p>30 étapes, ${c.tries} tentative${c.tries>1?'s':''}. Ton équipe est entrée dans la légende.</p></div>`;}
   else{
-    const op=cpTeam(st),me=myPayloadTeam(),myLv=me?teamAvg(me):null,ch=me?cpChance(me,st):null,rew=CP_REW[st],ko=rd.ko;
+    const op=cpTeam(st),me=myTeam(),myLv=me?teamAvg(me):null,ch=me?cpChance(me,st):null,rew=CP_REW[st],ko=rd.ko;
     const prev=c.res[st],tryN=prev&&!prev.w?prev.tries+1:1;
     let btn='',note='';
     if(!me){btn=`<button class="btn primary big" type="button" disabled>Jouer le match</button>`;note=`Complète ton équipe (7 cartes) dans l'onglet <b>Équipe</b> pour jouer.`;}
@@ -3344,7 +3296,9 @@ function renderCamp(){
       <div class="cp-th"><div><b>${esc(t.n)}</b><small>${state2==='lock'?'🔒 ':''}${esc(t.lvl)} · niveau ${t.lo} à ${t.hi} · ${t.fmt.sets===1?'1 set':t.fmt.sets+' sets gagnants'}</small></div>${state2==='won'?`<span class="cp-tbadge">${TROPHY}</span>`:''}</div>
       <div class="cp-nodes">${nodes.join('')}</div></div>`;}).join('');
   const last=c.last?`<div class="cp-last"><span>Dernier match · étape ${c.last.st} : <b class="${c.last.win?'w':'l'}">${c.last.win?'victoire':'défaite'}</b> ${c.last.sh.sc.join('-')}</span><button class="btn" type="button" id="cp-sheet">Feuille de match</button></div>`:'';
-  root.innerHTML=hero+poster+last+`<div class="section cp-road"><span class="label">Les 30 étapes</span>${road}</div>`;
+  root.innerHTML=hero+poster+last+`<div class="section" id="cp-rank-sec"><div class="rank-head"><span class="label">Classement de la campagne</span><div class="mseg small" id="cr-seg" role="group" aria-label="Classement de la campagne"><button type="button" data-r="friends">Amis</button><button type="button" data-r="all">Général</button></div></div><div class="rank" id="cp-rank"></div></div>`+`<div class="section cp-road"><span class="label">Les 30 étapes</span>${road}</div>`;
+  document.querySelectorAll('#cr-seg button').forEach(b=>b.addEventListener('click',()=>{campView=b.dataset.r;try{localStorage.setItem('cartes-volley-rank-camp',campView);}catch(e){}renderCampRank();}));
+  renderCampRank();if(net.on)netRank();
   const pb=$('cp-play');if(pb)pb.addEventListener('click',cpPlay);
   const rb=$('cp-retry');if(rb)rb.addEventListener('click',cpRefresh);
   const sb=$('cp-sheet');if(sb)sb.addEventListener('click',()=>openSheet(state.camp.last));
@@ -3354,10 +3308,25 @@ function renderCamp(){
       l.innerHTML=`Prochaine tentative dans <b>${z(h)}:${z(m)}:${z(s2)}</b>`;};tick();cpTimer=setInterval(tick,1000);}
 }
 
+/* ---------- classement de la campagne : plus haute étape, puis le moins de tentatives ---------- */
+let campView='friends';try{const v=localStorage.getItem('cartes-volley-rank-camp');if(v==='all'||v==='friends')campView=v;}catch(e){}
+function renderCampRank(){
+  const box=$('cp-rank');if(!box)return;const R=net.rank,me=state.pid,c=state.camp;
+  document.querySelectorAll('#cr-seg button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.r===campView));$('cr-seg').hidden=!R;
+  const mine={pid:me,pseudo:state.pseudo,cst:c.st,ctr:c.tries};
+  let rows,note='';
+  if(!R){rows=[mine];note=net.on?'Chargement…':'Hors ligne : le classement de la campagne s\'affiche avec internet.';}
+  else if(campView==='friends'){rows=[mine].concat(R.friends);note=R.friends.length?'':'Ajoute des amis (Match → Contre un pote) pour comparer vos campagnes.';}
+  else{rows=R.campAll.map(x=>x.pid===me?mine:x);if(!rows.some(x=>x.pid===me))rows.push({...mine,pos:R.cpos});note=`${R.ctotal} joueur${R.ctotal>1?'s':''} en campagne`;}
+  rows.sort((a,b)=>(a.pos||0)-(b.pos||0)||b.cst-a.cst||a.ctr-b.ctr);
+  const lab=x=>x.cst>CP_N?'Qualifié !':`Étape ${x.cst}`,tierOf=x=>cpTier(Math.min(CP_N,x.cst));
+  box.innerHTML=rows.map((x,i)=>{const meRow=x.pid===me,pos=x.pos||i+1,sep=x.pos&&x.pos>rows.length?'<div class="rank-sep">…</div>':'';
+    return`${sep}<div class="rank-row${meRow?' me':''}${pos<=3?' top':''}"><b>${pos}</b><span>${esc(meRow?state.pseudo:x.pseudo)}${meRow?' (toi)':''}</span><small style="color:${tierOf(x).col}">${lab(x)}</small><b>${x.ctr} essai${x.ctr>1?'s':''}</b></div>`;}).join('')+(note?`<p class="note" style="margin:4px 0 0">${note}</p>`:'');
+}
 /* ---------- jouer ---------- */
 async function cpPlay(){
   if(cpBusy)return;const c=state.camp;if(c.st>CP_N)return;
-  const me=myPayloadTeam();if(!me){toast('Complète ton équipe dans l\'onglet Équipe');return;}
+  const me=myTeam();if(!me){toast('Complète ton équipe dans l\'onglet Équipe');return;}
   cpBusy=true;let now=Date.now();
   if(!isAdmin){const t=await trustedNow();
     if(t==null){cpStatus='offline';renderCamp();cpBusy=false;return;}
@@ -3372,11 +3341,12 @@ async function cpPlay(){
   c.res[st]={w:win?1:0,sc:sim.score.slice(),sets:sim.sets,tries:(prev&&prev.tries||0)+1};
   if(rew)state.bonus[rew[0]]+=rew[1];
   if(win)c.st=st+1;
+  duosOf(me.ids).forEach(k=>{state.chem[k]=(state.chem[k]||0)+1;state.chemPend.push(k);}); // complicité gagnée en campagne
   c.last={ts:now,st,win,sh:sheetFrom(sim,me,op,[state.pseudo,op.name],0)};
-  const na=checkAch(false);await saveState();cpStatus=isAdmin?'ready':'locked';
+  const na=checkAch(false);await saveState();cpStatus=isAdmin?'ready':'locked';netCamp();
   cpBusy=false;
   await cpIntro(st,me,op,chance);
-  await playMatch(sim,[myDispCards(me),op.cards.map((x,i)=>({...x,id:'o'+i,kind:'joueur',photo:null}))],[state.pseudo,op.name],0,
+  await playMatch(sim,[dispCards(me),op.cards.map((x,i)=>({...x,id:'o'+i,kind:'joueur',photo:null}))],[state.pseudo,op.name],0,
     {fmt:T.fmt,title:`${rd.r} · ${T.n}`,tier:T.id,camp:{st,win,rew,rd,T,op,next:win&&st<CP_N?st+1:null}});
   if(na.length)showAch(na);
   renderCamp();
@@ -3456,46 +3426,33 @@ function cpEnd(M,sim,res){
 let mRun=0,mSpeed=1,mSkip=false,mFF=false;
 const MPOS={1:[7.2,15.3],2:[7.2,11.3],3:[4.5,11.3],4:[1.8,11.3],5:[1.8,15.3],6:[4.5,15.3]};
 const SETTER_SPOT=[6.3,10.3],SERVE_SPOT=[7.4,18.8],BENCH=[9.85,13.6];
-async function launchMatch(){
-  if(!oppData||!oppRaw)return;ac();
-  if(!myCode){if(!myNonce)myNonce=rid(8);myCode=teamPayload(myNonce);}
-  const go=$('m-go');go.disabled=true;go.textContent='Connexion au serveur…';mErr('');
-  let j;try{j=await api('match',{mine:myCode,theirs:oppRaw,pseudo:state.pseudo});}
-  catch(e){go.disabled=false;go.textContent='Lancer le match';mErr(netMsg(e,oppData.pseudo));$('m-vs').scrollIntoView({block:'center',behavior:'smooth'});return;}
-  oppData=null;oppRaw=null;$('m-vs').hidden=true;
-  await playOnline(j.match,false);
-}
-// rejoue un match fixé par le serveur (lancé par moi ou par un pote) : même graine, même résultat sur les deux téléphones
+// rejoue un défi joué par le serveur : même moteur, mêmes équipes, même graine → même match sur les deux téléphones
 async function playOnline(m,incoming){
-  const A=parsePayload(m.pa),B=parsePayload(m.pb);
-  if(!A||!B||!A.cards||!B.cards){netAck(m.id);return;}
-  const myIdx=A.pid===state.pid?0:1,me=myIdx?B:A,op=myIdx?A:B,e=m.elo&&m.elo[state.pid];
-  const sim=simulateMatch(A,B,hashStr(m.id+'|cartes-volley')),win=m.winner===myIdx;
-  if(m.names&&m.names[op.pid])op.pseudo=m.names[op.pid]; // pseudo à jour côté serveur
+  if(!m||!m.ta||!m.tb){if(m)netAck(m.id);return;}
+  const A=m.ta,B=m.tb,myIdx=A.pid===state.pid?0:1,me=myIdx?B:A,op=myIdx?A:B,e=m.elo&&m.elo[state.pid];
+  if(m.names&&m.names[op.pid])op.pseudo=m.names[op.pid];
+  const sameVer=m.ver===ENGINE_VER,sim=sameVer?simulateMatch(A,B,m.seed):null,win=m.winner===myIdx;
   const names=myIdx===0?[state.pseudo,op.pseudo]:[op.pseudo,state.pseudo];
   let na=[];
-  if(!state.played.includes(m.id)&&e){
-    state.played.push(m.id,'n:'+A.nonce,'n:'+B.nonce);
-    state.elo=e.after;
-    const prev=state.opps[op.pid]||{w:0,l:0};state.opps[op.pid]={n:op.pseudo,e:m.elo[op.pid]?m.elo[op.pid].after:op.elo,w:prev.w+(win?1:0),l:prev.l+(win?0:1)};
-    state.matches.unshift({ts:m.ts||Date.now(),opp:op.pseudo,my:sim.score[myIdx],op:sim.score[1-myIdx],win,d:e.d,before:e.before,sh:sheetFrom(sim,A,B,names,myIdx),id:m.id,by:m.by});
+  if(!state.played.includes(m.id)){
+    state.played.push(m.id);if(e)state.elo=e.after;
+    if(e){const prev=state.opps[op.pid]||{w:0,l:0};state.opps[op.pid]={n:op.pseudo,e:m.elo[op.pid]?m.elo[op.pid].after:0,w:prev.w+(win?1:0),l:prev.l+(win?0:1)};}
+    state.matches.unshift({ts:m.ts||Date.now(),opp:op.pseudo,my:m.score[myIdx],op:m.score[1-myIdx],win,d:e?e.d:0,before:e?e.before:state.elo,friendly:!m.ranked,sh:sim?sheetFrom(sim,A,B,names,myIdx):undefined,id:m.id,by:m.by});
     state.matches=state.matches.slice(0,40);state.matches.forEach((x,i)=>{if(i>=15)delete x.sh;});
     na=checkAch(false);await saveState();
   }
-  // mon QR vient de servir : il ne peut plus être utilisé
-  if(myNonce&&(A.nonce===myNonce||B.nonce===myNonce)){myNonce=null;myCode=null;$('m-qrbox').hidden=true;$('m-start').hidden=false;$('m-played').hidden=true;}
   netAck(m.id);renderMatchTab();
-  if(incoming)await challengeIntro(op.pseudo,e);
-  const myCards=myDispCards(me),opCards=op.cards.map((c,i)=>({...c,id:'o'+i,kind:'joueur',photo:null}));
-  await playMatch(sim,myIdx===0?[myCards,opCards]:[opCards,myCards],names,myIdx,{win,d:e?e.d:0,before:e?e.before:state.elo,after:e?e.after:state.elo,ts:m.ts,online:true,incoming,opName:op.pseudo});
+  if(!sim){toast(`Match contre ${op.pseudo} : ${win?'victoire':'défaite'} ${m.score[myIdx]}-${m.score[1-myIdx]}. Mets l'appli à jour pour voir les prochains matchs.`);return;}
+  if(incoming)await challengeIntro(op.pseudo,m.ranked);
+  await playMatch(sim,myIdx===0?[dispCards(A),dispCards(B)]:[dispCards(A),dispCards(B)],names,myIdx,{win,d:e?e.d:0,before:e?e.before:state.elo,after:e?e.after:state.elo,ts:m.ts,online:true,incoming,opName:op.pseudo,friendly:!m.ranked});
   if(na.length)showAch(na);
   netRank(true);
 }
 // petite intro quand un pote lance un match contre moi
-function challengeIntro(name,e){return new Promise(res=>{const ov=$('ch-intro'),st=$('chi-stage');ov.style.setProperty('--c','#FF7A2F');ov.hidden=false;document.body.style.overflow='hidden';
+function challengeIntro(name,ranked){return new Promise(res=>{const ov=$('ch-intro'),st=$('chi-stage');ov.style.setProperty('--c','#FF7A2F');ov.hidden=false;document.body.style.overflow='hidden';
   let done=false;const end=()=>{if(done)return;done=true;ov.hidden=true;st.innerHTML='';document.body.style.overflow='';res();};ov.onclick=end;
   ac();sfx.whoosh();buzz([60,40,60]);
-  st.innerHTML=`<small class="cpi-venue">Défi reçu</small><b class="cpi-tier">${esc(name)}</b><span class="cpi-step">a scanné ton QR : le match commence !</span>`;
+  st.innerHTML=`<small class="cpi-venue">${ranked?'Défi classé':'Match amical'}</small><b class="cpi-tier">${esc(name)}</b><span class="cpi-step">t'a défié : le match commence !</span>`;
   setTimeout(()=>{if(done)return;sfx.boom();st.innerHTML=`<b class="cpi-go">Coup d'envoi !</b>`;tone('sine',2850,2950,.28,.09);setTimeout(end,900);},2000);});}
 function closeMatch(){mRun++;mSkip=true;$('match').hidden=true;document.body.style.overflow='';setTimeout(()=>{if(typeof netDrain==='function')netDrain();},400);}
 $('mt-close').addEventListener('click',closeMatch);
@@ -3623,7 +3580,7 @@ async function playMatch(sim,disp,names,myIdx,res){
   com(res.win?`Victoire de <b>${esc(names[myIdx])}</b> !`:`Victoire de <b>${esc(names[1-myIdx])}</b>`);
   const end=document.createElement('div');end.className='mt-end';
   end.innerHTML=`<div><b class="${res.win?'w':'l'}">${res.win?'Victoire !':'Défaite'}</b><span class="sc">${sim.score[myIdx]} – ${sim.score[1-myIdx]}</span>
-    <span class="el">Élo ${res.before} → ${res.after} <i class="${res.d>=0?'':'n'}">${res.d>=0?'+':''}${res.d}</i></span><span class="note">${rankName(res.after)}</span><span class="note" style="max-width:30ch">${res.online?(res.incoming?`Match lancé par ${esc(res.opName)}. Ton élo est à jour en ligne.`:`Le match s'est aussi lancé sur le téléphone de ${esc(res.opName)}. Élo mis à jour en ligne.`):''}</span>
+    ${res.friendly?`<span class="el">Match amical</span><span class="note" style="max-width:30ch">Vous avez déjà joué un match classé aujourd'hui : celui-ci ne change pas l'élo.</span>`:`<span class="el">Élo ${res.before} → ${res.after} <i class="${res.d>=0?'':'n'}">${res.d>=0?'+':''}${res.d}</i></span><span class="note">${rankName(res.after)}</span>`}<span class="note" style="max-width:30ch">${res.online?(res.incoming?`Défi lancé par ${esc(res.opName)}.`:`${esc(res.opName)} verra le match à sa prochaine ouverture de l'appli.`):''}</span>
     <div class="row-actions"><button class="btn" type="button" data-sh>Feuille de match</button><button class="btn primary" type="button" data-end>Terminer</button></div></div>`;
   end.querySelector('[data-end]').addEventListener('click',closeMatch);
   const rec=state.matches.find(x=>x.ts===res.ts)||state.matches[0];end.querySelector('[data-sh]').addEventListener('click',()=>openSheet(rec));M.appendChild(end);
