@@ -738,9 +738,19 @@ input[type=range]::-moz-range-thumb{width:20px;height:20px;border-radius:50%;bac
       </button>
       <label class="menu-item" for="m-import" style="cursor:pointer">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 21V9m0 0l-5 5m5-5l5 5M4 3h16"/></svg>
-        <span><b>Restaurer une sauvegarde</b><small>Ajoute les cartes d'un fichier .json</small></span>
+        <span><b>Importer une sauvegarde</b><small>Ajoute les cartes d'un fichier .json, et le classeur s'il y en a un</small></span>
         <input type="file" id="m-import" accept=".json,application/json" hidden>
       </label>
+      <label class="menu-item" for="m-import-cards" style="cursor:pointer">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="7" width="10" height="14" rx="1.5"/><path d="M17 16V3m0 0l-3.5 3.5M17 3l3.5 3.5"/></svg>
+        <span><b>Importer les cartes uniquement</b><small>Remplace ta liste de cartes par celle du fichier, sans toucher à ton classeur</small></span>
+        <input type="file" id="m-import-cards" accept=".json,application/json" hidden>
+      </label>
+      <div class="b-confirm" id="mi-confirm" hidden role="alertdialog" aria-labelledby="mi-confirm-t">
+        <b id="mi-confirm-t">Mettre à jour les cartes ?</b>
+        <p id="mi-confirm-txt"></p>
+        <div class="row-actions"><button class="btn" type="button" id="mi-cancel">Annuler</button><button class="btn primary" type="button" id="mi-ok">Mettre à jour</button></div>
+      </div>
     </div>
     <div class="section" id="m-install">
       <span class="label">Installer sur ton téléphone</span>
@@ -1247,6 +1257,30 @@ $('m-import').addEventListener('change',async e=>{
   }catch(err){toast("Ce fichier n'est pas une sauvegarde Cartes Volley.");}
 });
 
+/* Importer les cartes uniquement : la liste devient celle du fichier, le classeur ne bouge pas */
+let pendingCards=null;
+$('m-import-cards').addEventListener('change',async e=>{
+  const f=e.target.files[0];e.target.value='';if(!f)return;
+  try{
+    const j=JSON.parse(await f.text());const arr=Array.isArray(j)?j:j.players;if(!Array.isArray(arr))throw 0;
+    const list=arr.filter(p=>p&&p.id&&!p.example).map(normalize);
+    if(!list.length){toast('Ce fichier ne contient aucune carte.');return;}
+    const mine=new Set(players.map(p=>p.id)),theirs=new Set(list.map(p=>p.id));
+    const add=list.filter(p=>!mine.has(p.id)).length,upd=list.length-add,del=players.filter(p=>!theirs.has(p.id)).length;
+    pendingCards=list;
+    const pl=(n,a,b)=>`${n} ${n>1?b:a}`;
+    $('mi-confirm-txt').textContent=`${pl(add,'nouvelle carte','nouvelles cartes')}, ${pl(upd,'mise à jour','mises à jour')}, ${pl(del,'carte supprimée','cartes supprimées')}. Ton classeur n'est pas touché : les cartes que tu as déjà obtenues y restent si elles existent encore.`;
+    $('mi-confirm').hidden=false;$('mi-confirm').scrollIntoView({block:'center',behavior:'smooth'});
+  }catch(err){toast("Ce fichier n'est pas une sauvegarde Cartes Volley.");}
+});
+$('mi-cancel').addEventListener('click',()=>{pendingCards=null;$('mi-confirm').hidden=true;});
+$('mi-ok').addEventListener('click',async()=>{
+  const list=pendingCards;pendingCards=null;$('mi-confirm').hidden=true;if(!list)return;
+  const keep=new Set(list.map(p=>p.id));
+  for(const p of players.filter(p=>!keep.has(p.id)))await remove(p.id);
+  for(const p of list)await persist(p);
+  toast(`Cartes mises à jour : ${list.length} carte${list.length>1?'s':''}`);closeAll();
+});
 window.__back=function(){
   if(!$('opening').hidden){closeOpening();return true;}
   if(!$('cropper').hidden){closeCropper();return true;}
