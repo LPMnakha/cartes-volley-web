@@ -1,5 +1,5 @@
 // Garde l'appli disponible hors connexion.
-const V = 'cartes-volley-v31';
+const V = 'cartes-volley-v32';
 const CORE = ['./', './index.html', './manifest.webmanifest', './icon-192.png', './icon-512.png', './apple-touch-icon.png'];
 self.addEventListener('install', e => { e.waitUntil(caches.open(V).then(c => c.addAll(CORE))); self.skipWaiting(); });
 self.addEventListener('activate', e => {
@@ -13,7 +13,7 @@ self.addEventListener('fetch', e => {
     // Réseau d'abord pour avoir la dernière version, sinon la copie en cache.
     e.respondWith(fetch(req).then(res => { const cp = res.clone(); caches.open(V).then(c => c.put(req, cp)); return res; })
       .catch(() => caches.match(req, { ignoreSearch: true }).then(m => m || caches.match('./index.html'))));
-  } else if (/fonts\.(googleapis|gstatic)\.com$/.test(url.host)) {
+  } else if (/fonts\.(googleapis|gstatic)\.com$/.test(url.host) || url.host === 'cdn.jsdelivr.net') {
     e.respondWith(caches.match(req).then(m => m || fetch(req).then(res => { const cp = res.clone(); caches.open(V).then(c => c.put(req, cp)); return res; })));
   }
 });
