@@ -2489,18 +2489,21 @@ const RANKS=[[0,'Débutant'],[450,'Amateur'],[500,'Régional'],[560,'National'],
 const rankName=e=>RANKS.filter(r2=>e>=r2[0]).pop()[1];
 const eloExp=(a,b)=>1/(1+Math.pow(10,(b-a)/400));
 const ELO_K=32;
+const ENGINE_VER=3; // à augmenter à chaque changement du moteur : deux versions différentes ne donnent pas le même match
 let myCode=null,myNonce=null,oppData=null;
 function teamPayload(nonce){
   const cards=SLOT_ORDER.map(k=>{const sl=TEAM_SLOTS.find(x=>x.k===k),c=teamCard(sl);return[encodeURIComponent(c.name),c.s.ser,c.s.rec,c.s.pas,c.s.att,c.s.blo,c.s.def,c.poste].join(',');});
-  return['CV1',state.pid,encodeURIComponent(state.pseudo),state.elo,nonce,cards.join(';')].join('|');
+  return['CV1',state.pid,encodeURIComponent(state.pseudo),state.elo,nonce,cards.join(';'),'m'+ENGINE_VER].join('|');
 }
 function parsePayload(str){
-  try{const parts=String(str||'').trim().split('|');if(parts.length!==6||parts[0]!=='CV1')return null;
+  try{const parts=String(str||'').trim().split('|');if(parts[0]!=='CV1')return null;
+    if(parts.length===6)return{ver:0};if(parts.length!==7)return null;
+    const ver=parseInt(String(parts[6]).slice(1),10)||0;if(ver!==ENGINE_VER)return{ver};
     const[,pid,ps,elo,nonce,cs]=parts;const cards=cs.split(';').map(c=>{const f=c.split(',');if(f.length<8)return null;
       const s2={};['ser','rec','pas','att','blo','def'].forEach((k,i)=>s2[k]=Math.max(0,Math.min(100,Math.round(+f[i+1]||0))));
       return{name:decodeURIComponent(f[0]).slice(0,18)||'?',s:s2,poste:POSTES.some(q=>q.v===f[7])?f[7]:'POL'};});
     if(cards.length!==7||cards.some(c=>!c)||!pid||!nonce)return null;
-    return{pid,pseudo:decodeURIComponent(ps).slice(0,16)||'Pote',elo:Math.round(+elo)||500,nonce,cards};
+    return{pid,pseudo:decodeURIComponent(ps).slice(0,16)||'Pote',elo:Math.round(+elo)||500,nonce,cards,ver};
   }catch(e){return null;}
 }
 function payloadTeamScore(d){return Math.round(d.cards.reduce((t,c,i)=>{const sl=TEAM_SLOTS.find(x=>x.k===SLOT_ORDER[i]);return t+Math.round(Object.entries(POSTE_W[sl.p]).reduce((u,[k,v])=>u+c.s[k]*v,0));},0)/7);}
@@ -2537,6 +2540,8 @@ function gotCode(str){
   if(!$('m-played').hidden){mErr('Tu as déjà joué avec ce QR. Touche « Nouveau QR » pour un autre match.');return false;}
   const d=parsePayload(str);
   if(!d){mErr("Ce code n'est pas un QR Cartes Volley valide.");return false;}
+  // versions différentes = matchs différents : on bloque
+  if(d.ver!==ENGINE_VER){mErr(d.ver<ENGINE_VER?"Ton pote a une ancienne version de l'appli : il doit la mettre à jour avant de jouer, sinon vous n'aurez pas le même match.":"Ton pote a une version plus récente de l'appli : mets la tienne à jour avant de jouer, sinon vous n'aurez pas le même match.");buzz(120);return false;}
   if(d.nonce===myNonce||d.pid===state.pid){mErr("C'est ton propre QR : scanne celui de ton pote.");return false;}
   // un QR ne sert qu'une fois : impossible de rejouer un ancien QR pour gagner de l'élo
   if(state.played.includes('n:'+d.nonce)){mErr('Ce QR a déjà servi pour un match. Demande à ton pote d\'en préparer un nouveau.');return false;}
