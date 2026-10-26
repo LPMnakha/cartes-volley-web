@@ -265,6 +265,40 @@ textarea.text-in{font-size:1rem;font-weight:500;resize:none;line-height:1.35}
 .adm-row{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px}
 .adm-row .btn{padding:12px 16px}
 .sr{position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0 0 0 0);white-space:nowrap}
+
+/* Types de booster */
+.pack.t-silver .pack-top,.pack.t-silver .pack-bot{background:linear-gradient(160deg,#FFFFFF,#C9D3DD 30%,#7D8896 60%,#DCE3EA 84%,#FFFFFF)}
+.pack.t-gold .pack-top,.pack.t-gold .pack-bot{background:linear-gradient(160deg,#FFF6C8,#FFD23F 28%,#B8860B 60%,#FFE97A 84%,#FFF6C8)}
+.pack.t-icon .pack-top,.pack.t-icon .pack-bot{background:linear-gradient(140deg,#FFD6F5,#B8E6FF 30%,#C9FFD9 55%,#FFF3B0 80%,#FFD6F5)}
+.pack.t-icon .pack-art svg{animation:hue 3s linear infinite}
+.pack.t-silver{--glow:rgba(232,238,245,.6)}.pack.t-gold{--glow:rgba(255,210,63,.7)}.pack.t-icon{--glow:rgba(201,184,255,.8)}
+.pack.t-silver .pack-art,.pack.t-icon .pack-art{color:#18202A}
+.pack.t-gold .pack-art{color:#2A1C02}
+.pack.t-silver .pack-art i{background:#18202A;color:#E8EEF5}.pack.t-gold .pack-art i{background:#2A1C02;color:#FFE97A}.pack.t-icon .pack-art i{background:#1A1033;color:#E9DDFF}
+.pack-zone.t-silver .rays{background:repeating-conic-gradient(from 0deg,rgba(232,238,245,.22) 0 7deg,transparent 7deg 20deg)}
+.pack-zone.t-gold .rays{background:repeating-conic-gradient(from 0deg,rgba(255,210,63,.3) 0 7deg,transparent 7deg 20deg)}
+.pack-zone.t-icon .rays{background:repeating-conic-gradient(from 0deg,rgba(255,139,224,.25) 0 6deg,transparent 6deg 13deg,rgba(122,216,255,.25) 13deg 19deg,transparent 19deg 26deg);animation:spin 18s linear infinite,hue 6s linear infinite}
+.cycle{display:flex;flex-direction:column;gap:10px}
+.cycle-head{display:flex;justify-content:space-between;align-items:baseline;gap:10px;flex-wrap:wrap}
+.cycle-head b{font-family:var(--display);font-weight:900;font-size:1.35rem;text-transform:uppercase;letter-spacing:.02em}
+.cycle-head span{color:var(--muted);font-size:.9rem}
+.cycle-bar{display:grid;grid-template-columns:repeat(28,minmax(0,1fr));gap:3px}
+.cycle-bar i{height:10px;border-radius:3px;background:rgba(255,255,255,.1)}
+.cycle-bar i.done{background:var(--orange)}
+.cycle-bar i.sp{height:16px;margin-top:-3px}
+.cycle-bar i.sp.silver{background:rgba(232,238,245,.35)}.cycle-bar i.sp.gold{background:rgba(255,210,63,.4)}.cycle-bar i.sp.icon{background:linear-gradient(180deg,#FF8BE0,#7AD8FF,#8CFFB0);opacity:.55}
+.cycle-bar i.sp.done{opacity:1;box-shadow:0 0 0 1px rgba(255,255,255,.5) inset}
+.cycle-bar i.sp.silver.done{background:#DCE3EA}.cycle-bar i.sp.gold.done{background:#FFD23F}
+.cycle-bar i.next{outline:2px solid #fff;outline-offset:1px}
+.cycle-legend{display:flex;gap:12px;flex-wrap:wrap;font-size:.8rem;color:var(--muted)}
+.cycle-legend span{display:inline-flex;align-items:center;gap:5px}
+.cycle-legend i{width:10px;height:10px;border-radius:3px}
+.pack-title{position:absolute;z-index:4;top:2%;left:0;right:0;text-align:center;font-family:var(--display);font-weight:900;text-transform:uppercase;letter-spacing:.04em;
+  font-size:clamp(2rem,10vw,3.2rem);animation:slam .6s cubic-bezier(.2,.9,.3,1.35) both;pointer-events:none}
+.pack-title.t-classic{color:#FFB35C}.pack-title.t-silver{color:#F4F7FA;text-shadow:0 0 24px rgba(232,238,245,.8)}
+.pack-title.t-gold{color:#FFD23F;text-shadow:0 0 24px rgba(255,210,63,.9)}
+.pack-title.t-icon{background:linear-gradient(90deg,#FF8BE0,#7AD8FF,#8CFFB0,#FFF07A,#FF8BE0);background-size:200% 100%;-webkit-background-clip:text;background-clip:text;color:transparent;
+  animation:slam .6s cubic-bezier(.2,.9,.3,1.35) both,slide 1.4s linear infinite;filter:drop-shadow(0 0 14px rgba(201,184,255,.8))}
 .empty-filter{color:var(--muted);text-align:center;padding:30px 10px;border:1px dashed var(--line);border-radius:14px}
 
 .fab{position:fixed;right:calc(18px + env(safe-area-inset-right,0px));bottom:calc(20px + env(safe-area-inset-bottom,0px));z-index:8;
@@ -380,7 +414,7 @@ input[type=range]::-moz-range-thumb{width:20px;height:20px;border-radius:50%;bac
 .tab svg{width:18px;height:18px;flex:none}
 .tab{min-width:0;overflow:hidden;white-space:nowrap}
 @media (max-width:460px){.tab{font-size:1.05rem;padding:10px 4px;gap:6px}.tab svg{width:16px;height:16px}}
-@media (max-width:370px){.tab svg{display:none}}
+@media (max-width:420px){.tab svg{display:none}}
 .tabpane{display:flex;flex-direction:column;gap:16px}
 
 /* Onglet Packs */
@@ -615,10 +649,16 @@ input[type=range]::-moz-range-thumb{width:20px;height:20px;border-radius:50%;bac
     </div>
     <div class="banner" id="pack-ex" hidden><span>Tirage parmi les <b>exemples</b> tant que tu n'as pas créé de cartes.</span></div>
     <div class="banner" id="pack-few" hidden><span>Il faut au moins <b>5 cartes</b> pour ouvrir un booster : tu en as <b id="pack-few-n">0</b> (les Signature ne comptent pas). Crée-en d'autres dans l'onglet Cartes.</span></div>
+    <div class="section cycle" id="cycle">
+      <div class="cycle-head"><b id="cy-now">Booster</b><span id="cy-next"></span></div>
+      <div class="cycle-bar" id="cy-bar" aria-hidden="true"></div>
+      <div class="cycle-legend"><span><i style="background:#DCE3EA"></i>Argent : 7e et 21e</span><span><i style="background:#FFD23F"></i>Or : 14e</span><span><i style="background:linear-gradient(90deg,#FF8BE0,#7AD8FF,#8CFFB0)"></i>Icône : 28e</span></div>
+      <div class="chips" id="adm-types" role="group" aria-label="Type de booster (admin)" hidden></div>
+    </div>
     <div class="pack-zone" id="pack-zone"><div class="rays"></div><button class="pack" id="pack" type="button" aria-label="Ouvrir le booster"></button></div>
     <button class="btn primary open-btn" type="button" id="open-btn">Ouvrir le booster</button>
     <p class="lock-txt" id="pack-lock" hidden></p>
-    <div class="section"><span class="label">Chances d'apparaître dans un booster, de la plus rare à la plus courante</span><div class="odds" id="odds"></div></div>
+    <div class="section"><span class="label"><span id="odds-title">Chances d'apparaître dans le prochain booster</span>, de la plus rare à la plus courante</span><div class="odds" id="odds"></div></div>
   </div>
   <div class="tabpane" id="tab-binder" role="tabpanel" aria-labelledby="tab-btn-binder" hidden>
     <div class="pack-head"><div><h2 class="pane-title">Mon classeur</h2><p class="note" id="b-sub">Chaque carte a sa place. Ouvre ton booster du jour pour le remplir.</p></div></div>
@@ -766,7 +806,7 @@ input[type=range]::-moz-range-thumb{width:20px;height:20px;border-radius:50%;bac
         <p class="err" id="adm-err" hidden>Mot de passe incorrect.</p>
       </div>
       <div id="adm-on" class="stack" hidden>
-        <p class="note" style="color:var(--ink);margin:0">Mode admin activé : boosters illimités sur cet appareil.</p>
+        <p class="note" style="color:var(--ink);margin:0">Mode admin activé : boosters illimités sur cet appareil. Choisis le type de booster dans l'onglet Packs.</p>
         <button class="btn" type="button" id="adm-quit">Quitter le mode admin</button>
       </div>
     </div>
@@ -879,18 +919,18 @@ const shown=()=>players.length?players:EXAMPLES;
 const LS_STATE='cartes-volley-etat';
 let state=loadState(),timeOffset=null,lockTimer=null,packStatus='checking',openBusy=false;
 function loadState(){
-  try{const j=JSON.parse(localStorage.getItem(LS_STATE)||'null');if(j&&Array.isArray(j.owned))return{owned:j.owned.map(String),lastDay:String(j.lastDay||''),lastTs:+j.lastTs||0};}catch(e){}
-  return{owned:[],lastDay:'',lastTs:0};
+  try{const j=JSON.parse(localStorage.getItem(LS_STATE)||'null');if(j&&Array.isArray(j.owned))return{owned:j.owned.map(String),lastDay:String(j.lastDay||''),lastTs:+j.lastTs||0,count:+j.count||0};}catch(e){}
+  return{owned:[],lastDay:'',lastTs:0,count:0};
 }
 function mergeState(o){ // union des cartes obtenues, et on garde toujours le dernier booster ouvert
   if(!o)return false;const before=JSON.stringify(state);const set=new Set(state.owned);
   (Array.isArray(o.owned)?o.owned:[]).forEach(x=>set.add(String(x)));state.owned=[...set];
-  if(String(o.lastDay||'')>state.lastDay)state.lastDay=String(o.lastDay);state.lastTs=Math.max(state.lastTs,+o.lastTs||0);
+  if(String(o.lastDay||'')>state.lastDay)state.lastDay=String(o.lastDay);state.count=Math.max(+state.count||0,+o.count||0);state.lastTs=Math.max(state.lastTs,+o.lastTs||0);
   return JSON.stringify(state)!==before;
 }
 async function saveState(){
   try{localStorage.setItem(LS_STATE,JSON.stringify(state));}catch(e){}
-  if(mode==='cloud'&&col){try{await col.doc('_state').set({owned:state.owned,lastDay:state.lastDay,lastTs:state.lastTs});}catch(e){}}
+  if(mode==='cloud'&&col){try{await col.doc('_state').set({owned:state.owned,lastDay:state.lastDay,lastTs:state.lastTs,count:state.count||0});}catch(e){}}
 }
 /* Mode admin : boosters illimités. Seule l'empreinte du mot de passe est dans le code, jamais le mot lui-même */
 const ADMIN_HASH='2637129b8667d6edb4028eb186acdaf42233ce679c61f6ccf9e86bbb6a13110f',LS_ADMIN='cartes-volley-admin';
@@ -901,10 +941,10 @@ $('adm-form').addEventListener('submit',async e=>{
   e.preventDefault();const pw=$('adm-pw').value.trim();if(!pw)return;
   let h='';try{h=await sha256(pw);}catch(err){toast("Vérification impossible dans cette vue.");return;}
   if(h===ADMIN_HASH){isAdmin=true;try{localStorage.setItem(LS_ADMIN,h);}catch(err){}$('adm-pw').value='';$('adm-err').hidden=true;$('adm-pw').blur();
-    renderAdmin();packStatus='ready';renderLock();toast('Mode admin activé : boosters illimités');}
+    renderAdmin();packStatus='ready';renderPacks();toast('Mode admin activé : boosters illimités');}
   else{$('adm-err').hidden=false;$('adm-pw').select();}
 });
-$('adm-quit').addEventListener('click',()=>{isAdmin=false;try{localStorage.removeItem(LS_ADMIN);}catch(e){}renderAdmin();refreshPackLock();toast('Mode admin désactivé');});
+$('adm-quit').addEventListener('click',()=>{isAdmin=false;try{localStorage.removeItem(LS_ADMIN);}catch(e){}renderAdmin();renderPacks();refreshPackLock();toast('Mode admin désactivé');});
 renderAdmin();
 /* Heure fiable : elle vient d'internet, jamais de l'horloge du téléphone */
 async function trustedNow(){
@@ -1343,10 +1383,20 @@ const TIER_RANGE={bronze:[0,64],silver:[65,74],gold:[75,84],icon:[85,100]};
 const weightOf=p=>{const o=ovr(p.s),t=tier(o),[lo,hi]=TIER_RANGE[t],k=(o-lo)/(hi-lo);
   return TIER_WEIGHT[t]*Math.pow(1/1.5,k)/(p.signature&&p.photo?SIGNATURE_RARITY:p.fullart&&p.photo?FULLART_RARITY:1);};
 const PACK_SIZE=5;
-function drawPack(pool){ // 0,5 % de chance d'une Signature (au hasard parmi toutes), le reste en tirage pondéré sans remise
+// Types de booster : le 7e et le 21e sont argent, le 14e or, le 28e icône, puis le cycle recommence
+const PACK_TYPES={
+  classic:{l:'Booster',sub:'CARTES VOLLEY',mult:{bronze:1,silver:1,gold:1,icon:1},sig:1},
+  silver:{l:'Booster Argent',sub:'ARGENT',mult:{bronze:1,silver:2,gold:2,icon:2},sig:2},
+  gold:{l:'Booster Or',sub:'OR',mult:{bronze:1,silver:2,gold:4,icon:4},sig:4},
+  icon:{l:'Booster Icône',sub:'ICÔNE',mult:{bronze:1,silver:2,gold:4,icon:8},sig:8}};
+const typeForN=n=>n%28===0?'icon':n%14===0?'gold':n%7===0?'silver':'classic';
+let adminType='classic';
+const nextType=()=>isAdmin?adminType:typeForN((+state.count||0)+1);
+function drawPack(pool,type='classic'){ // 0,5 % de chance d'une Signature (au hasard parmi toutes), le reste en tirage pondéré sans remise
   const sigs=pool.filter(isSigP),out=[];
-  if(sigs.length&&Math.random()<SIG_CHANCE)out.push(sigs[Math.floor(Math.random()*sigs.length)]);
-  const left=pool.filter(p=>!isSigP(p)).map(p=>({p,w:weightOf(p)}));
+  const T_=PACK_TYPES[type]||PACK_TYPES.classic;
+  if(sigs.length&&Math.random()<SIG_CHANCE*T_.sig)out.push(sigs[Math.floor(Math.random()*sigs.length)]);
+  const left=pool.filter(p=>!isSigP(p)).map(p=>({p,w:weightOf(p)*T_.mult[tier(ovr(p.s))]}));
   while(out.length<PACK_SIZE&&left.length){
     const T=left.reduce((a,b)=>a+b.w,0);let x=Math.random()*T,i=0;
     while(i<left.length-1&&x>=left[i].w){x-=left[i].w;i++;}
@@ -1363,25 +1413,37 @@ function revealOrder(cards){ // ordre au hasard, sauf la plus rare qui sort en d
   return a.concat([best]);
 }
 let oddsCache={key:'',map:null};
-function packOdds(pool){ // chance d'apparaître, estimée par simulation (le tirage sans remise n'a pas de formule simple)
-  const key=pool.map(p=>p.id+':'+ovr(p.s)+':'+(p.fullart&&p.photo?1:0)+(isSigP(p)?'s':'')).join('|');
+function packOdds(pool,type='classic'){ // chance d'apparaître, estimée par simulation (le tirage sans remise n'a pas de formule simple)
+  const key=type+'#'+pool.map(p=>p.id+':'+ovr(p.s)+':'+(p.fullart&&p.photo?1:0)+(isSigP(p)?'s':'')).join('|');
   if(oddsCache.key===key)return oddsCache.map;
   const N=pool.filter(p=>!isSigP(p)).length<=PACK_SIZE?1:4000,cnt=new Map(pool.map(p=>[p.id,0]));
   const normal=pool.filter(p=>!isSigP(p));
-  for(let n=0;n<N;n++)drawPack(normal).forEach(p=>cnt.set(p.id,cnt.get(p.id)+1));
+  for(let n=0;n<N;n++)drawPack(normal,type).forEach(p=>cnt.set(p.id,cnt.get(p.id)+1));
   const nSig=pool.filter(isSigP).length;
-  const map=new Map(pool.map(p=>[p.id,isSigP(p)?SIG_CHANCE/nSig:cnt.get(p.id)/N]));oddsCache={key,map};return map;
+  const map=new Map(pool.map(p=>[p.id,isSigP(p)?Math.min(1,SIG_CHANCE*PACK_TYPES[type].sig)/nSig:cnt.get(p.id)/N]));oddsCache={key,map};return map;
 }
-function packHTML(){return`<div class="pack-top"></div><div class="pack-bot"><div class="pack-art">${HEX_BIG}<b>BOOSTER</b><span>CARTES VOLLEY</span><i>5 CARTES</i></div></div>`;}
+function packHTML(type='classic'){return`<div class="pack-top"></div><div class="pack-bot"><div class="pack-art">${HEX_BIG}<b>BOOSTER</b><span>${PACK_TYPES[type].sub}</span><i>5 CARTES</i></div></div>`;}
 function miniHTML(p){const o=ovr(p.s);const fa=p.fullart&&p.photo,sg=p.signature&&p.photo;return`<div class="mini ${vt(p)}${isDiv(p)?' divers':''}${fa?' fullart':''}${sg?' signature':''}"><div class="mface">${sg?'<div class="msr"></div>':''}${fa?`<div class="mfa"><img src="${p.photo}" alt=""></div>`:''}<div class="mo">${sg?'':o}<small>${esc(p.poste)}</small></div>
   <div class="mp">${p.photo?`<img src="${p.photo}" alt="">`:esc(initials(p.name))}</div><div class="mn">${esc(p.name)}</div></div></div>`;}
-$('pack').innerHTML=packHTML();
+function renderCycle(){
+  const nt=nextType(),c=+state.count||0,pos=c%28; // pos = boosters déjà ouverts dans le cycle en cours
+  $('pack').className='pack t-'+nt;$('pack').innerHTML=packHTML(nt);$('pack-zone').className='pack-zone t-'+nt+($('pack-zone').classList.contains('off')?' off':'');
+  $('cy-now').textContent=(isAdmin?'Admin : ':'Prochain : ')+PACK_TYPES[nt].l;
+  let k=1;while(k<=28&&typeForN(c+k)==='classic')k++;const sp=typeForN(c+k);
+  $('cy-next').textContent=isAdmin?'Les boosters admin ne comptent pas':nt!=='classic'?`Booster n° ${c+1}`:`${PACK_TYPES[sp].l} dans ${k} booster${k>1?'s':''}`;
+  $('cy-bar').innerHTML=Array.from({length:28},(_,i)=>{const t=typeForN(i+1);return`<i class="${t!=='classic'?'sp '+t:''}${i<pos?' done':''}${i===pos&&!isAdmin?' next':''}"></i>`;}).join('');
+  $('odds-title').textContent=`Chances d'apparaître dans le prochain ${PACK_TYPES[nt].l.toLowerCase()}`;
+  const at=$('adm-types');at.hidden=!isAdmin;
+  if(isAdmin)at.innerHTML=Object.keys(PACK_TYPES).map(t=>`<button class="chip" type="button" data-t="${t}" aria-pressed="${t===adminType}">${PACK_TYPES[t].l.replace('Booster ','')||'Classique'}</button>`).join('');
+}
+$('adm-types').addEventListener('click',e=>{const b=e.target.closest('.chip');if(!b)return;adminType=b.dataset.t;renderPacks();});
 function renderPacks(){
   const pool=players;$('pack-ex').hidden=true;
   const nNormal=pool.filter(p=>!isSigP(p)).length,few=nNormal<PACK_SIZE;
   $('pack-few').hidden=!few;$('pack-few-n').textContent=nNormal;
   renderLock();
-  const od=few?null:packOdds(pool);
+  renderCycle();
+  const od=few?null:packOdds(pool,nextType());
   const rows=pool.map(p=>({p,o:ovr(p.s),w:isSigP(p)?-1:weightOf(p),c:few?0:od.get(p.id)})).sort((a,b)=>a.w-b.w||b.o-a.o); // de la plus rare à la plus courante
   const col={icon:'#C9B8FF',gold:'#FFD23F',silver:'#DCE3EA',bronze:'#E9A877'};
   $('odds').innerHTML=rows.map(x=>`<div class="odd"><i style="background:${isSigP(x.p)?'#FFD700':col[tier(x.o)]}"></i><span>${esc(x.p.name)}${x.p.signature&&x.p.photo?' <em class="sig-tag">Signature</em>':x.p.fullart&&x.p.photo?' <em class="fa-tag">FULL ART</em>':''}</span><b>${isSigP(x.p)?'–':x.o}</b><span>${few?'–':(x.c*100).toFixed(x.c<.01?2:x.c<.1?1:0)+' %'}</span></div>`).join('');
@@ -1414,7 +1476,7 @@ function renderLock(){
     const tick=()=>{const n=estNow();if(n==null){l.textContent='Reviens demain pour un nouveau booster.';return;}
       const ms=msToMidnight(n);if(ms<=1000){clearInterval(lockTimer);setTimeout(refreshPackLock,1500);return;}
       const h=Math.floor(ms/3.6e6),m=Math.floor(ms%3.6e6/6e4),sec=Math.floor(ms%6e4/1e3),z=v=>String(v).padStart(2,'0');
-      l.innerHTML=`Prochain booster dans <b>${z(h)}:${z(m)}:${z(sec)}</b>`;};
+      const nt=nextType();l.innerHTML=`Prochain booster dans <b>${z(h)}:${z(m)}:${z(sec)}</b>${nt!=='classic'?`<br>Demain : <b style="font-size:1rem">${PACK_TYPES[nt].l}</b>`:''}`;};
     tick();lockTimer=setInterval(tick,1000);}
   else if(isAdmin){b.disabled=false;b.textContent='Ouvrir un booster';l.hidden=false;l.textContent='Mode admin : boosters illimités';}
   else{b.disabled=false;b.textContent='Ouvrir le booster du jour';l.hidden=true;}
@@ -1652,16 +1714,18 @@ async function openPack(){
     if(state.lastDay===today||now<state.lastTs){packStatus='locked';renderLock();toast("Tu as déjà ouvert ton booster aujourd'hui. Reviens après minuit !");return;}
   }
   const my=++run,alive=()=>my===run;
-  const pulled=revealOrder(drawPack(pool));
+  const ptype=nextType();
+  const pulled=revealOrder(drawPack(pool,ptype));
   // Enregistré tout de suite : fermer l'animation ne rend pas le booster
   const before=new Set(state.owned),fresh=new Set(pulled.filter(p=>!before.has(p.id)).map(p=>p.id));
-  if(!isAdmin){state.lastDay=today;state.lastTs=now;}pulled.forEach(p=>{if(!before.has(p.id))state.owned.push(p.id);});
-  saveState();packStatus=isAdmin?'ready':'locked';renderLock();
+  if(!isAdmin){state.lastDay=today;state.lastTs=now;state.count=(+state.count||0)+1;}pulled.forEach(p=>{if(!before.has(p.id))state.owned.push(p.id);});
+  saveState();packStatus=isAdmin?'ready':'locked';renderPacks();
+  if(ptype!=='classic'){sfx.sparkle();buzz([30,40,30]);}
   const best=pulled.map(vt).reduce((m,t)=>TIER_RANK[t]>TIER_RANK[m]?t:m,'bronze'),bestR=TIER_RANK[best]; // la lueur annonce le plus haut niveau du booster
   const O=$('opening'),stage=$('op-stage'),tray=$('op-tray');
   O.hidden=false;O.classList.remove('dark');document.body.style.overflow='hidden';fxSize();FX.parts=[];
   $('op-count').textContent='BOOSTER';tray.innerHTML='<div class="slot"></div>'.repeat(5);tray.hidden=false;
-  stage.innerHTML=`<div class="glowring" id="op-glow"></div><div class="tease" id="op-tease"></div><div class="walk" id="walk"><div class="beams"></div><div class="walk-txt" id="walk-txt"></div></div><button class="pack" id="op-pack" type="button" aria-label="Ouvrir">${packHTML()}</button>`;
+  stage.innerHTML=`<div class="glowring" id="op-glow"></div><div class="tease" id="op-tease"></div><div class="walk" id="walk"><div class="beams"></div><div class="walk-txt" id="walk-txt"></div></div><div class="pack-title t-${ptype}" id="op-ptitle">${PACK_TYPES[ptype].l}</div><button class="pack t-${ptype}" id="op-pack" type="button" aria-label="Ouvrir">${packHTML(ptype)}</button>`;
   const pack=$('op-pack'),glow=$('op-glow');
   hint('Touche le booster pour l\'ouvrir');
   await nextTap();if(!alive())return;
@@ -1679,6 +1743,7 @@ async function openPack(){
   await wait(CM);clearInterval(sparkT);if(!alive())return;
   // 2. Explosion
   const[cx,cy]=centerOf(pack);
+  const ptl=$('op-ptitle');if(ptl)ptl.remove();
   pack.classList.add('tear');sfx.boom();buzz(bestR>=2?[200,60,140]:160);flash(bestR>=2?'#FFF6D0':'#FFFFFF');shake();
   burst(cx,cy,TIER_FX[best].c.concat(['#FF7A2F','#FFD23F']),RM?20:[160,220,300,380][bestR],13+bestR*2,{up:3});
   if(bestR===3)setTimeout(()=>{if(!alive())return;sfx.boom();flash('#E9DDFF');shake();burst(cx,cy,TIER_FX.icon.c,240,18,{up:4});},380);
