@@ -683,7 +683,7 @@ input[type=range]::-moz-range-thumb{width:20px;height:20px;border-radius:50%;bac
       <label class="toggle" for="f-fullart"><input type="checkbox" id="f-fullart"><span class="sw" aria-hidden="true"></span>
         <span><b>Full Art</b><small>Carte holographique : la photo prend toute la carte</small></span></label>
       <label class="toggle gold" for="f-sig"><input type="checkbox" id="f-sig"><span class="sw" aria-hidden="true"></span>
-        <span><b>Signature</b><small>Full Art signée, sans note ni stats : 0,5 % de chance par booster</small></span></label>
+        <span><b>Signature</b><small>Full Art signée, sans note ni stats : 0,5 % de chance d'en avoir une par booster</small></span></label>
       <label class="label" for="f-name">Nom</label>
       <input class="text-in" type="text" id="f-name" maxlength="18" placeholder="Prénom ou surnom" autocomplete="off" enterkeyhint="done">
       <div class="stack" id="f-poste-wrap"><span class="label">Poste</span>
@@ -800,7 +800,7 @@ const isDiv=p=>!!p&&p.kind==='divers';
 const isSigP=p=>!!(p&&p.signature&&p.photo); // une Signature n'a ni note ni stats
 const vt=p=>isSigP(p)?'gold':tier(ovr(p.s)); // couleur affichée : dorée pour les Signature
 const sortVal=p=>isSigP(p)?101:ovr(p.s);
-const SIG_CHANCE=0.005; // chaque Signature a 0,5 % de chance d'être dans un booster
+const SIG_CHANCE=0.005; // 0,5 % de chance qu'un booster contienne une Signature, tirée au hasard parmi toutes
 const allS=n=>{const o={};SKILLS.forEach(x=>o[x.k]=n);return o;};
 const initials=n=>(n||'').trim().split(/\s+/).filter(Boolean).map(w=>w[0]).slice(0,2).join('').toUpperCase()||'?';
 const clampN=v=>Math.max(0,Math.min(100,Math.round(+v||0)));
@@ -1257,8 +1257,9 @@ const TIER_RANGE={bronze:[0,64],silver:[65,74],gold:[75,84],icon:[85,100]};
 const weightOf=p=>{const o=ovr(p.s),t=tier(o),[lo,hi]=TIER_RANGE[t],k=(o-lo)/(hi-lo);
   return TIER_WEIGHT[t]*Math.pow(1/1.5,k)/(p.signature&&p.photo?SIGNATURE_RARITY:p.fullart&&p.photo?FULLART_RARITY:1);};
 const PACK_SIZE=5;
-function drawPack(pool){ // chaque Signature : 0,5 % de chance ; le reste, tirage pondéré sans remise
-  const out=pool.filter(p=>isSigP(p)&&Math.random()<SIG_CHANCE).slice(0,PACK_SIZE);
+function drawPack(pool){ // 0,5 % de chance d'une Signature (au hasard parmi toutes), le reste en tirage pondéré sans remise
+  const sigs=pool.filter(isSigP),out=[];
+  if(sigs.length&&Math.random()<SIG_CHANCE)out.push(sigs[Math.floor(Math.random()*sigs.length)]);
   const left=pool.filter(p=>!isSigP(p)).map(p=>({p,w:weightOf(p)}));
   while(out.length<PACK_SIZE&&left.length){
     const T=left.reduce((a,b)=>a+b.w,0);let x=Math.random()*T,i=0;
@@ -1282,7 +1283,8 @@ function packOdds(pool){ // chance d'apparaître, estimée par simulation (le ti
   const N=pool.filter(p=>!isSigP(p)).length<=PACK_SIZE?1:4000,cnt=new Map(pool.map(p=>[p.id,0]));
   const normal=pool.filter(p=>!isSigP(p));
   for(let n=0;n<N;n++)drawPack(normal).forEach(p=>cnt.set(p.id,cnt.get(p.id)+1));
-  const map=new Map(pool.map(p=>[p.id,isSigP(p)?SIG_CHANCE:cnt.get(p.id)/N]));oddsCache={key,map};return map;
+  const nSig=pool.filter(isSigP).length;
+  const map=new Map(pool.map(p=>[p.id,isSigP(p)?SIG_CHANCE/nSig:cnt.get(p.id)/N]));oddsCache={key,map};return map;
 }
 function packHTML(){return`<div class="pack-top"></div><div class="pack-bot"><div class="pack-art">${HEX_BIG}<b>BOOSTER</b><span>CARTES VOLLEY</span><i>5 CARTES</i></div></div>`;}
 function miniHTML(p){const o=ovr(p.s);const fa=p.fullart&&p.photo,sg=p.signature&&p.photo;return`<div class="mini ${vt(p)}${isDiv(p)?' divers':''}${fa?' fullart':''}${sg?' signature':''}"><div class="mface">${sg?'<div class="msr"></div>':''}${fa?`<div class="mfa"><img src="${p.photo}" alt=""></div>`:''}<div class="mo">${sg?'':o}<small>${esc(p.poste)}</small></div>
@@ -1296,7 +1298,7 @@ function renderPacks(){
   const od=few?null:packOdds(pool);
   const rows=pool.map(p=>({p,o:ovr(p.s),w:isSigP(p)?-1:weightOf(p),c:few?0:od.get(p.id)})).sort((a,b)=>a.w-b.w||b.o-a.o); // de la plus rare à la plus courante
   const col={icon:'#C9B8FF',gold:'#FFD23F',silver:'#DCE3EA',bronze:'#E9A877'};
-  $('odds').innerHTML=rows.map(x=>`<div class="odd"><i style="background:${isSigP(x.p)?'#FFD700':col[tier(x.o)]}"></i><span>${esc(x.p.name)}${x.p.signature&&x.p.photo?' <em class="sig-tag">Signature</em>':x.p.fullart&&x.p.photo?' <em class="fa-tag">FULL ART</em>':''}</span><b>${isSigP(x.p)?'–':x.o}</b><span>${few?'–':(x.c*100).toFixed(x.c<.1?1:0)+' %'}</span></div>`).join('');
+  $('odds').innerHTML=rows.map(x=>`<div class="odd"><i style="background:${isSigP(x.p)?'#FFD700':col[tier(x.o)]}"></i><span>${esc(x.p.name)}${x.p.signature&&x.p.photo?' <em class="sig-tag">Signature</em>':x.p.fullart&&x.p.photo?' <em class="fa-tag">FULL ART</em>':''}</span><b>${isSigP(x.p)?'–':x.o}</b><span>${few?'–':(x.c*100).toFixed(x.c<.01?2:x.c<.1?1:0)+' %'}</span></div>`).join('');
 }
 function setTab(t){
   ['cards','packs','binder'].forEach(k=>{$('tab-'+k).hidden=t!==k;$('tab-btn-'+k).setAttribute('aria-selected',t===k);});
