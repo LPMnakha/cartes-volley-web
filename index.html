@@ -2958,6 +2958,13 @@ const TEAM_SLOTS=[
   {k:'LIB',p:'LIB',l:'Libéro',row:2}];
 const POSTE_W={PAS:{pas:.5,def:.15,ser:.15,rec:.1,blo:.05,att:.05},PTU:{att:.45,blo:.2,ser:.2,def:.1,rec:.05},
   R4:{rec:.3,att:.3,def:.2,ser:.15,blo:.05},CEN:{blo:.45,att:.3,ser:.15,pas:.05,def:.05},LIB:{rec:.45,def:.45,pas:.1}};
+// deux cartes du même nom sont deux versions du même joueur : une seule peut jouer
+const nameKey=p=>String(p&&p.name||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').trim().toLowerCase();
+const sameName=(a,b)=>!!a&&!!b&&a.id!==b.id&&nameKey(a)===nameKey(b);
+const twinSlot=(p,except)=>TEAM_SLOTS.find(x=>x.k!==except&&sameName(players.find(q=>q.id===state.team[x.k]),p));
+// retire de l'équipe les doublons de nom (on garde la meilleure version) ; renvoie les noms concernés
+function dedupTeam(){const out=[];for(const x of TEAM_SLOTS){const p=players.find(q=>q.id===state.team[x.k]);if(!p)continue;const y=twinSlot(p,x.k);if(!y)continue;
+  const q=players.find(c=>c.id===state.team[y.k]),drop=ovr(q.s)<ovr(p.s)||(ovr(q.s)===ovr(p.s)&&p.fullart&&!q.fullart)?y:x;delete state.team[drop.k];out.push(p.name);}return out;}
 const fitsSlot=(p,sl)=>!!p&&owns(p.id)&&!isDiv(p)&&!isSigP(p); // tout le monde peut jouer partout
 const slotScore=(p,sl)=>Math.round(Object.entries(POSTE_W[sl.p]).reduce((t,[k,v])=>t+(+p.s[k]||0)*v,0));
 const teamCard=sl=>{const p=players.find(x=>x.id===state.team[sl.k]);return fitsSlot(p,sl)?p:null;};
@@ -2982,6 +2989,7 @@ function slotHTML(sl){
   return`<button class="tslot" type="button" data-slot="${sl.k}" aria-label="${sl.l}${p?', '+esc(p.name):', vide'}"><span class="tpos">${sl.l}</span>${p?miniHTML(p):'<span class="tempty">+</span>'}<span class="tval">${p?slotScore(p,sl):'–'}</span>${p&&p.id===capId()?'<span class="tcap" title="Capitaine">C</span>':''}</button>`;
 }
 function renderTeam(){
+  const dup=dedupTeam();if(dup.length){saveState();toast(`Une seule version de ${dup[0]} peut jouer : j'ai gardé la meilleure.`);}
   $('court').innerHTML=TEAM_SLOTS.filter(sl=>sl.row<2).map(slotHTML).join('');
   $('lib-slot').innerHTML=slotHTML(TEAM_SLOTS[6]);$('lib-slot').classList.toggle('off',!!state.noLib);$('t-lib').checked=!state.noLib;$('t-lib-txt').textContent=state.noLib?'Sans libéro : tes centraux restent sur le terrain en défense et en réception.':'Le libéro remplace un central en défense. Il est noté sur sa réception et sa défense.';
   const need=activeSlots().length,n=activeSlots().filter(sl=>teamCard(sl)).length,sc=teamScore();renderTac();
@@ -3052,11 +3060,13 @@ function openPicker(k){
   const list=players.filter(p=>fitsSlot(p,sl)).sort((a,b)=>slotScore(b,sl)-slotScore(a,sl));
   $('pk-title').textContent=sl.l;
   $('pk-note').textContent=list.length?'Toutes les cartes de ton classeur, avec leur note à ce poste. Le poste écrit sur la carte est juste son poste habituel.':"Aucune carte de ton classeur ne peut encore jouer. Ouvre des boosters ! (Les cartes Divers et Signature n'ont pas de stats.)";
-  $('pk-grid').innerHTML=list.map(p=>{const where=TEAM_SLOTS.find(x=>state.team[x.k]===p.id);return`<button class="pk-card${where&&where.k===sl.k?' cur':''}" type="button" data-id="${esc(p.id)}">${miniHTML(p)}<b>${slotScore(p,sl)}${where&&where.k!==sl.k?` · ${where.l}`:''}</b></button>`;}).join('');
+  $('pk-grid').innerHTML=list.map(p=>{const where=TEAM_SLOTS.find(x=>state.team[x.k]===p.id);return`<button class="pk-card${where&&where.k===sl.k?' cur':''}" type="button" data-id="${esc(p.id)}">${miniHTML(p)}<b>${slotScore(p,sl)}${where&&where.k!==sl.k?` · ${where.l}`:(()=>{const tw=twinSlot(p,sl.k);return tw?` · remplace ${tw.l}`:'';})()}</b></button>`;}).join('');
   $('pk-remove').hidden=!teamCard(sl);const pc=teamCard(sl),isC=pc&&pc.id===capId();$('pk-cap').hidden=!pc;$('pk-cap').disabled=!!isC;$('pk-cap').textContent=isC?`${pc.name} est ton capitaine`:'Nommer capitaine';show('picker');
 }
 async function setSlot(k,id){
   for(const x of TEAM_SLOTS)if(state.team[x.k]===id&&x.k!==k)delete state.team[x.k]; // une carte ne joue qu'à un poste
+  const p=id&&players.find(q=>q.id===id),tw=p&&!DIV_SLOTS.some(x=>x.k===k)&&twinSlot(p,k);
+  if(tw){const old=players.find(q=>q.id===state.team[tw.k]);delete state.team[tw.k];toast(`${p.name} prend la place de l'autre version de ${old.name} (${tw.l}) : deux cartes du même joueur ne jouent pas ensemble.`);}
   if(id)state.team[k]=id;else delete state.team[k];
   await saveState();renderTeam();const na=checkAch(true);if(na.length)showAch(na);
 }
@@ -3078,12 +3088,23 @@ function bestAssign(S){const n=S.length,m=Math.max(n,S[0]?S[0].length:0),INF=1e9
       for(let j=0;j<=m;j++)if(used[j]){u[p[j]]+=d;v[j]-=d;}else minv[j]-=d;j0=j1;}while(p[j0]!==0);
     do{const j1=way[j0];p[j0]=p[j1];j0=j1;}while(j0);}
   const res=Array(n).fill(-1);for(let j=1;j<=m;j++)if(p[j]&&j<=S[p[j]-1].length)res[p[j]-1]=j-1;return res;}
+// essaie chaque choix de version pour les joueurs en plusieurs exemplaires, et garde la meilleure répartition
+function bestUnique(slots,cards){const G=new Map();cards.forEach(c=>{const k=nameKey(c);if(!G.has(k))G.set(k,[]);G.get(k).push(c);});
+  let groups=[...G.values()],combos=groups.reduce((t,g)=>t*g.length,1);
+  if(combos>512)groups=groups.map(g=>g.length>1?[...g].sort((a,b)=>ovr(b.s)-ovr(a.s)).slice(0,2):g); // très grande collection : les 2 meilleures versions
+  const multi=groups.filter(g=>g.length>1),single=groups.filter(g=>g.length===1).map(g=>g[0]);let best=null,bv=-1;
+  const n=multi.reduce((t,g)=>t*g.length,1);
+  for(let c=0;c<Math.min(n,4096);c++){let r=c;const pool=single.slice();for(const g of multi){pool.push(g[r%g.length]);r=Math.floor(r/g.length);}
+    const S=slots.map(sl=>pool.map(p=>slotScore(p,sl))),as=bestAssign(S),v=as.reduce((t,j,i)=>t+(j>=0?S[i][j]:0),0);
+    if(v>bv){bv=v;best=as.map(j=>j>=0?pool[j]:null);}}
+  return best||[];}
 $('t-auto').addEventListener('click',async()=>{
   const slots=activeSlots(),cards=players.filter(p=>fitsSlot(p,slots[0]));
   if(!cards.length){toast("Aucune carte de ton classeur ne peut encore jouer. Ouvre des boosters !");return;}
-  const before=teamScore(),as=bestAssign(slots.map(sl=>cards.map(p=>slotScore(p,sl)))),team={};
-  as.forEach((j,i)=>{if(j>=0)team[slots[i].k]=cards[j].id;});
-  if(state.noLib&&state.team.LIB&&!Object.values(team).includes(state.team.LIB))team.LIB=state.team.LIB; // le libéro mis de côté reste prêt
+  const before=teamScore(),pick=bestUnique(slots,cards),team={};
+  slots.forEach((sl,i)=>{if(pick[i])team[sl.k]=pick[i].id;});
+  const kl=state.noLib&&players.find(q=>q.id===state.team.LIB);
+  if(kl&&!Object.values(team).includes(kl.id)&&!Object.values(team).some(id=>sameName(players.find(q=>q.id===id),kl)))team.LIB=kl.id; // le libéro mis de côté reste prêt
   for(const sl of DIV_SLOTS){const best=players.filter(p=>fitsDiv(p,sl)).sort((a,b)=>divGain(b,slots)-divGain(a,slots))[0];
     if(best&&divGain(best,slots)>0)team[sl.k]=best.id;else if(state.team[sl.k])team[sl.k]=state.team[sl.k];}
   state.team=team;await saveState();renderTeam();sfx.sparkle();const after=teamScore();
