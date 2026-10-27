@@ -1207,6 +1207,18 @@ body.player .tabs{grid-template-columns:repeat(4,minmax(0,1fr))} /* sans l'ongle
 .tv-sec span{font-weight:700;font-size:.86rem;display:flex;flex-direction:column;line-height:1.15}.tv-sec span small{font-weight:500;font-size:.7rem;color:var(--muted)}
 .tv-sec i{display:block;height:7px;border-radius:4px;background:rgba(255,255,255,.08);overflow:hidden}.tv-sec u{display:block;height:100%;border-radius:4px}
 .tv-sec em{font-style:normal;font-family:var(--data);font-weight:700;text-align:right}
+.acc-wait{border:1px solid rgba(255,210,63,.45);background:linear-gradient(135deg,rgba(255,210,63,.12),transparent)}.acc-wait b{color:#FFD23F;font-family:var(--display);font-weight:900;font-size:1.2rem;text-transform:uppercase}
+#f-sec.locked{opacity:.45;pointer-events:none}
+.acc-badge{min-width:22px;height:22px;padding:0 6px;border-radius:11px;background:#FF5A5A;color:#fff;font-family:var(--data);font-weight:700;font-size:.8rem;display:grid;place-items:center}
+.tab{position:relative}.tab-dot{position:absolute;top:6px;right:calc(50% - 22px);width:10px;height:10px;border-radius:50%;background:#FF5A5A;box-shadow:0 0 8px #FF5A5A}
+.acc-row{display:flex;flex-direction:column;gap:8px;padding:12px 14px;border-radius:14px;background:rgba(255,255,255,.04);border:1px solid var(--line)}
+.acc-row.wait{border-color:rgba(255,210,63,.5);background:rgba(255,210,63,.07)}.acc-row.no{opacity:.7}
+.acc-top{display:flex;justify-content:space-between;align-items:center;gap:8px}.acc-top b{font-size:1.05rem;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.acc-top small{color:var(--muted);font-weight:500}
+.acc-pill{flex:none;padding:3px 10px;border-radius:999px;font-family:var(--data);font-weight:700;font-size:.72rem;text-transform:uppercase}
+.acc-pill.ok{background:rgba(62,224,143,.18);color:#3EE08F}.acc-pill.wait{background:rgba(255,210,63,.2);color:#FFD23F}.acc-pill.no{background:rgba(255,90,90,.2);color:#FF8A8A}
+.acc-info{margin:0;font-size:.82rem;color:var(--muted);line-height:1.4}.acc-info small{font-family:var(--data)}
+.acc-act{display:flex;gap:8px;flex-wrap:wrap}.acc-act .btn{flex:1;min-width:0;padding:9px 8px;font-size:.84rem}.acc-act .btn.danger{background:#C8102E;border-color:#C8102E;color:#fff}
+#pg-in{width:100%;text-align:center;font-size:1.1rem}
 </style>
 
 <header class="appbar">
@@ -1230,7 +1242,7 @@ body.player .tabs{grid-template-columns:repeat(4,minmax(0,1fr))} /* sans l'ongle
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"><rect x="5" y="3" width="15" height="18" rx="2"/><path d="M5 7H3M5 12H3M5 17H3"/><path d="M10 8h6M10 12h6"/></svg>Classeur</button>
     <button class="tab" role="tab" type="button" id="tab-btn-team" data-tab="team" aria-selected="false" aria-controls="tab-team">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"><circle cx="8" cy="8" r="3"/><circle cx="16" cy="8" r="3"/><path d="M2.5 20c.7-3.5 2.8-5.5 5.5-5.5s4.8 2 5.5 5.5M10.5 20c.7-3.5 2.8-5.5 5.5-5.5s4.8 2 5.5 5.5"/></svg>Équipe</button>
-    <button class="tab" role="tab" type="button" id="tab-btn-match" data-tab="match" aria-selected="false" aria-controls="tab-match">
+    <button class="tab" role="tab" type="button" id="tab-btn-match" data-tab="match" aria-selected="false" aria-controls="tab-match"><span class="tab-dot" id="tab-dot" hidden></span>
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 3c-2 3-2 6 0 9s2 6 0 9M3.5 9c3 1 6 1 8.5 3s5.5 2 8.5 3M4 16c3-2 6-2 8-4s5-3 8-3"/></svg>Match</button>
   </div>
   <div class="tabpane" id="tab-cards" role="tabpanel" aria-labelledby="tab-btn-cards">
@@ -1317,6 +1329,9 @@ body.player .tabs{grid-template-columns:repeat(4,minmax(0,1fr))} /* sans l'ongle
     </div>
     <div class="net" id="m-net"><i></i><span id="m-net-txt">Connexion au serveur…</span><button class="btn" type="button" id="m-net-retry" hidden>Réessayer</button></div>
     <div class="banner" id="m-noteam" hidden><span>Complète ton équipe dans l'onglet <b>Équipe</b> : c'est elle qui joue tes défis.</span></div>
+    <div class="section acc-wait" id="acc-wait" hidden></div>
+    <div class="section" id="adm-acc" hidden><div class="rank-head"><span class="label">Comptes (admin)</span><span class="acc-badge" id="adm-acc-n" hidden></span></div>
+      <p class="note" style="margin:0" id="adm-acc-txt"></p><button class="btn" type="button" id="adm-acc-go">Gérer les comptes</button></div>
     <div class="section" id="f-sec">
       <span class="label">Ajouter un ami</span>
       <div class="fcode"><span>Ton code ami</span><b id="f-mycode"></b><button class="btn" type="button" id="f-copy">Copier</button></div>
@@ -1628,6 +1643,23 @@ body.player .tabs{grid-template-columns:repeat(4,minmax(0,1fr))} /* sans l'ongle
     <h2 id="tv-title">Équipe</h2>
   </div>
   <div class="sh-body" id="tv-body"></div>
+</section>
+<section class="upd" id="pgate" hidden role="dialog" aria-modal="true" aria-labelledby="pg-t">
+  <form class="upd-box" id="pg-form" novalidate>
+    <span class="upd-ic" aria-hidden="true"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"/></svg></span>
+    <b id="pg-t">Bienvenue sur Cartes Volley !</b>
+    <p class="note upd-msg" style="margin:0">Choisis ton pseudo : c'est le nom que tes amis verront dans les classements et les défis. Tu pourras le changer plus tard dans l'onglet Match.</p>
+    <label class="sr" for="pg-in">Ton pseudo</label><input class="text-in" type="text" id="pg-in" maxlength="40" autocomplete="off" enterkeyhint="done" placeholder="Ton pseudo">
+    <p class="err" id="pg-err" hidden></p>
+    <button class="btn primary big" type="submit" id="pg-go">C'est parti</button>
+  </form>
+</section>
+<section class="msheet" id="accounts" hidden aria-label="Comptes">
+  <div class="sh-bar">
+    <button class="icon-btn" type="button" id="ac-close" aria-label="Fermer"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+    <h2>Comptes</h2>
+  </div>
+  <div class="sh-body" id="ac-body"></div>
 </section>
 <div class="toast" id="toast" role="status" hidden></div>
 
@@ -2167,6 +2199,8 @@ window.__back=function(){
   if(!$('chp').hidden){$('chp-later').click();return true;}
   if(!$('frp').hidden){$('frp-later').click();return true;}
   if(!$('upd').hidden){if(upd.step!=='dl')$('upd-later').click();return true;}
+  if(!$('pgate').hidden)return true; // le pseudo est obligatoire
+  if(!$('accounts').hidden){$('accounts').hidden=true;return true;}
   if(!$('tview').hidden){closeTeamView();return true;}
   if(!$('guide').hidden){closeGuide();return true;}
   if(!$('sheet').hidden){closeSheet();return true;}
@@ -3264,15 +3298,17 @@ function netMsg(e,who){const c=e&&e.code;who=who?esc(who):'ton pote';
   if(c==='cards'){netCards();return e.data&&e.data.who==='theirs'?`L'équipe de ${who} contient des cartes qui ne sont pas dans la liste officielle : il doit rouvrir l'appli avec internet, refaire son équipe si besoin, puis préparer un nouveau QR.`:"Ton équipe contient des cartes qui ne sont pas (ou plus) dans la liste officielle. Ta liste vient d'être mise à jour : vérifie ton équipe et prépare un nouveau QR.";}
   if(c==='unknown_friend')return`${who} n'est pas encore connecté au serveur : il doit ouvrir la dernière version de l'appli avec internet.`;
   if(c==='self')return"C'est ton propre code.";
+  if(c==='pending')return"Ton compte attend la validation de l'admin : tu pourras ajouter des amis et les défier dès qu'il l'aura validé.";
+  if(c==='blocked')return"Ton compte a été bloqué par l'admin.";
   if(c==='bad_key'||c==='unknown_player')return"Ton compte en ligne n'est pas reconnu. Réessaie dans un instant.";
   return"Le serveur a refusé la demande. Réessaie dans un instant.";}
-function netApplyMe(me){if(!me)return;net.me=me;if(state.elo!==me.elo){state.elo=me.elo;saveState();}if(me.pseudo!==state.pseudo)netSyncPseudo();}
+function netApplyMe(me){if(!me)return;net.me=me;if(typeof renderAccState==='function')renderAccState();if(state.elo!==me.elo){state.elo=me.elo;saveState();}if(me.pseudo!==state.pseudo)netSyncPseudo();}
 let pseudoBusy=false;
 async function netSyncPseudo(){ // le pseudo de ce téléphone fait foi : on le renvoie au serveur tant qu'il n'y est pas
   if(!net.on||pseudoBusy||!state.pseudo||(net.me&&net.me.pseudo===state.pseudo))return;pseudoBusy=true;
   try{const j=await api('hello',{pseudo:state.pseudo});net.me=j.me;if(j.me.elo!==state.elo){state.elo=j.me.elo;saveState();}netRank(true);}catch(e){}finally{pseudoBusy=false;}}
 let helloP=null;
-function netHello(){if(!helloP)helloP=netHello1().finally(()=>{helloP=null;});return helloP;}
+function netHello(){if(!state.pseudoSet)return Promise.resolve();if(!helloP)helloP=netHello1().finally(()=>{helloP=null;});return helloP;}
 async function netHello1(){
   if(!SERVER){net.on=false;net.err='off';renderNet();return;}
   ensureProfile();
@@ -3287,7 +3323,7 @@ function netStartPoll(){if(net.timer)return;net.timer=setInterval(()=>{if(!docum
 document.addEventListener('visibilitychange',()=>{if(!document.hidden){if(net.on){netPoll();netCards();}else if(SERVER)netHello();}});
 async function netPoll(){
   if(!net.on||net.polling)return;net.polling=true;
-  try{const j=await api('inbox');netApplyMe(j.me);
+  try{const j=await api('inbox',isAdmin&&admTok()?{token:admTok()}:{});netApplyMe(j.me);onPending(j.pending);
     for(const m of j.matches||[]){if(state.played.includes(m.id)){netAck(m.id);continue;}if(!net.queue.some(x=>x.id===m.id))net.queue.push(m);}
     onChals(j.chals);onFreqs(j.freqs);}
   catch(e){if(e.code==='net'){net.on=false;net.err='net';renderNet();clearInterval(net.timer);net.timer=null;setTimeout(netHello,15000);}}
@@ -3465,7 +3501,7 @@ function renderMatchTab(){
   $('m-elo').textContent=state.elo;$('m-rankname').textContent=rankName(state.elo);
   const rk=state.matches.filter(m=>!m.friendly),w=rk.filter(m=>m.win).length,l=rk.length-w;
   $('m-record').textContent=rk.length?`${w} victoire${w>1?'s':''} · ${l} défaite${l>1?'s':''}`:'Tout le monde commence à '+ELO_START+' d\'élo. Gagner contre plus fort que toi rapporte plus.';
-  $('m-noteam').hidden=teamFull();$('f-mycode').textContent=state.pid;renderChals();renderFreqs();
+  $('m-noteam').hidden=teamFull();$('f-mycode').textContent=state.pid;renderChals();renderFreqs();renderAccState();
   // classement : amis ou général, depuis le serveur
   renderNet();document.querySelectorAll('#r-seg button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.r===rankView));$('r-seg').hidden=!net.rank;
   const RR=rankRows();
@@ -3484,6 +3520,44 @@ function renderMatchTab(){
 }
 $('m-hist').addEventListener('click',e=>{const r=e.target.closest('.mh-row.has');if(r)openSheet(state.matches[+r.dataset.i]);});
 $('m-pseudo').addEventListener('change',async()=>{const v=cleanPseudo($('m-pseudo').value);if(!v){$('m-pseudo').value=state.pseudo;return;}if(v===state.pseudo){$('m-pseudo').value=v;return;}state.pseudo=v;$('m-pseudo').value=v;await saveState();renderMatchTab();netSyncPseudo();});
+
+/* premier lancement : on demande le pseudo tout de suite */
+const DEF_PSEUDO=/^Joueur \d{4}$/;
+if(!state.pseudoSet&&state.pseudo&&!DEF_PSEUDO.test(state.pseudo)){state.pseudoSet=true;saveState();} // déjà choisi avant cette version
+function pseudoGate(){if(state.pseudoSet)return false;$('pgate').hidden=false;$('pg-in').value='';$('pg-err').hidden=true;setTimeout(()=>{try{$('pg-in').focus();}catch(e){}},300);return true;}
+$('pg-form').addEventListener('submit',async e=>{e.preventDefault();const v=cleanPseudo($('pg-in').value);
+  if(Array.from(v).length<2){$('pg-err').textContent='Ton pseudo doit faire au moins 2 caractères.';$('pg-err').hidden=false;return;}
+  if(DEF_PSEUDO.test(v)){$('pg-err').textContent='Choisis un vrai pseudo, que tes amis reconnaîtront.';$('pg-err').hidden=false;return;}
+  ensureProfile();state.pseudo=v;state.pseudoSet=true;await saveState();$('pgate').hidden=true;ac();sfx.ding('silver');toast(`Bienvenue ${v} !`);
+  if(typeof renderMatchTab==='function')renderMatchTab();netHello();});
+/* compte en attente ou bloqué ; l'admin valide les nouveaux comptes */
+function renderAccState(){const me=net.me,w=$('acc-wait');if(!w)return;const ok=!me||me.ok===undefined||me.ok===1;
+  w.hidden=ok||!net.on;if(!ok)w.innerHTML=me.ok<0?`<b>Compte bloqué</b><p class="note" style="margin:0">L'admin a bloqué ton compte : tu peux toujours ouvrir tes boosters et jouer la campagne, mais plus jouer en ligne.</p>`
+    :`<b>Compte en attente de validation</b><p class="note" style="margin:0">L'admin doit valider ton compte avant que tu puisses ajouter des amis, les défier et apparaître dans les classements. En attendant, ouvre tes boosters et joue la campagne !</p>`;
+  $('f-sec').classList.toggle('locked',!ok);
+  const a=$('adm-acc'),n=net.pending||0;if(a){a.hidden=!(isAdmin&&net.on&&admTok());$('adm-acc-n').hidden=!n;$('adm-acc-n').textContent=n;$('adm-acc-txt').textContent=n?`${n} nouveau${n>1?'x':''} joueur${n>1?'s':''} attend${n>1?'ent':''} ta validation.`:'Aucun compte en attente. Tu peux voir et gérer tous les comptes.';}
+  $('tab-dot').hidden=!(isAdmin&&n);}
+let lastPend=0;
+function onPending(n){if(n===undefined)return;const before=net.pending||0;net.pending=n;if(n>before&&n>lastPend){toast(`${n} nouveau${n>1?'x':''} joueur${n>1?'s':''} attend${n>1?'ent':''} ta validation (onglet Match).`);buzz([40,40,40]);}lastPend=n;renderAccState();if(!$('accounts').hidden&&n!==before)openAccounts();}
+const agoTxt=ts=>{if(!ts)return'jamais';const m=Math.round((Date.now()-ts)/6e4);return m<2?'à l\'instant':m<60?`il y a ${m} min`:m<1440?`il y a ${Math.round(m/60)} h`:`il y a ${Math.round(m/1440)} j`;};
+const dateTxt=ts=>ts?new Intl.DateTimeFormat('fr-FR',{day:'numeric',month:'short'}).format(new Date(ts)):'';
+async function openAccounts(){
+  if(!admTok()){toast("Connecte-toi d'abord au serveur avec le mot de passe admin (onglet Cartes).");return;}
+  $('accounts').hidden=false;const body=$('ac-body');if(!body.children.length)body.innerHTML='<p class="note">Chargement…</p>';
+  try{const j=await api('players',{token:admTok()});net.pending=j.pending;renderAccState();
+    const L={1:['Validé','ok'],0:['En attente','wait'],'-1':['Bloqué','no']};
+    body.innerHTML=`<p class="note" style="margin:0">${j.players.length} compte${j.players.length>1?'s':''} · ${j.pending} en attente. Un compte en attente ou bloqué peut jouer seul (boosters, campagne), mais n'apparaît nulle part et ne peut ni ajouter d'amis ni défier.</p>`+
+      j.players.map(x=>{const st=L[x.ok]||L[0];return`<div class="acc-row ${st[1]}"><div class="acc-top"><b>${esc(x.pseudo)}${x.me?' <small>(toi)</small>':''}</b><span class="acc-pill ${st[1]}">${st[0]}</span></div>
+        <p class="acc-info">Inscrit le ${dateTxt(x.created)} · vu ${agoTxt(x.seen)} · ${x.w+x.l} match${x.w+x.l>1?'s':''} classé${x.w+x.l>1?'s':''} · ${x.elo} élo · campagne étape ${x.cst} · ${x.nf} ami${x.nf>1?'s':''}${x.team?'':' · pas d\'équipe'}<br><small>code ${esc(x.pid)}</small></p>
+        ${x.me?'':`<div class="acc-act">${x.ok!==1?`<button class="btn primary" type="button" data-acc="ok" data-pid="${esc(x.pid)}">Valider</button>`:''}${x.ok!==-1?`<button class="btn" type="button" data-acc="block" data-pid="${esc(x.pid)}">Bloquer</button>`:''}<button class="btn acc-del" type="button" data-acc="delete" data-pid="${esc(x.pid)}">Supprimer</button></div>`}</div>`;}).join('');}
+  catch(e){body.innerHTML=`<p class="err">${e.code==='not_admin'?"Ton jeton admin n'est plus valable : reconnecte-toi avec le mot de passe admin dans l'onglet Cartes.":esc(netMsg(e))}</p>`;}
+}
+$('ac-close').addEventListener('click',()=>{$('accounts').hidden=true;});
+$('adm-acc-go').addEventListener('click',openAccounts);
+$('ac-body').addEventListener('click',async e=>{const b=e.target.closest('[data-acc]');if(!b)return;const act=b.dataset.acc,pid=b.dataset.pid;
+  if(act==='delete'&&!b.dataset.sure){b.dataset.sure='1';b.textContent='Confirmer la suppression';b.classList.add('danger');setTimeout(()=>{if(b.isConnected){delete b.dataset.sure;b.textContent='Supprimer';b.classList.remove('danger');}},4000);return;}
+  b.disabled=true;try{await api('moderate',{token:admTok(),target:pid,act});toast(act==='ok'?'Compte validé.':act==='block'?'Compte bloqué.':'Compte supprimé.');sfx.ding(act==='ok'?'gold':'bronze');}catch(err){toast(netMsg(err));}
+  await openAccounts();netRank(true);});
 $('m-pseudo').setAttribute('maxlength','40'); // la vraie limite (16 caractères, emojis compris) est appliquée à la validation
 $('m-pseudo').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();e.target.blur();}});
 $('m-rank').addEventListener('click',e=>{const ft=e.target.closest('[data-fteam]');if(ft){friendTeam(ft.dataset.fteam,ft);return;}const cc=e.target.closest('[data-chcancel]');if(cc){answerChal(cc.dataset.chcancel,'cancel',cc);return;}const fc=e.target.closest('[data-frcancel]');if(fc){answerFreq(fc.dataset.frcancel,'cancel',fc);return;}const ok=e.target.closest('[data-chok]');if(ok){answerChal(ok.dataset.chok,true,ok);return;}const fo=e.target.closest('[data-frok]');if(fo){answerFreq(fo.dataset.frok,true,fo);return;}const d=e.target.closest('[data-defi]'),a=e.target.closest('[data-add]');if(d&&!d.disabled)challenge(d.dataset.defi,d);else if(a)addFriend(a.dataset.add,a);});
@@ -4595,7 +4669,7 @@ try{const t=localStorage.getItem('cartes-volley-onglet');if(['packs','binder','t
 appReady=true;applyRole();if(isAdmin)renderOfficial();
 setTimeout(checkUpdate,2500);
 connect();
-setTimeout(netHello,600);
+setTimeout(()=>{if(!pseudoGate())netHello();},600);
 </script>
 
 </body></html>
