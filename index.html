@@ -124,8 +124,14 @@ button{font:inherit;color:inherit;cursor:pointer}
 .c-star{width:28%;opacity:.8}
 .card.divers .face{gap:1.5%}
 .card.divers .c-photo{font-size:clamp(1rem,5.5vw,2rem)}
-.mini.divers .mface::after{content:"DIVERS";position:absolute;left:50%;bottom:5%;transform:translateX(-50%);font-family:var(--data);font-weight:700;font-size:8cqw;letter-spacing:.12em;background:rgba(0,0,0,.75);color:#fff;padding:0 5cqw;border-radius:99px}
+.card .c-bon{grid-template-columns:repeat(var(--n),auto);justify-content:center;gap:0 10px}
+.card .c-bon b{font-size:clamp(.85rem,3.8vw,1rem)}
+.mini.divers.gym .mface::after{content:"GYMNASE"}
+.mini.divers .mface::after{content:"OBJET";position:absolute;left:50%;bottom:5%;transform:translateX(-50%);font-family:var(--data);font-weight:700;font-size:8cqw;letter-spacing:.12em;background:rgba(0,0,0,.75);color:#fff;padding:0 5cqw;border-radius:99px}
 .postes.kinds{grid-template-columns:1fr 1fr}
+.postes.rars{grid-template-columns:repeat(4,1fr)}.postes.rars b{font-size:.9rem}
+.postes .rar-bronze{color:#E9A877}.postes .rar-silver{color:#DCE3EA}.postes .rar-gold{color:#FFD23F}.postes .rar-icon{color:#C9B8FF}
+.postes label:has(input:checked) b[class^=rar-]{color:#1B0A00}
 .stack{display:flex;flex-direction:column;gap:12px}
 textarea.text-in{font-size:1rem;font-weight:500;resize:none;line-height:1.35}
 .live.solo{grid-template-columns:1fr;text-align:center;padding:12px}
@@ -382,6 +388,10 @@ body.player #tab-btn-cards,body.player #fab,body.player #m-export-cards,body.pla
 .bench{display:grid;grid-template-columns:minmax(0,110px) 1fr;gap:14px;align-items:center;padding:12px;border-radius:14px;background:rgba(255,255,255,.04);border:1px solid var(--line)}
 .bench .tslot .tempty{border-color:rgba(255,255,255,.4)}
 .bench p{margin:0;color:var(--muted);font-size:.88rem}
+.div-slots{display:grid;grid-template-columns:repeat(2,minmax(0,110px));gap:22px;justify-content:center;padding:12px;border-radius:14px;background:rgba(255,255,255,.04);border:1px solid var(--line)}
+.div-slots .tslot .tempty{border-color:rgba(255,255,255,.4)}
+.div-slots .tslot .tval{font-size:.72rem;text-align:center;line-height:1.25;min-height:1.25em}
+.div-tot{margin:0;font-size:.9rem;color:var(--muted)}.div-tot b{color:var(--ink)}
 .pk-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(100px,1fr));gap:12px}
 .pk-card{position:relative;display:flex;flex-direction:column;align-items:center;gap:4px;border:0;background:none;padding:0;cursor:pointer;min-width:0}
 .pk-card .mini{width:100%}
@@ -1328,6 +1338,10 @@ body.player .tab{font-size:min(1.1rem,2.95vw)} /* sans l'onglet Cartes */
     <div class="court"><span class="court-row-label" style="top:8px">AVANT</span><span class="court-row-label" style="bottom:6px">ARRIÈRE</span><div class="court-grid" id="court"></div></div>
     <label class="toggle"><input type="checkbox" id="t-lib" checked><span class="sw"></span><span><b>Jouer avec un libéro</b><small>Décoche pour jouer à 6, sans libéro</small></span></label>
     <div class="bench"><div id="lib-slot"></div><p id="t-lib-txt">Le libéro remplace un central en défense. Il est noté sur sa réception et sa défense.</p></div>
+    <div class="section" id="t-div-sec"><span class="label">Objet et gymnase</span>
+      <p class="note" style="margin:0">Facultatifs. Leurs bonus s'ajoutent aux stats de tous tes joueurs, en campagne, en défi et en tournoi. Le moral compte pour toutes les stats.</p>
+      <div class="div-slots"><div id="obj-slot"></div><div id="gym-slot"></div></div>
+      <p class="div-tot" id="t-div-tot"></p></div>
     <div class="row-actions"><button class="btn" type="button" id="t-clear">Vider l'équipe</button><button class="btn primary" type="button" id="t-auto">Composer au mieux</button></div>
     <div class="section" id="t-tac-sec"><span class="label">Consignes de jeu</span>
       <p class="note" style="margin:0">Elles servent en campagne et dans tes défis. Chacune a un avantage et un défaut : elle ne rapporte que si elle colle à tes cartes et à celles d'en face. <a class="lnk" data-guide>Comment choisir ?</a></p>
@@ -1392,7 +1406,7 @@ body.player .tab{font-size:min(1.1rem,2.95vw)} /* sans l'onglet Cartes */
     <div class="section" id="d-div-sec" hidden>
       <span class="label">Carte divers</span>
       <p class="d-desc" id="d-desc"></p>
-      <div class="bars"><div class="bar"><span>Note</span><span class="track"><i id="d-note-bar"></i></span><b id="d-note"></b></div></div>
+      <div class="bars" id="d-bon"></div><p class="note" id="d-bon-txt" style="margin:0"></p>
     </div>
     <div class="section" id="d-radar-sec">
       <span class="label">Profil de jeu</span>
@@ -1429,7 +1443,7 @@ body.player .tab{font-size:min(1.1rem,2.95vw)} /* sans l'onglet Cartes */
       <span class="label">Type de carte</span>
       <div class="postes kinds" id="f-kinds">
         <label><input type="radio" name="kind" id="f-k-joueur" value="joueur" checked><b>Joueur</b><small>6 statistiques</small></label>
-        <label><input type="radio" name="kind" id="f-k-divers" value="divers"><b>Divers</b><small>Une seule note</small></label>
+        <label><input type="radio" name="kind" id="f-k-divers" value="divers"><b>Divers</b><small>Objet ou gymnase</small></label>
       </div>
       <label class="toggle" for="f-fullart"><input type="checkbox" id="f-fullart"><span class="sw" aria-hidden="true"></span>
         <span><b>Full Art</b><small>Carte holographique : la photo prend toute la carte</small></span></label>
@@ -1446,8 +1460,15 @@ body.player .tab{font-size:min(1.1rem,2.95vw)} /* sans l'onglet Cartes */
     </div>
     <div class="section" id="f-stats-sec"><span class="label">Notes de 0 à 100</span><div class="sliders" id="sliders"></div></div>
     <div class="section" id="f-div-sec" hidden>
-      <div class="sl"><label for="f-note">Note de 0 à 100</label><output id="o-note" for="f-note">50</output>
-        <input type="range" id="f-note" min="0" max="100" step="1" value="50"></div>
+      <span class="label">Emplacement dans l'équipe</span>
+      <div class="postes kinds" id="f-dts">
+        <label><input type="radio" name="dt" id="f-dt-objet" value="objet" checked><b>Objet</b><small>Ballon, maillot, mascotte…</small></label>
+        <label><input type="radio" name="dt" id="f-dt-gym" value="gym"><b>Gymnase</b><small>La salle où joue l'équipe</small></label>
+      </div>
+      <div class="stack" id="f-rar-wrap"><span class="label">Rareté</span>
+      <div class="postes rars" id="f-rars"></div></div>
+      <div class="stack" id="f-bon-wrap"><span class="label">Bonus pour tous les joueurs de l'équipe (0 = aucun)</span>
+      <div class="sliders" id="f-bons"></div></div>
       <label class="label" for="f-desc">Description</label>
       <textarea class="text-in" id="f-desc" maxlength="60" rows="2" placeholder="Ex. Le ballon fétiche depuis 2019" enterkeyhint="done"></textarea>
     </div>
@@ -1736,6 +1757,16 @@ const POSTES_ALL=[...POSTES,{v:'DIV',l:'Divers'}];
 const posteL=v=>(POSTES_ALL.find(p=>p.v===v)||{l:v}).l;
 const isDiv=p=>!!p&&p.kind==='divers';
 const isSigP=p=>!!(p&&p.signature&&p.photo); // une Signature n'a ni note ni stats
+// cartes divers : un objet ou un gymnase, avec des bonus de 0 à 5 qui s'ajoutent à tous les joueurs de l'équipe
+const DIV_BON=[{k:'ser',l:'Service',a:'SER'},{k:'blo',l:'Contre',a:'CTR'},{k:'att',l:'Attaque',a:'ATT'},{k:'rec',l:'Réception',a:'REC'},{k:'def',l:'Défense',a:'DEF'},{k:'pas',l:'Passe',a:'PAS'},{k:'mor',l:'Moral',a:'MOR'}];
+const DIV_RAR=[['bronze','Bronze',55],['silver','Argent',70],['gold','Or',80],['icon','Icône',90]]; // rareté d'une carte divers (sa note cachée)
+const cleanBon=b=>{const o={};DIV_BON.forEach(x=>{const v=Math.max(0,Math.min(5,Math.round(+(b&&b[x.k])||0)));if(v)o[x.k]=v;});return o;};
+const isGym=p=>isDiv(p)&&p.dt==='gym';
+const divKindL=p=>isGym(p)?'Gymnase':'Objet';
+const bonOf=p=>p&&isDiv(p)&&!isSigP(p)?(p.bon||{}):{};
+const bonList=p=>DIV_BON.filter(x=>bonOf(p)[x.k]).map(x=>({...x,v:bonOf(p)[x.k]}));
+const bonTxt=p=>bonList(p).map(x=>`+${x.v} ${x.l.toLowerCase()}`).join(' · ');
+const bonShort=p=>bonList(p).map(x=>`+${x.v} ${x.a}`).join(' ');
 const vt=p=>isSigP(p)?'gold':tier(ovr(p.s)); // couleur affichée : dorée pour les Signature
 const sortVal=p=>isSigP(p)?101:ovr(p.s);
 const SIG_CHANCE=0.005; // 0,5 % de chance qu'un booster contienne une Signature, tirée au hasard parmi toutes
@@ -1761,13 +1792,14 @@ function normalize(p){
   base.createdAt=+p.createdAt||idTime(base.id)||base.updatedAt;
   if(p.kind==='divers'){ // une carte divers n'a qu'une note : on la recopie partout pour que tri, rareté et boosters marchent pareil
     const note=clampN(p.note!=null?p.note:(p.s?ovr(p.s):50));
-    return{...base,kind:'divers',poste:'DIV',note,desc:String(p.desc||'').slice(0,60),s:allS(note)};
+    const dt=p.dt==='gym'||p.dt==='objet'?p.dt:(/gymnase|salle|stade/i.test(base.name)?'gym':'objet');
+    return{...base,kind:'divers',poste:'DIV',note,desc:String(p.desc||'').slice(0,60),s:allS(note),dt,bon:cleanBon(p.bon)};
   }
   const s={};SKILLS.forEach(x=>s[x.k]=clampN(p.s&&p.s[x.k]));
   return{...base,kind:'joueur',poste:POSTES.some(q=>q.v===p.poste)?p.poste:'POL',s};
 }
 const body=p=>({...bodyBase(p),fullart:!!p.fullart,signature:!!p.signature,createdAt:p.createdAt||Date.now()});
-const bodyBase=p=>isDiv(p)?{kind:'divers',name:p.name,poste:'DIV',photo:p.photo,note:p.note,desc:p.desc||'',s:p.s,updatedAt:p.updatedAt}
+const bodyBase=p=>isDiv(p)?{kind:'divers',name:p.name,poste:'DIV',photo:p.photo,note:p.note,desc:p.desc||'',s:p.s,dt:p.dt||'objet',bon:cleanBon(p.bon),updatedAt:p.updatedAt}
   :{kind:'joueur',name:p.name,poste:p.poste,photo:p.photo,s:p.s,updatedAt:p.updatedAt};
 const shown=()=>players.length?players:EXAMPLES;
 
@@ -1909,14 +1941,14 @@ function hexIcon(s){
 const STAR=`<svg class="c-star" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l2.9 6.6 7.1.6-5.4 4.7 1.6 7L12 17.3 5.8 20.9l1.6-7L2 9.2l7.1-.6z" fill="currentColor" fill-opacity=".75"/></svg>`;
 function cardHTML(p,i=0,tagOk=true){
   const o=ovr(p.s),dv=isDiv(p),fa=p.fullart&&p.photo,sg=p.signature&&p.photo;
-  return`<button class="card ${vt(p)}${dv?' divers':''}${fa?' fullart':''}${sg?' signature':''}" type="button" data-id="${esc(p.id)}" style="--i:${i}" aria-label="${esc(p.name)}, ${posteL(p.poste)}, ${sg?'Signature':'note '+o}">
+  return`<button class="card ${vt(p)}${dv?' divers':''}${fa?' fullart':''}${sg?' signature':''}" type="button" data-id="${esc(p.id)}" style="--i:${i}" aria-label="${esc(p.name)}, ${dv?divKindL(p):posteL(p.poste)}, ${sg?'Signature':dv?(bonTxt(p)||'sans bonus'):'note '+o}">
     ${p.example&&tagOk?'<span class="tag">Exemple</span>':''}
     <div class="face">
       ${sg?'<div class="sig-rim"></div>':''}${fa?`<div class="fa-art"><img src="${p.photo}" alt=""><div class="fa-holo"></div><div class="fa-glit"></div></div>`:''}
-      <div class="c-top"><div>${sg?'':`<div class="c-ovr">${o}</div>`}<span class="c-pos">${esc(p.poste)}</span></div>${dv||sg?STAR:hexIcon(p.s)}</div>
+      <div class="c-top"><div>${sg||dv?'':`<div class="c-ovr">${o}</div>`}<span class="c-pos">${dv?(isGym(p)?'GYM':'OBJET'):esc(p.poste)}</span></div>${dv||sg?STAR:hexIcon(p.s)}</div>
       <div class="c-photo">${p.photo?`<img src="${p.photo}" alt="">`:esc(initials(p.name))}</div>
       <div class="c-name">${esc(p.name)}</div>
-      ${dv?`<div class="c-div"><span class="c-kind">DIVERS</span><span class="c-desc">${esc(p.desc||'')}</span></div>`
+      ${dv&&!sg?(()=>{const L=bonList(p);return`<div class="c-div"><span class="c-kind">${isGym(p)?'GYMNASE':'OBJET'}</span>${L.length?`<div class="c-stats c-bon" style="--n:${L.length>4?4:L.length}">${L.map(x=>`<div><b>+${x.v}</b><span>${x.a}</span></div>`).join('')}</div>`:''}${L.length<=3&&p.desc?`<span class="c-desc">${esc(p.desc)}</span>`:''}</div>`;})()
         :sg?'<div class="c-sigline">Édition signée</div>'
         :`<div class="c-stats">${SKILLS.map(x=>`<div><b>${p.s[x.k]}</b><span>${x.a}</span></div>`).join('')}</div>`}
     </div></button>`;
@@ -1949,7 +1981,7 @@ function radar(s,{size=340,labels=true,anim=true,cmp=null}={}){
 function render(){
   const list=shown();
   $('banner').hidden=players.length>0;
-  const rated=list.filter(p=>!isSigP(p));
+  const rated=list.filter(p=>!isSigP(p)&&!isDiv(p));
   const avg=rated.length?Math.round(rated.reduce((t,p)=>t+ovr(p.s),0)/rated.length):0;
   const best=[...rated].sort((a,b)=>ovr(b.s)-ovr(a.s))[0];
   $('summary').innerHTML=`<div class="sum"><b>${list.length}</b><span>Cartes</span></div>
@@ -1988,11 +2020,13 @@ function openDetail(id,keepScroll){
   openId=id;const o=ovr(p.s);
   $('d-title').textContent=p.name;
   $('d-card').innerHTML=cardHTML(p,0,false);
-  $('d-tier').innerHTML=`${TIER_L[tier(o)]} · <b>${posteL(p.poste)}</b>${p.signature&&p.photo?' · <b style="color:#FFD700">Signature</b>':p.fullart&&p.photo?' · Full Art':''}${p.example?' · exemple':''}`;
+  $('d-tier').innerHTML=`${TIER_L[tier(o)]} · <b>${isDiv(p)?divKindL(p):posteL(p.poste)}</b>${p.signature&&p.photo?' · <b style="color:#FFD700">Signature</b>':p.fullart&&p.photo?' · Full Art':''}${p.example?' · exemple':''}`;
   const dv=isDiv(p),sgp=isSigP(p),noStats=dv||sgp;
   $('d-div-sec').hidden=!noStats;$('d-radar-sec').hidden=noStats;$('d-traits').hidden=noStats;$('d-bars-sec').hidden=noStats;
-  $('d-note').closest('.bars').hidden=sgp;$('d-div-sec').querySelector('.label').textContent=sgp?'Carte Signature':'Carte divers';
-  if(noStats){$('d-desc').textContent=sgp?(dv&&p.desc?p.desc+' · ':'')+'Édition signée, sans statistiques.':(p.desc||'Pas de description.');if(!sgp){$('d-note').textContent=p.note;$('d-note-bar').style.width=p.note+'%';}}
+  $('d-bon').hidden=sgp;$('d-bon-txt').hidden=sgp;$('d-div-sec').querySelector('.label').textContent=sgp?'Carte Signature':divKindL(p);
+  if(noStats){$('d-desc').textContent=sgp?(dv&&p.desc?p.desc+' · ':'')+'Édition signée, sans statistiques.':(p.desc||'');$('d-desc').hidden=!$('d-desc').textContent;
+    if(!sgp){const L=bonList(p);$('d-bon').innerHTML=L.map(x=>`<div class="bar"><span>${x.l}</span><span class="track"><i style="width:${x.v*20}%"></i></span><b>+${x.v}</b></div>`).join('');
+      $('d-bon-txt').textContent=L.length?`Place-la dans l'emplacement ${divKindL(p).toLowerCase()} de ton équipe : ${L.some(x=>x.k==='mor')?'le moral s\'ajoute à toutes les stats, et ':''}ces bonus comptent pour tous tes joueurs, en campagne, en défi et en tournoi.`:'Cette carte ne donne aucun bonus pour l\'instant : elle compte pour ta collection.';}}
   if(sgp)$('d-tier').innerHTML=`<b style="color:#FFD700">Signature</b> · ${esc(posteL(p.poste))}${p.example?' · exemple':''}`;
   const others=shown().filter(x=>x.id!==id&&!isDiv(x)&&!isSigP(x));
   const prev=$('d-compare').value;
@@ -2038,6 +2072,12 @@ $('d-card').addEventListener('pointerleave',e=>{const c=e.currentTarget.querySel
 $('f-postes').innerHTML=POSTES.map(p=>`<label><input type="radio" name="poste" id="f-p-${p.v}" value="${p.v}"><b>${p.v}</b><small>${p.l}</small></label>`).join('');
 $('sliders').innerHTML=SKILLS.map(x=>`<div class="sl"><label for="f-${x.k}">${x.l}</label><output id="o-${x.k}" for="f-${x.k}">50</output>
   <input type="range" id="f-${x.k}" min="0" max="100" step="1" value="50"></div>`).join('');
+$('f-rars').innerHTML=DIV_RAR.map(([t,l])=>`<label><input type="radio" name="rar" value="${t}"><b class="rar-${t}">${l}</b></label>`).join('');
+$('f-bons').innerHTML=DIV_BON.map(x=>`<div class="sl"><label for="fb-${x.k}">${x.l}</label><output id="ob-${x.k}" for="fb-${x.k}">0</output>
+  <input type="range" id="fb-${x.k}" min="0" max="5" step="1" value="0"></div>`).join('');
+const formBon=()=>{const o={};DIV_BON.forEach(x=>o[x.k]=+$('fb-'+x.k).value);return cleanBon(o);};
+const formRar=()=>(document.querySelector('#f-rars input:checked')||{}).value||'bronze';
+document.querySelectorAll('#f-bons input,#f-rars input,#f-dts input').forEach(i=>i.addEventListener('input',()=>updateLive()));
 function formS(){const s={};SKILLS.forEach(x=>s[x.k]=+$('f-'+x.k).value);return s;}
 const formDiv=()=>$('f-k-divers').checked;
 function setKindUI(){
@@ -2047,14 +2087,14 @@ function setKindUI(){
   if(!editing||!editing.id)$('f-title').textContent=dv?'Nouvelle carte divers':'Nouveau joueur';
   const sg=$('f-sig').checked; // une Signature n'a ni note ni stats
   if(sg){$('f-stats-sec').hidden=true;$('f-live').hidden=true;}else $('f-live').hidden=false;
-  $('f-note').closest('.sl').hidden=sg;
+  $('f-bon-wrap').hidden=sg;$('f-rar-wrap').hidden=sg;
   updateLive();
 }
 document.querySelectorAll('#f-kinds input').forEach(i=>i.addEventListener('change',setKindUI));
-$('f-note').addEventListener('input',()=>updateLive());
 function updateLive(){
-  if(formDiv()){const n=+$('f-note').value,t=tier(n);$('o-note').textContent=n;$('f-note').style.setProperty('--v',n+'%');
-    $('f-ovr').textContent=n;$('f-tier').textContent=TIER_L[t];$('f-ovr').style.color={icon:'#C9B8FF',gold:'#FFD23F',silver:'#DCE3EA',bronze:'#E9A877'}[t];return;}
+  if(formDiv()){const t=formRar(),b=formBon();DIV_BON.forEach(x=>{const v=+$('fb-'+x.k).value;$('ob-'+x.k).textContent=v?'+'+v:'0';$('fb-'+x.k).style.setProperty('--v',v*20+'%');});
+    const tot=Object.values(b).reduce((a,c)=>a+c,0);$('f-ovr').textContent=tot?'+'+tot:'–';
+    $('f-tier').textContent=`${TIER_L[t]} · ${$('f-dt-gym').checked?'gymnase':'objet'}${tot?'':' sans bonus'}`;$('f-ovr').style.color={icon:'#C9B8FF',gold:'#FFD23F',silver:'#DCE3EA',bronze:'#E9A877'}[t];return;}
   const s=formS();SKILLS.forEach(x=>{$('o-'+x.k).textContent=s[x.k];$('f-'+x.k).style.setProperty('--v',s[x.k]+'%');});
   const o=ovr(s),t=tier(o);$('f-ovr').textContent=o;$('f-tier').textContent=TIER_L[t];
   $('f-ovr').style.color={icon:'#C9B8FF',gold:'#FFD23F',silver:'#DCE3EA',bronze:'#E9A877'}[t];
@@ -2155,7 +2195,9 @@ function openEditor(p){
   SKILLS.forEach(x=>$('f-'+x.k).value=p&&!isDiv(p)?p.s[x.k]:50);
   draftOrig=null;$('f-fullart').checked=!!(p&&(p.fullart||p.signature));$('f-sig').checked=!!(p&&p.signature);$('f-fullart').disabled=$('f-sig').checked;
   $('f-k-divers').checked=isDiv(p);$('f-k-joueur').checked=!isDiv(p);
-  $('f-note').value=isDiv(p)?p.note:50;$('f-desc').value=isDiv(p)?(p.desc||''):'';
+  $('f-desc').value=isDiv(p)?(p.desc||''):'';
+  const rt=isDiv(p)?tier(p.note):'bronze';document.querySelectorAll('#f-rars input').forEach(i=>i.checked=i.value===rt);
+  $('f-dt-gym').checked=isGym(p);$('f-dt-objet').checked=!isGym(p);DIV_BON.forEach(x=>$('fb-'+x.k).value=isDiv(p)?(bonOf(p)[x.k]||0):0);
   $('f-err').hidden=true;setAvatar();setKindUI();show('editor');
 }
 $('form').addEventListener('submit',async e=>{
@@ -2166,9 +2208,9 @@ $('form').addEventListener('submit',async e=>{
   const isNew=!editing.id;
   const id=editing.id||('p'+Date.now().toString(36)+Math.random().toString(36).slice(2,6));
   if($('f-fullart').checked&&!draftPhoto){$('f-err').textContent='Ajoute une photo pour faire une carte Full Art.';$('f-err').hidden=false;return;}
-  const n=+$('f-note').value;
+  const rt=formRar(),n=editing&&isDiv(editing)&&tier(editing.note)===rt?editing.note:DIV_RAR.find(x=>x[0]===rt)[2]; // on garde l'ancienne note si la rareté ne change pas
   const signature=$('f-sig').checked,fullart=$('f-fullart').checked||signature;
-  const p=formDiv()?{id,fullart,kind:'divers',name,poste:'DIV',note:n,desc:$('f-desc').value.trim().slice(0,60),photo:draftPhoto,s:allS(n)}
+  const p=formDiv()?{id,fullart,kind:'divers',name,poste:'DIV',note:n,desc:$('f-desc').value.trim().slice(0,60),photo:draftPhoto,s:allS(n),dt:$('f-dt-gym').checked?'gym':'objet',bon:formBon()}
     :{id,fullart,kind:'joueur',name,poste,photo:draftPhoto,s:formS()};
   p.signature=signature;if(signature){p.s=allS(0);if(p.kind==='divers')p.note=0;}p.createdAt=(editing&&editing.createdAt)||Date.now();
   await persist(p);
@@ -2328,7 +2370,7 @@ function packOdds(pool,type='classic'){ // chance d'apparaître, estimée par si
   const map=new Map(pool.map(p=>[p.id,isSigP(p)?Math.min(1,SIG_CHANCE*PACK_TYPES[type].sig)/nSig:cnt.get(p.id)/N]));oddsCache={key,map};return map;
 }
 function packHTML(type='classic'){return`<div class="pack-top"></div><div class="pack-bot"><div class="pack-art">${HEX_BIG}<b>BOOSTER</b><span>${PACK_TYPES[type].sub}</span><i>5 CARTES</i></div></div>`;}
-function miniHTML(p){const o=ovr(p.s);const fa=p.fullart&&p.photo,sg=p.signature&&p.photo;return`<div class="mini ${vt(p)}${isDiv(p)?' divers':''}${fa?' fullart':''}${sg?' signature':''}"><div class="mface">${sg?'<div class="msr"></div>':''}${fa?`<div class="mfa"><img src="${p.photo}" alt=""></div>`:''}<div class="mo">${sg?'':o}<small>${esc(p.poste)}</small></div>
+function miniHTML(p){const o=ovr(p.s),dv=isDiv(p);const fa=p.fullart&&p.photo,sg=p.signature&&p.photo;return`<div class="mini ${vt(p)}${dv?' divers':''}${isGym(p)?' gym':''}${fa?' fullart':''}${sg?' signature':''}"><div class="mface">${sg?'<div class="msr"></div>':''}${fa?`<div class="mfa"><img src="${p.photo}" alt=""></div>`:''}<div class="mo">${sg||dv?'':o}<small>${dv?'':esc(p.poste)}</small></div>
   <div class="mp">${p.photo?`<img src="${p.photo}" alt="">`:esc(initials(p.name))}</div><div class="mn">${esc(p.name)}</div></div></div>`;}
 function renderCycle(){
   const nt=nextType(),c=+state.count||0,pos=c%28; // pos = boosters déjà ouverts dans le cycle en cours
@@ -2921,6 +2963,19 @@ const slotScore=(p,sl)=>Math.round(Object.entries(POSTE_W[sl.p]).reduce((t,[k,v]
 const teamCard=sl=>{const p=players.find(x=>x.id===state.team[sl.k]);return fitsSlot(p,sl)?p:null;};
 const activeSlots=()=>state.noLib?TEAM_SLOTS.slice(0,6):TEAM_SLOTS; // sans libéro : 6 joueurs
 const teamFull=()=>activeSlots().every(sl=>teamCard(sl));
+// emplacements facultatifs : un objet et un gymnase, dont les bonus vont à tous les joueurs
+const DIV_SLOTS=[{k:'OBJ',l:'Objet',dt:'objet',div:1},{k:'GYM',l:'Gymnase',dt:'gym',div:1}];
+const fitsDiv=(p,sl)=>!!p&&owns(p.id)&&isDiv(p)&&!isSigP(p)&&(p.dt||'objet')===sl.dt;
+const divCard=k=>{const sl=DIV_SLOTS.find(x=>x.k===k),p=players.find(x=>x.id===state.team[k]);return fitsDiv(p,sl)?p:null;};
+// bonus par stat : objet + gymnase (leur moral compte partout), plus le moral de champion
+function teamBonus(withBoost=true){const r={},bo=withBoost&&typeof boostOn==='function'&&boostOn()?3:0,cs=DIV_SLOTS.map(x=>divCard(x.k)).filter(Boolean);
+  SKILLS.forEach(x=>r[x.k]=bo+cs.reduce((t,c)=>t+(bonOf(c)[x.k]||0)+(bonOf(c).mor||0),0));return r;}
+const bonusTxt=b=>DIV_BON.filter(x=>x.k!=='mor'&&b[x.k]).map(x=>`+${b[x.k]} ${x.l.toLowerCase()}`).join(' · ');
+const withBonus=(s,b)=>{const o={...s};for(const k in b)if(b[k])o[k]=Math.min(100,(+o[k]||0)+b[k]);return o;};
+// ce qu'une carte divers ajoute à la note d'équipe actuelle
+const divGain=(c,slots)=>{const b=bonOf(c),m=b.mor||0;return slots.reduce((t,sl)=>t+Object.entries(POSTE_W[sl.p]).reduce((u,[k,w])=>u+((b[k]||0)+m)*w,0),0)/Math.max(1,slots.length);};
+function divSlotHTML(sl){const p=divCard(sl.k);
+  return`<button class="tslot" type="button" data-slot="${sl.k}" aria-label="${sl.l}${p?', '+esc(p.name):', vide'}"><span class="tpos">${sl.l}</span>${p?miniHTML(p):'<span class="tempty">+</span>'}<span class="tval">${p?(bonShort(p)||'aucun bonus'):'facultatif'}</span></button>`;}
 function teamScore(){const v=activeSlots().map(sl=>{const p=teamCard(sl);return p?slotScore(p,sl):null;}).filter(x=>x!=null);return v.length?Math.round(v.reduce((a,b)=>a+b,0)/v.length):0;}
 function slotHTML(sl){
   const p=teamCard(sl);
@@ -2931,8 +2986,15 @@ function renderTeam(){
   $('lib-slot').innerHTML=slotHTML(TEAM_SLOTS[6]);$('lib-slot').classList.toggle('off',!!state.noLib);$('t-lib').checked=!state.noLib;$('t-lib-txt').textContent=state.noLib?'Sans libéro : tes centraux restent sur le terrain en défense et en réception.':'Le libéro remplace un central en défense. Il est noté sur sa réception et sa défense.';
   const need=activeSlots().length,n=activeSlots().filter(sl=>teamCard(sl)).length,sc=teamScore();renderTac();
   $('t-score').textContent=n?sc:'–';$('t-score').style.color=n?TIER_COL[tier(sc)]:'';
-  renderChem();if(typeof netTeamSoon==='function')netTeamSoon(); // l'équipe enregistrée en ligne sert pour les défis
+  renderChem();renderDivSlots();if(typeof netTeamSoon==='function')netTeamSoon(); // l'équipe enregistrée en ligne sert pour les défis
   $('t-sub').textContent=n===need?`Équipe complète${state.noLib?' à 6':''} · ${TIER_L[tier(sc)].replace('Carte','Niveau')}`:n?`${n} / ${need} postes remplis. La note compte les postes remplis.`:'Touche un poste pour y placer une carte de ton classeur.';
+}
+function renderDivSlots(){
+  $('obj-slot').innerHTML=divSlotHTML(DIV_SLOTS[0]);$('gym-slot').innerHTML=divSlotHTML(DIV_SLOTS[1]);
+  const b=teamBonus(false),any=SKILLS.some(x=>b[x.k]),sc=teamScore(),sl=activeSlots().filter(x=>teamCard(x));
+  const g=Math.round(sl.reduce((t,x)=>{const p=teamCard(x);return t+slotScore({s:withBonus(p.s,b)},x)-slotScore(p,x);},0)/Math.max(1,sl.length));
+  $('t-div-tot').innerHTML=!any?'Aucun bonus pour l\'instant : ouvre des boosters pour trouver des objets et des gymnases.'
+    :`Bonus pour chaque joueur : <b>${bonusTxt(b)}</b>${sl.length?`<br>Note d'équipe avec ces bonus : <b>${sc}</b> → <b style="color:${TIER_COL[tier(sc+g)]}">${sc+g}</b>`:''}`;
 }
 /* consignes de jeu */
 const TAC_DEF=[
@@ -2978,7 +3040,14 @@ function renderChem(){
   box.innerHTML=rows.join('')||'<p class="note" style="margin:0">Place des attaquants pour voir la complicité.</p>';
 }
 let pickSlot=null;
+function openDivPicker(sl){pickSlot=sl;
+  const list=players.filter(p=>fitsDiv(p,sl)),slots=activeSlots();list.sort((a,b)=>divGain(b,slots)-divGain(a,slots)||a.name.localeCompare(b.name,'fr'));
+  $('pk-title').textContent=sl.l;
+  $('pk-note').textContent=list.length?`Tes cartes ${sl.dt==='gym'?'gymnase':'objet'} et leurs bonus. Ils s'ajoutent aux stats de tous tes joueurs.`:`Tu n'as encore aucune carte ${sl.dt==='gym'?'gymnase':'objet'}. Ouvre des boosters !`;
+  $('pk-grid').innerHTML=list.map(p=>`<button class="pk-card${state.team[sl.k]===p.id?' cur':''}" type="button" data-id="${esc(p.id)}">${miniHTML(p)}<b>${esc(bonShort(p)||'aucun bonus')}</b></button>`).join('');
+  $('pk-remove').hidden=!divCard(sl.k);$('pk-cap').hidden=true;show('picker');}
 function openPicker(k){
+  const dsl=DIV_SLOTS.find(x=>x.k===k);if(dsl)return openDivPicker(dsl);
   const sl=TEAM_SLOTS.find(x=>x.k===k);pickSlot=sl;
   const list=players.filter(p=>fitsSlot(p,sl)).sort((a,b)=>slotScore(b,sl)-slotScore(a,sl));
   $('pk-title').textContent=sl.l;
@@ -2993,6 +3062,7 @@ async function setSlot(k,id){
 }
 $('court').addEventListener('click',e=>{const b=e.target.closest('.tslot');if(b)openPicker(b.dataset.slot);});
 $('lib-slot').addEventListener('click',e=>{const b=e.target.closest('.tslot');if(b)openPicker(b.dataset.slot);});
+$('t-div-sec').addEventListener('click',e=>{const b=e.target.closest('.tslot');if(b)openPicker(b.dataset.slot);});
 $('pk-grid').addEventListener('click',async e=>{const b=e.target.closest('.pk-card');if(!b||!pickSlot)return;await setSlot(pickSlot.k,b.dataset.id);closeAll();sfx.whoosh();});
 $('pk-remove').addEventListener('click',async()=>{if(!pickSlot)return;await setSlot(pickSlot.k,null);closeAll();});
 $('pk-cap').addEventListener('click',async()=>{const p=pickSlot&&teamCard(pickSlot);if(!p)return;state.captain=p.id;await saveState();renderTeam();closeAll();toast(`${p.name} est ton capitaine : c'est lui qui soulèvera les coupes.`);sfx.ding('gold');});
@@ -3014,6 +3084,8 @@ $('t-auto').addEventListener('click',async()=>{
   const before=teamScore(),as=bestAssign(slots.map(sl=>cards.map(p=>slotScore(p,sl)))),team={};
   as.forEach((j,i)=>{if(j>=0)team[slots[i].k]=cards[j].id;});
   if(state.noLib&&state.team.LIB&&!Object.values(team).includes(state.team.LIB))team.LIB=state.team.LIB; // le libéro mis de côté reste prêt
+  for(const sl of DIV_SLOTS){const best=players.filter(p=>fitsDiv(p,sl)).sort((a,b)=>divGain(b,slots)-divGain(a,slots))[0];
+    if(best&&divGain(best,slots)>0)team[sl.k]=best.id;else if(state.team[sl.k])team[sl.k]=state.team[sl.k];}
   state.team=team;await saveState();renderTeam();sfx.sparkle();const after=teamScore();
   toast(after>before?`Équipe optimisée : note ${before||'–'} → ${after}`:after===before&&before?`Ton équipe était déjà la meilleure possible (${after})`:`Note d'équipe : ${after}`);
   const na=checkAch(true);if(na.length)showAch(na);
@@ -3029,7 +3101,7 @@ function renderCotd(){
   if(cotdId===p.id+day&&el.innerHTML)return;cotdId=p.id+day;
   const needPerm=typeof DeviceOrientationEvent!=='undefined'&&typeof DeviceOrientationEvent.requestPermission==='function'&&!gyroOn;
   el.innerHTML=`<div class="hero-card" id="cotd-card">${cardHTML(p,0,false)}</div><div><span class="label">Carte du jour</span><h3>${esc(p.name)}</h3>
-    <p>${isSigP(p)?'Signature':TIER_L[tier(ovr(p.s))]}${p.fullart&&p.photo&&!isSigP(p)?' · Full Art':''} · ${esc(posteL(p.poste))}</p><p>Une nouvelle carte de ta collection chaque jour. Penche ton téléphone pour la faire bouger.</p>
+    <p>${isSigP(p)?'Signature':TIER_L[tier(ovr(p.s))]}${p.fullart&&p.photo&&!isSigP(p)?' · Full Art':''} · ${esc(isDiv(p)?divKindL(p):posteL(p.poste))}</p><p>Une nouvelle carte de ta collection chaque jour. Penche ton téléphone pour la faire bouger.</p>
     ${needPerm?'<button class="btn" type="button" id="cotd-gyro">Activer l\'inclinaison</button>':''}</div>`;
   const g=$('cotd-gyro');if(g)g.addEventListener('click',async()=>{try{if((await DeviceOrientationEvent.requestPermission())==='granted'){gyroOn=true;g.remove();}}catch(e){g.remove();}});
 }
@@ -3073,8 +3145,8 @@ async function drawCardImage(p){
     g.restore();
   }
   const sh2=fa?{c:'rgba(0,0,0,.9)',b:14}:{c:'transparent',b:0};const txt=(s2,x,y,font,al='left',col=ink)=>{g.save();g.font=font;g.textAlign=al;g.fillStyle=col;g.shadowColor=sh2.c;g.shadowBlur=sh2.b;g.fillText(s2,x,y);g.restore();};
-  if(!sg)txt(String(o),cx+cw*.09,cy+ch*.17,'900 150px "Big Shoulders Display","Arial Narrow",Impact,sans-serif');
-  txt(p.poste,cx+cw*.095,cy+ch*(sg?.1:.215),'700 44px "Chakra Petch",monospace,sans-serif');
+  if(!sg&&!dv)txt(String(o),cx+cw*.09,cy+ch*.17,'900 150px "Big Shoulders Display","Arial Narrow",Impact,sans-serif');
+  txt(dv?(isGym(p)?'GYM':'OBJET'):p.poste,cx+cw*.095,cy+ch*(sg||dv?.1:.215),'700 44px "Chakra Petch",monospace,sans-serif');
   if(!fa){ // médaillon photo
     const r0=cw*.25,mx0=cx+cw/2,my0=cy+ch*.44;g.save();g.beginPath();g.arc(mx0,my0,r0,0,7);g.fillStyle='rgba(0,0,0,.14)';g.fill();g.clip();
     if(p.photo){try{const im=await loadImg(p.photo),k=Math.max(2*r0/im.width,2*r0/im.height);g.drawImage(im,mx0-im.width*k/2,my0-im.height*k*.42,im.width*k,im.height*k);}catch(e){}}
@@ -3084,7 +3156,9 @@ async function drawCardImage(p){
   txt(p.name.toUpperCase(),cx+cw/2,cy+ch*.74,'900 92px "Big Shoulders Display","Arial Narrow",Impact,sans-serif','center');
   g.fillStyle=fa?'rgba(255,255,255,.5)':'rgba(0,0,0,.28)';g.fillRect(cx+cw*.12,cy+ch*.76,cw*.76,3);
   if(sg)txt('Édition signée',cx+cw/2,cy+ch*.83,'400 72px "Great Vibes","Brush Script MT",cursive','center','#FFE97A');
-  else if(dv){txt('DIVERS',cx+cw/2,cy+ch*.815,'700 38px "Chakra Petch",monospace','center');txt(p.desc||'',cx+cw/2,cy+ch*.865,'italic 600 38px Barlow,sans-serif','center');}
+  else if(dv){const L=bonList(p);txt(isGym(p)?'GYMNASE':'OBJET',cx+cw/2,cy+ch*.805,'700 38px "Chakra Petch",monospace','center');
+    if(L.length){const n=L.length,w=cw*.8/n;L.forEach((x,i)=>{const xx=cx+cw*.1+w*(i+.5);txt('+'+x.v,xx,cy+ch*.87,`700 ${n>5?44:54}px "Chakra Petch",monospace`,'center');txt(x.a,xx,cy+ch*.87+30,'600 24px "Chakra Petch",monospace','center');});}
+    else txt(p.desc||'',cx+cw/2,cy+ch*.865,'italic 600 38px Barlow,sans-serif','center');}
   else SKILLS.forEach((x,i)=>{const col=i%3,row=Math.floor(i/3),xx=cx+cw*(.25+col*.25),yy=cy+ch*(.825+row*.075);
     txt(String(p.s[x.k]),xx,yy,'700 54px "Chakra Petch",monospace','center');txt(x.a,xx,yy+30,'600 24px "Chakra Petch",monospace','center');});
   g.restore();
@@ -3471,8 +3545,8 @@ $('frp-go').addEventListener('click',()=>{const x=frCur;$('frp').hidden=true;frC
 /* défis : le serveur joue le match avec les équipes enregistrées */
 let teamSent='',teamTimer=null;
 function netTeamSoon(){clearTimeout(teamTimer);teamTimer=setTimeout(netTeam,1200);}
-async function netTeam(){if(!net.on)return;const ids=teamFull()?teamIds():null,tac=state.tac||{},k=JSON.stringify([ids,tac]);if(k===teamSent)return;
-  try{await api('team',{ids,tac});teamSent=k;}catch(e){if(e.code==='cards')netCards();}}
+async function netTeam(){if(!net.on)return;const ids=teamFull()?teamIds():null,tac=state.tac||{},obj=(divCard('OBJ')||{}).id||null,gym=(divCard('GYM')||{}).id||null,k=JSON.stringify([ids,tac,obj,gym]);if(k===teamSent)return;
+  try{await api('team',{ids,tac,obj,gym});teamSent=k;}catch(e){if(e.code==='cards')netCards();}}
 let defiBusy=false;
 async function challenge(pid,btn){
   if(defiBusy)return;if(!teamFull()){toast("Complète ton équipe dans l'onglet Équipe pour défier tes amis.");return;}
@@ -3556,7 +3630,9 @@ const duosOf=ids=>ids.slice(0,5).map(a=>ids[5]+'>'+a);
 const chemArr=ids=>ids.map((id,i)=>i<5?Math.min(CHEM_MAX,Math.floor(((state.chem||{})[ids[5]+'>'+id]||0)/CHEM_STEP)):0);
 // mon équipe, telle qu'elle joue (campagne et défis)
 const boostOn=()=>(state.boostUntil||0)>Date.now();
-function myTeam(){if(!teamFull())return null;const ids=teamIds(),bo=boostOn()?3:0;return{ids,tac:{...(state.tac||{})},chem:chemArr(ids),cards:ids.map(id=>{const p=players.find(x=>x.id===id);const s2={...p.s};if(bo)for(const k in s2)s2[k]=Math.min(100,(+s2[k]||0)+bo);return{id,name:p.name,s:s2,poste:p.poste};})};}
+// les bonus (objet, gymnase, moral de champion) sont déjà ajoutés aux stats des cartes
+const divInfo=()=>{const o={};DIV_SLOTS.forEach(sl=>{const c=divCard(sl.k);if(c)o[sl.k.toLowerCase()]={id:c.id,name:c.name,bon:{...bonOf(c)}};});return o;};
+function myTeam(){if(!teamFull())return null;const ids=teamIds(),b=teamBonus();return{ids,tac:{...(state.tac||{})},chem:chemArr(ids),div:divInfo(),cards:ids.map(id=>{const p=players.find(x=>x.id===id);return{id,name:p.name,s:withBonus(p.s,b),poste:p.poste};})};}
 function payloadTeamScore(d){return Math.round(d.cards.reduce((t,c,i)=>{const sl=TEAM_SLOTS.find(x=>x.k===SLOT_ORDER[i]);return t+Math.round(Object.entries(POSTE_W[sl.p]).reduce((u,[k,v])=>u+c.s[k]*v,0));},0)/d.cards.length);} // même note que dans l'onglet Équipe (6 ou 7 joueurs)
 function renderMatchTab(){
   ensureProfile();
@@ -3762,6 +3838,7 @@ function openTeamView(name,cards,o={}){
   $('tv-title').textContent=name;
   $('tv-body').innerHTML=`<div class="tv-head"><div><small>${esc(o.sub||'Équipe')}</small><b>${esc(name)}</b><span>${o.subline||(lib?'Avec libéro':'Sans libéro, à 6')}</span></div><div class="tv-note"><b style="color:${TIER_COL[tier(note)]}">${note}</b><small>note d'équipe</small></div></div>
     ${o.tac?`<p class="tv-tac"><span>${o.tacL||'Leur jeu'} :</span> <b>${esc(tacTxt(o.tac))}</b></p>`:''}
+    ${o.div&&(o.div.obj||o.div.gym)?`<p class="tv-tac">${[['obj','Objet'],['gym','Gymnase']].filter(([k])=>o.div[k]).map(([k,l])=>`<span>${l} :</span> <b>${esc(o.div[k].name)}</b>${bonShort({kind:'divers',bon:o.div[k].bon})?` <small>(${esc(bonShort({kind:'divers',bon:o.div[k].bon}))})</small>`:''}`).join(' &nbsp; ')}</p>`:''}
     ${sec.length?`<div class="tv-sec"><b>Moyennes par secteur</b><div>${sec.map(([l,w,v])=>`<div><span>${l}<small>${w}</small></span><i><u style="width:${Math.max(2,Math.min(100,v))}%;background:${TIER_COL[tier(v)]}"></u></i><em>${v}</em></div>`).join('')}</div></div>`:''}
     <div class="tv-list">${cards.map((p,i)=>{const sl=TEAM_SLOTS.find(x=>x.k===slots[i]),v=slotScore(p,sl);
       return`<div class="tv-row">${miniHTML(p)}<div class="tv-info"><div class="tv-pos"><b>${esc(p.name)}</b><span>${sl.l} · note au poste <em style="color:${TIER_COL[tier(v)]}">${v}</em></span></div>
@@ -3773,7 +3850,9 @@ function closeTeamView(){$('tview').hidden=true;}
 $('tv-close').addEventListener('click',closeTeamView);
 $('t-stats').addEventListener('click',()=>{const sl=activeSlots().filter(x=>teamCard(x));
   if(!sl.length){toast('Place des cartes dans ton équipe pour voir leurs stats.');return;}
-  const n=activeSlots().length;openTeamView(state.pseudo||'Mon équipe',sl.map(x=>teamCard(x)),{slots:sl.map(x=>x.k),sub:'Mon équipe',tac:state.tac,tacL:'Tes consignes',
+  const n=activeSlots().length,b=teamBonus(),bt=bonusTxt(b);
+  openTeamView(state.pseudo||'Mon équipe',sl.map(x=>{const p=teamCard(x);return{...p,s:withBonus(p.s,b)};}),{slots:sl.map(x=>x.k),sub:'Mon équipe',tac:state.tac,tacL:'Tes consignes',div:divInfo(),
+    foot:bt?`Stats avec tes bonus (${bt}).`:'',
     subline:sl.length<n?`${sl.length} / ${n} postes remplis`:(state.noLib?'Sans libéro, à 6':'Avec libéro')});});
 
 async function friendTeam(pid,btn){
@@ -3781,8 +3860,8 @@ async function friendTeam(pid,btn){
   if(btn)btn.disabled=true;
   try{const j=await api('fteam',{code:pid});
     if(!j.team){toast(`${j.friend.pseudo} n'a pas encore d'équipe complète.`);return;}
-    const cards=j.team.cards.map((c,i)=>players.find(p=>p.id===c.id)||{...c,id:'ft'+i,kind:'joueur',photo:null});
-    openTeamView(j.friend.pseudo,cards,{sub:`Équipe de ton ami · ${j.friend.elo} élo`,foot:'Ses consignes de jeu restent secrètes : tu les découvriras sur la feuille de match.'});}
+    const cards=j.team.cards.map((c,i)=>{const p=players.find(q=>q.id===c.id);return p?{...p,s:c.s}:{...c,id:'ft'+i,kind:'joueur',photo:null};}); // stats avec ses bonus
+    openTeamView(j.friend.pseudo,cards,{sub:`Équipe de ton ami · ${j.friend.elo} élo`,div:j.team.div,foot:(j.team.div&&(j.team.div.obj||j.team.div.gym)?'Stats avec ses bonus. ':'')+'Ses consignes de jeu restent secrètes : tu les découvriras sur la feuille de match.'});}
   catch(e){toast(e.code==='not_friend'?"Vous n'êtes pas (encore) amis.":netMsg(e));}
   finally{if(btn)btn.disabled=false;}
 }
