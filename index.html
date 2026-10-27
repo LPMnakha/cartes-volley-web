@@ -107,9 +107,50 @@ button{font:inherit;color:inherit;cursor:pointer}
 .card.gold .c-eng,.mini.gold .c-eng{color:rgba(105,62,0,.24);filter:drop-shadow(.5px 1px 0 rgba(255,250,215,.7))}
 .card.icon .c-eng,.mini.icon .c-eng{color:rgba(70,40,120,.19);filter:drop-shadow(.5px 1px 0 rgba(255,255,255,.75))}
 .c-eng .c-eng-fr,.c-eng .c-eng-tip{opacity:.9}
-.face>.c-eng~*{position:relative;z-index:1}
+.face>.c-eng~*:not(.tw-badge){position:relative;z-index:1}
 /* cartes classiques : tout se règle sur la largeur de la carte, la photo prend plus de place, les 6 stats sur une ligne */
 .card{container-type:inline-size}
+/* Team of the Week : le cadre garde le métal de la rareté, le fond devient noir, la gravure prend la couleur de la rareté */
+.card{--tw:#F0B48A}.card.silver{--tw:#E6ECF3}.card.gold{--tw:#FFD23F}.card.icon{--tw:#D9C8FF}
+.mini{--tw:#F0B48A}.mini.silver{--tw:#E6ECF3}.mini.gold{--tw:#FFD23F}.mini.icon{--tw:#D9C8FF}
+.tw-bg{position:absolute;inset:3.2% 4%;z-index:0;clip-path:polygon(0 6.6%,8.6% 0,91.4% 0,100% 6.6%,100% 87.4%,50% 100%,0 87.4%);
+  background:radial-gradient(90% 55% at 50% 38%,#1E2030,#0B0C12 70%),#0B0C12}
+.card.icon .tw-bg{background:radial-gradient(90% 55% at 50% 38%,#241E3A,#0D0B16 70%)}
+.card.totw:not(.fullart) .face{color:var(--tw)}
+.card.totw:not(.fullart) .c-eng{color:var(--tw);opacity:.5;filter:drop-shadow(0 1px 0 rgba(0,0,0,.7))}
+.card.totw .c-eng .c-eng-tip{display:none}
+.card.totw:not(.fullart) .c-name{border-color:color-mix(in srgb,var(--tw) 45%,transparent)}
+.card.totw:not(.fullart) .c-photo{border-color:var(--tw);background:rgba(255,255,255,.06);box-shadow:0 0 0 .8cqw rgba(0,0,0,.5),0 0 5cqw color-mix(in srgb,var(--tw) 35%,transparent)}
+.card.totw:not(.fullart) .c-hex{opacity:1}
+.card.totw.fullart .fa-art{inset:5.2% 6.4%}
+.card.totw.fullart .tw-bg{background:#0B0C12}
+.tw-up{font-style:normal;font-family:var(--data);font-weight:800;color:#3BEA7E;font-size:.5em;vertical-align:super;margin-left:.1em;letter-spacing:0;text-shadow:0 0 6px rgba(59,234,126,.45)}
+.card.fullart .tw-up{color:#5CFF98!important;text-shadow:0 1px 3px rgba(0,0,0,.95),0 0 6px rgba(59,234,126,.5)}
+.c-stats b{position:relative}.c-stats .tw-up{position:absolute;left:92%;top:-.42em;font-size:.6em;margin:0}
+.c-ovr .tw-up{font-size:.34em;vertical-align:1.3em}
+.bar .track{position:relative}.bar .tw-tr{position:absolute;top:0;bottom:0;background:linear-gradient(90deg,#1FBF5E,#3BEA7E);border-radius:0 99px 99px 0;box-shadow:0 0 8px rgba(59,234,126,.5)}
+.bar.tw b .tw-up{font-size:.7em}.tw-note{margin:6px 0 0}.tw-note b{color:#3BEA7E}.tw-l{color:#3BEA7E}
+.tw-row{display:grid;grid-template-columns:minmax(0,118px) 1fr;gap:12px;align-items:start;padding:10px;border-radius:14px;background:rgba(255,255,255,.04);border:1px solid var(--line)}
+.tw-row+.tw-row{margin-top:10px}.tw-prev .card{animation:none;pointer-events:none}
+.tw-ed{display:flex;flex-direction:column;gap:5px;min-width:0}
+.tw-st{display:grid;grid-template-columns:36px 30px 32px 30px minmax(0,1fr);gap:4px;align-items:center;font-size:.86rem}
+.tw-st span{color:var(--muted);font-family:var(--data);font-weight:700;font-size:.78rem;letter-spacing:.04em}
+.tw-st b{text-align:center;font-family:var(--data);color:var(--muted)}.tw-st b.on{color:#3BEA7E}
+.tw-st em{font-style:normal;font-family:var(--data);font-size:.74rem;white-space:nowrap;color:var(--muted);text-align:right}.tw-st em u{text-decoration:none;color:#3BEA7E;font-weight:700}
+.tw-b{width:30px;height:30px;border-radius:9px;border:1px solid var(--line);background:rgba(255,255,255,.06);color:var(--ink);font-size:1.1rem;font-weight:700;line-height:1;padding:0}
+.tw-b:disabled{opacity:.3}
+.tw-acts{display:flex;flex-wrap:wrap;gap:4px 14px;margin-top:2px}.tw-rm{color:#FF8A8A}
+.tw-pick{display:grid;grid-template-columns:repeat(auto-fill,minmax(78px,1fr));gap:10px;max-height:420px;overflow:auto;padding:2px}
+.tw-dirty{color:#FFB86B}
+.tw-badge{position:absolute;left:50%;bottom:3.4%;transform:translateX(-50%);z-index:3;font-family:var(--data);font-weight:800;font-size:4.6cqw;letter-spacing:.18em;padding:.3cqw 3cqw .3cqw 3.4cqw;border-radius:99px;
+  background:var(--tw);color:#0B0C12;box-shadow:0 0 6cqw color-mix(in srgb,var(--tw) 60%,transparent)}
+.card.icon .tw-badge{background:linear-gradient(90deg,#FFD6F5,#B8E6FF,#C9FFD9,#FFF3B0)}
+.mini.totw .mface::before{content:"";position:absolute;inset:4.5% 5.5%;clip-path:polygon(0 6.6%,8.6% 0,91.4% 0,100% 6.6%,100% 87.4%,50% 100%,0 87.4%);background:#0B0C12;z-index:0}
+.mini.totw:not(.fullart) .mface{color:var(--tw)}
+.mini.totw:not(.fullart) .c-eng{color:var(--tw);opacity:.45}
+.mini.totw .mface::after{content:"TOTW";position:absolute;left:50%;bottom:4%;transform:translateX(-50%);z-index:2;font-family:var(--data);font-weight:800;font-size:7.5cqw;letter-spacing:.12em;background:var(--tw);color:#0B0C12;padding:0 4cqw;border-radius:99px}
+.mini .mo .tw-up{font-size:.42em;vertical-align:1em}
+.mini.fullart.totw .mfa{inset:7% 8%}
 .card:not(.fullart):not(.signature) .face{gap:2.2cqw;padding:8% 8% 16%}
 .card:not(.fullart):not(.signature) .c-ovr{font-size:19cqw}
 .card:not(.fullart):not(.signature) .c-pos{font-size:6.4cqw;margin-top:1.2cqw}
@@ -1303,6 +1344,8 @@ body.player .tab{font-size:min(1.1rem,2.95vw)} /* sans l'onglet Cartes */
       <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M7 3h10v2h3v3a4 4 0 01-4 4h-.4A5 5 0 0113 14.9V18h3v3H8v-3h3v-3.1A5 5 0 018.4 12H8a4 4 0 01-4-4V5h3zm-1 4v1a2 2 0 002 2V7zm12 0v3a2 2 0 002-2V7z"/></svg>Campagne</button>
     <button class="tab" role="tab" type="button" id="tab-btn-multi" data-tab="multi" aria-selected="false" aria-controls="tab-multi"><span class="tab-dot" id="tab-dot" hidden></span>
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 3c-2 3-2 6 0 9s2 6 0 9M3.5 9c3 1 6 1 8.5 3s5.5 2 8.5 3M4 16c3-2 6-2 8-4s5-3 8-3"/></svg><span class="tl">Multijoueur</span><span class="ts">Multi</span></button>
+    <button class="tab adm-only" role="tab" type="button" id="tab-btn-totw" data-tab="totw" aria-selected="false" aria-controls="tab-totw">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linejoin="round"><path d="M12 3l2.6 5.6 6 .7-4.5 4.1 1.2 6L12 16.4 6.7 19.4l1.2-6L3.4 9.3l6-.7z"/></svg>TOTW</button>
   </div>
   <div class="tabpane" id="tab-cards" role="tabpanel" aria-labelledby="tab-btn-cards">
   <div class="cotd" id="cotd" hidden></div>
@@ -1416,6 +1459,14 @@ body.player .tab{font-size:min(1.1rem,2.95vw)} /* sans l'onglet Cartes */
       <div class="rank" id="m-rank"></div></div>
     <div class="section" id="m-hist-sec" hidden><span class="label">Derniers matchs</span><div class="mhist" id="m-hist"></div></div>
     </div>
+  </div>
+  <div class="tabpane" id="tab-totw" role="tabpanel" aria-labelledby="tab-btn-totw" hidden>
+    <div class="pack-head"><div><h2 class="pane-title">Team of the Week</h2><p class="note">Choisis les cartes de la semaine et règle à la main ce que gagne chaque stat. Elles gardent leur rareté, passent en fond noir et jouent avec leurs stats boostées chez tout le monde (campagne, défis, tournois) jusqu'à la prochaine TOTW.</p></div></div>
+    <div class="section tw-cur" id="tw-cur"></div>
+    <div class="section"><div class="rank-head"><span class="label">Cartes de la semaine</span><span class="acc-badge" id="tw-n" hidden></span></div><div class="tw-sel" id="tw-sel"></div></div>
+    <div class="section"><span class="label">Ajouter une carte</span>
+      <input class="text-in" type="search" id="tw-q" placeholder="Chercher un joueur" autocomplete="off" enterkeyhint="search">
+      <div class="tw-pick" id="tw-pick"></div></div>
   </div>
 </main>
 
@@ -1794,6 +1845,13 @@ const bonOf=p=>p&&isDiv(p)&&!isSigP(p)?(p.bon||{}):{};
 const bonList=p=>DIV_BON.filter(x=>bonOf(p)[x.k]).map(x=>({...x,v:bonOf(p)[x.k]}));
 const bonTxt=p=>bonList(p).map(x=>`+${x.v} ${x.l.toLowerCase()}`).join(' · ');
 const bonShort=p=>bonList(p).map(x=>`+${x.v} ${x.a}`).join(' ');
+/* Team of the Week : des cartes choisies par l'admin jouent avec des stats en plus (la rareté reste celle de base) */
+const LS_TOTW='cartes-volley-totw';
+let TOTW=(()=>{try{const t=JSON.parse(localStorage.getItem(LS_TOTW)||'null');return t&&t.cards?t:{ts:0,cards:{}};}catch(e){return{ts:0,cards:{}};}})();
+const twOf=p=>p&&p.id&&!isDiv(p)&&!isSigP(p)?TOTW.cards[p.id]||null:null;
+const effS=p=>{const b=twOf(p);if(!b)return p.s;const o={};SKILLS.forEach(x=>o[x.k]=Math.min(100,(+p.s[x.k]||0)+(b[x.k]||0)));return o;};
+const twUp=(p,k)=>{const b=twOf(p);return b?Math.min(100,(+p.s[k]||0)+(b[k]||0))-(+p.s[k]||0):0;}; // ce que la TOTW ajoute vraiment (plafond 100)
+const twOvrUp=p=>twOf(p)?ovr(effS(p))-ovr(p.s):0;
 const vt=p=>isSigP(p)?'gold':tier(ovr(p.s)); // couleur affichée : dorée pour les Signature
 const sortVal=p=>isSigP(p)?101:ovr(p.s);
 const SIG_CHANCE=0.005; // 0,5 % de chance qu'un booster contienne une Signature, tirée au hasard parmi toutes
@@ -1882,7 +1940,7 @@ async function sha256(t){const b=await crypto.subtle.digest('SHA-256',new TextEn
 let appReady=false; // passe à vrai une fois tout le script chargé
 function renderAdmin(){$('adm-off').hidden=isAdmin;$('adm-on').hidden=!isAdmin;applyRole();if(isAdmin&&appReady)renderOfficial();}
 // seul l'admin voit l'onglet Cartes et peut créer ou modifier des cartes
-function applyRole(){document.body.classList.toggle('player',!isAdmin);if(appReady&&!isAdmin&&!$('tab-cards').hidden)setTab('packs');}
+function applyRole(){document.body.classList.toggle('player',!isAdmin);if(appReady&&!isAdmin&&(!$('tab-cards').hidden||!$('tab-totw').hidden))setTab('packs');}
 $('adm-form').addEventListener('submit',async e=>{
   e.preventDefault();const pw=$('adm-pw').value.trim();if(!pw)return;
   let h='';try{h=await sha256(pw);}catch(err){toast("Vérification impossible dans cette vue.");return;}
@@ -2001,18 +2059,20 @@ function hexIcon(s){
   return`<svg class="c-hex" viewBox="0 0 40 40" aria-hidden="true"><polygon points="${out}" fill="none" stroke="currentColor" stroke-opacity=".45" stroke-width="1.5"/><polygon points="${pts}" fill="currentColor" fill-opacity=".75"/></svg>`;
 }
 const STAR=`<svg class="c-star" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l2.9 6.6 7.1.6-5.4 4.7 1.6 7L12 17.3 5.8 20.9l1.6-7L2 9.2l7.1-.6z" fill="currentColor" fill-opacity=".75"/></svg>`;
+const twTag=v=>v>0?`<i class="tw-up">+${v}</i>`:''; // le petit « +2 » vert des stats boostées
 function cardHTML(p,i=0,tagOk=true){
-  const o=ovr(p.s),dv=isDiv(p),fa=p.fullart&&p.photo,sg=p.signature&&p.photo;
-  return`<button class="card ${vt(p)}${dv?' divers':''}${fa?' fullart':''}${sg?' signature':''}" type="button" data-id="${esc(p.id)}" style="--i:${i}" aria-label="${esc(p.name)}, ${dv?divKindL(p):posteL(p.poste)}, ${sg?'Signature':dv?(bonTxt(p)||'sans bonus'):'note '+o}">
+  const tw=twOf(p),es=effS(p),o=ovr(es),dv=isDiv(p),fa=p.fullart&&p.photo,sg=p.signature&&p.photo;
+  return`<button class="card ${vt(p)}${dv?' divers':''}${fa?' fullart':''}${sg?' signature':''}${tw?' totw':''}" type="button" data-id="${esc(p.id)}" style="--i:${i}" aria-label="${esc(p.name)}, ${dv?divKindL(p):posteL(p.poste)}, ${sg?'Signature':dv?(bonTxt(p)||'sans bonus'):'note '+o+(tw?', Team of the Week':'')}">
     ${p.example&&tagOk?'<span class="tag">Exemple</span>':''}
     <div class="face">
-      ${sg?'<div class="sig-rim"></div>':''}${!fa&&!sg?engSVG(engKey(p)):''}${fa?`<div class="fa-art"><img src="${p.photo}" alt=""><div class="fa-holo"></div><div class="fa-glit"></div></div>`:''}
-      <div class="c-top"><div>${sg||dv?'':`<div class="c-ovr">${o}</div>`}<span class="c-pos">${dv?(isGym(p)?'GYM':'OBJET'):esc(p.poste)}</span></div>${dv||sg?STAR:hexIcon(p.s)}</div>
+      ${sg?'<div class="sig-rim"></div>':''}${tw?'<div class="tw-bg"></div>':''}${!fa&&!sg?engSVG(engKey(p)):''}${fa?`<div class="fa-art"><img src="${p.photo}" alt=""><div class="fa-holo"></div><div class="fa-glit"></div></div>`:''}
+      <div class="c-top"><div>${sg||dv?'':`<div class="c-ovr">${o}${tw?twTag(twOvrUp(p)):''}</div>`}<span class="c-pos">${dv?(isGym(p)?'GYM':'OBJET'):esc(p.poste)}</span></div>${dv||sg?STAR:hexIcon(p.s)}</div>
       <div class="c-photo">${p.photo?`<img src="${p.photo}" alt="">`:esc(initials(p.name))}</div>
       <div class="c-name">${esc(p.name)}</div>
       ${dv&&!sg?(()=>{const L=bonList(p);return`<div class="c-div"><span class="c-kind">${isGym(p)?'GYMNASE':'OBJET'}</span>${L.length?`<div class="c-stats c-bon" style="--n:${L.length>4?4:L.length}">${L.map(x=>`<div><b>+${x.v}</b><span>${x.a}</span></div>`).join('')}</div>`:''}${L.length<=3&&p.desc?`<span class="c-desc">${esc(p.desc)}</span>`:''}</div>`;})()
         :sg?'<div class="c-sigline">Édition signée</div>'
-        :`<div class="c-stats">${SKILLS.map(x=>`<div><b>${p.s[x.k]}</b><span>${x.a}</span></div>`).join('')}</div>`}
+        :`<div class="c-stats">${SKILLS.map(x=>`<div><b>${es[x.k]}${tw?twTag(twUp(p,x.k)):''}</b><span>${x.a}</span></div>`).join('')}</div>`}
+      ${tw?'<span class="tw-badge">TOTW</span>':''}
     </div></button>`;
 }
 function radar(s,{size=340,labels=true,anim=true,cmp=null}={}){
@@ -2082,7 +2142,7 @@ function openDetail(id,keepScroll){
   openId=id;const o=ovr(p.s);
   $('d-title').textContent=p.name;
   $('d-card').innerHTML=cardHTML(p,0,false);
-  $('d-tier').innerHTML=`${TIER_L[tier(o)]} · <b>${isDiv(p)?divKindL(p):posteL(p.poste)}</b>${p.signature&&p.photo?' · <b style="color:#FFD700">Signature</b>':p.fullart&&p.photo?' · Full Art':''}${p.example?' · exemple':''}`;
+  $('d-tier').innerHTML=`${TIER_L[tier(o)]} · <b>${isDiv(p)?divKindL(p):posteL(p.poste)}</b>${twOf(p)?' · <b class="tw-l">TOTW</b>':''}${p.signature&&p.photo?' · <b style="color:#FFD700">Signature</b>':p.fullart&&p.photo?' · Full Art':''}${p.example?' · exemple':''}`;
   const dv=isDiv(p),sgp=isSigP(p),noStats=dv||sgp;
   $('d-div-sec').hidden=!noStats;$('d-radar-sec').hidden=noStats;$('d-traits').hidden=noStats;$('d-bars-sec').hidden=noStats;
   $('d-bon').hidden=sgp;$('d-bon-txt').hidden=sgp;$('d-div-sec').querySelector('.label').textContent=sgp?'Carte Signature':divKindL(p);
@@ -2092,13 +2152,14 @@ function openDetail(id,keepScroll){
   if(sgp)$('d-tier').innerHTML=`<b style="color:#FFD700">Signature</b> · ${esc(posteL(p.poste))}${p.example?' · exemple':''}`;
   const others=shown().filter(x=>x.id!==id&&!isDiv(x)&&!isSigP(x));
   const prev=$('d-compare').value;
-  $('d-compare').innerHTML=`<option value="">Personne</option>`+others.map(x=>`<option value="${esc(x.id)}">${esc(x.name)} (${ovr(x.s)})</option>`).join('');
+  $('d-compare').innerHTML=`<option value="">Personne</option>`+others.map(x=>`<option value="${esc(x.id)}">${esc(x.name)} (${ovr(effS(x))})</option>`).join('');
   $('d-compare').value=keepScroll&&others.some(x=>x.id===prev)?prev:'';
   if(!noStats)drawDetailRadar(true);
-  const sorted=[...SKILLS].sort((a,b)=>p.s[b.k]-p.s[a.k]);
+  const es=effS(p),sorted=[...SKILLS].sort((a,b)=>es[b.k]-es[a.k]);
   $('d-traits').innerHTML=`<div class="trait up"><span class="label">Point fort</span><b>${sorted[0].l}</b></div>
     <div class="trait down"><span class="label">À travailler</span><b>${sorted[5].l}</b></div>`;
-  $('d-bars').innerHTML=SKILLS.map(x=>`<div class="bar"><span>${x.l}</span><span class="track"><i style="width:${p.s[x.k]}%"></i></span><b>${p.s[x.k]}</b></div>`).join('');
+  $('d-bars').innerHTML=SKILLS.map(x=>{const u=twUp(p,x.k);return`<div class="bar${u?' tw':''}"><span>${x.l}</span><span class="track"><i style="width:${p.s[x.k]}%"></i>${u?`<i class="tw-tr" style="left:${p.s[x.k]}%;width:${u}%"></i>`:''}</span><b>${es[x.k]}${twTag(u)}</b></div>`;}).join('')
+    +(twOf(p)?`<p class="note tw-note"><b>Team of the Week</b> : les chiffres en vert sont ajoutés aux stats de base tant que la carte est dans la TOTW.</p>`:'');
   $('d-actions').innerHTML=p.example
     ?`<button class="btn primary full" type="button" id="d-template">Partir de ce modèle</button>`
     :`<button class="btn full" type="button" id="d-share">Partager en image</button>${isAdmin?'<button class="btn" type="button" id="d-del">Supprimer</button><button class="btn primary" type="button" id="d-edit">Modifier</button>':''}`;
@@ -2106,7 +2167,7 @@ function openDetail(id,keepScroll){
 }
 function drawDetailRadar(anim){
   const p=findP(openId);if(!p||isDiv(p)||isSigP(p))return;const q=findP($('d-compare').value);
-  $('d-radar').innerHTML=radar(p.s,{cmp:q?q.s:null,anim});
+  $('d-radar').innerHTML=radar(effS(p),{cmp:q?effS(q):null,anim});
   $('d-legend').innerHTML=q?`<span><i style="background:#FF7A2F"></i>${esc(p.name)}</span><span><i style="background:#5CD6FF"></i>${esc(q.name)}</span>`:'';
 }
 $('d-compare').addEventListener('change',()=>drawDetailRadar(true));
@@ -2432,7 +2493,7 @@ function packOdds(pool,type='classic'){ // chance d'apparaître, estimée par si
   const map=new Map(pool.map(p=>[p.id,isSigP(p)?Math.min(1,SIG_CHANCE*PACK_TYPES[type].sig)/nSig:cnt.get(p.id)/N]));oddsCache={key,map};return map;
 }
 function packHTML(type='classic'){return`<div class="pack-top"></div><div class="pack-bot"><div class="pack-art">${HEX_BIG}<b>BOOSTER</b><span>${PACK_TYPES[type].sub}</span><i>5 CARTES</i></div></div>`;}
-function miniHTML(p){const o=ovr(p.s),dv=isDiv(p);const fa=p.fullart&&p.photo,sg=p.signature&&p.photo;return`<div class="mini ${vt(p)}${dv?' divers':''}${isGym(p)?' gym':''}${fa?' fullart':''}${sg?' signature':''}"><div class="mface">${sg?'<div class="msr"></div>':''}${!fa&&!sg?engSVG(engKey(p)):''}${fa?`<div class="mfa"><img src="${p.photo}" alt=""></div>`:''}<div class="mo">${sg||dv?'':o}<small>${dv?'':esc(p.poste)}</small></div>
+function miniHTML(p){const tw=twOf(p),o=ovr(effS(p)),dv=isDiv(p);const fa=p.fullart&&p.photo,sg=p.signature&&p.photo;return`<div class="mini ${vt(p)}${dv?' divers':''}${isGym(p)?' gym':''}${fa?' fullart':''}${sg?' signature':''}${tw?' totw':''}"><div class="mface">${sg?'<div class="msr"></div>':''}${!fa&&!sg?engSVG(engKey(p)):''}${fa?`<div class="mfa"><img src="${p.photo}" alt=""></div>`:''}<div class="mo">${sg||dv?'':o}${tw?twTag(twOvrUp(p)):''}<small>${dv?'':esc(p.poste)}</small></div>
   <div class="mp">${p.photo?`<img src="${p.photo}" alt="">`:esc(initials(p.name))}</div><div class="mn">${esc(p.name)}</div></div></div>`;}
 function renderCycle(){
   const nt=nextType(),c=+state.count||0,pos=c%28; // pos = boosters déjà ouverts dans le cycle en cours
@@ -2458,13 +2519,15 @@ function renderPacks(){
   $('odds').innerHTML=rows.map(x=>`<div class="odd"><i style="background:${isSigP(x.p)?'#FFD700':col[tier(x.o)]}"></i><span>${esc(x.p.name)}${x.p.signature&&x.p.photo?' <em class="sig-tag">Signature</em>':x.p.fullart&&x.p.photo?' <em class="fa-tag">FULL ART</em>':''}</span><b>${isSigP(x.p)?'–':x.o}</b><span>${few?'–':(x.c*100).toFixed(x.c<.01?2:x.c<.1?1:0)+' %'}</span></div>`).join('');
 }
 function setTab(t){
-  ['cards','packs','binder','team','match','multi'].forEach(k=>{$('tab-'+k).hidden=t!==k;$('tab-btn-'+k).setAttribute('aria-selected',t===k);});
+  if(t==='totw'&&!isAdmin)t='packs';
+  ['cards','packs','binder','team','match','multi','totw'].forEach(k=>{$('tab-'+k).hidden=t!==k;$('tab-btn-'+k).setAttribute('aria-selected',t===k);});
   $('fab').hidden=t!=='cards';try{localStorage.setItem('cartes-volley-onglet',t);}catch(e){}
   if(t==='packs')refreshPackLock();
   if(t==='binder')renderBinder();
   if(t==='team')renderTeam();
   if(t==='match')setMMode('camp');
   if(t==='multi'){setMMode('pvp');renderMatchTab();}
+  if(t==='totw')renderTotw(true);
 }
 document.querySelectorAll('.tab').forEach(b=>b.addEventListener('click',()=>setTab(b.dataset.tab)));
 document.addEventListener('visibilitychange',()=>{if(!document.hidden&&!$('tab-packs').hidden)refreshPackLock();});
@@ -2809,7 +2872,7 @@ async function openPack(bonusType){
   // 3. Révélation carte par carte, la meilleure en dernier
   const walk=$('walk'),txt=$('walk-txt'),tease=$('op-tease');
   for(let i=0;i<5;i++){
-    const p=pulled[i],o=ovr(p.s),t=vt(p),fx=TIER_FX[t],R=TIER_RANK[t];
+    const p=pulled[i],o=ovr(effS(p)),t=vt(p),fx=TIER_FX[t],R=TIER_RANK[t];
     $('op-count').textContent=`CARTE ${i+1} / 5`;
     stage.querySelectorAll('.stack-back').forEach(e=>e.remove());
     for(let k=4-i;k>0;k--)stage.insertAdjacentHTML('beforeend',`<div class="stack-back" style="transform:translate(${k*5}px,${k*-5}px) rotate(${k*1.5}deg)"><div class="cardback">${HEX_BIG}</div></div>`);
@@ -3036,7 +3099,7 @@ const twinSlot=(p,except)=>TEAM_SLOTS.find(x=>x.k!==except&&sameName(players.fin
 function dedupTeam(){const out=[];for(const x of TEAM_SLOTS){const p=players.find(q=>q.id===state.team[x.k]);if(!p)continue;const y=twinSlot(p,x.k);if(!y)continue;
   const q=players.find(c=>c.id===state.team[y.k]),drop=ovr(q.s)<ovr(p.s)||(ovr(q.s)===ovr(p.s)&&p.fullart&&!q.fullart)?y:x;delete state.team[drop.k];out.push(p.name);}return out;}
 const fitsSlot=(p,sl)=>!!p&&owns(p.id)&&!isDiv(p)&&!isSigP(p); // tout le monde peut jouer partout
-const slotScore=(p,sl)=>Math.round(Object.entries(POSTE_W[sl.p]).reduce((t,[k,v])=>t+(+p.s[k]||0)*v,0));
+const slotScore=(p,sl)=>{const s=effS(p);return Math.round(Object.entries(POSTE_W[sl.p]).reduce((t,[k,v])=>t+(+s[k]||0)*v,0));}; // avec les stats TOTW
 const teamCard=sl=>{const p=players.find(x=>x.id===state.team[sl.k]);return fitsSlot(p,sl)?p:null;};
 const activeSlots=()=>state.noLib?TEAM_SLOTS.slice(0,6):TEAM_SLOTS; // sans libéro : 6 joueurs
 const teamFull=()=>activeSlots().every(sl=>teamCard(sl));
@@ -3070,7 +3133,7 @@ function renderTeam(){
 function renderDivSlots(){
   $('obj-slot').innerHTML=divSlotHTML(DIV_SLOTS[0]);$('gym-slot').innerHTML=divSlotHTML(DIV_SLOTS[1]);
   const b=teamBonus(false),any=SKILLS.some(x=>b[x.k]),sc=teamScore(),sl=activeSlots().filter(x=>teamCard(x));
-  const g=Math.round(sl.reduce((t,x)=>{const p=teamCard(x);return t+slotScore({s:withBonus(p.s,b)},x)-slotScore(p,x);},0)/Math.max(1,sl.length));
+  const g=Math.round(sl.reduce((t,x)=>{const p=teamCard(x);return t+slotScore({s:withBonus(effS(p),b)},x)-slotScore(p,x);},0)/Math.max(1,sl.length));
   $('t-div-tot').innerHTML=!any?'Aucun bonus pour l\'instant : ouvre des boosters pour trouver des objets et des gymnases.'
     :`Bonus pour chaque joueur : <b>${bonusTxt(b)}</b>${sl.length?`<br>Note d'équipe avec ces bonus : <b>${sc}</b> → <b style="color:${TIER_COL[tier(sc+g)]}">${sc+g}</b>`:''}`;
 }
@@ -3203,6 +3266,51 @@ $('cotd').addEventListener('pointermove',e=>{const c=$('cotd-card');if(!c)return
 $('cotd').addEventListener('pointerleave',()=>tiltCotd(0,0,50));
 $('cotd').addEventListener('click',e=>{if(e.target.closest('#cotd-gyro'))return;const c=e.target.closest('.card');if(c)openDetail(c.dataset.id);});
 
+/* =================== Team of the Week (admin) =================== */
+let twDraft=null,twArm=0;
+const twEligible=()=>players.filter(p=>!isDiv(p)&&!isSigP(p));
+const twClean=d=>{const o={};for(const id in d){const b={};SKILLS.forEach(x=>{const v=Math.max(0,Math.min(15,Math.round(+(d[id]||{})[x.k]||0)));if(v)b[x.k]=v;});o[id]=b;}return o;};
+const twSame=(a,b)=>{const f=d=>JSON.stringify(Object.keys(d).sort().map(id=>[id,SKILLS.map(x=>(d[id]||{})[x.k]||0)]).filter(([,v])=>v.some(Boolean)));return f(a)===f(b);};
+// dessine une carte comme si la TOTW du brouillon était publiée
+const twPreview=(p,d)=>{const keep=TOTW;TOTW={ts:0,cards:d};try{return cardHTML(p,0,false);}finally{TOTW=keep;}};
+function renderTotw(reset){
+  if(reset||!twDraft)twDraft=JSON.parse(JSON.stringify(TOTW.cards||{}));
+  const ids=Object.keys(twDraft).filter(id=>players.some(p=>p.id===id)),fmt=new Intl.DateTimeFormat('fr-FR',{weekday:'long',day:'numeric',month:'long',hour:'2-digit',minute:'2-digit'});
+  const live=Object.keys(TOTW.cards).length,dirty=!twSame(twDraft,TOTW.cards),empty=ids.filter(id=>!SKILLS.some(x=>(twDraft[id]||{})[x.k]));
+  $('tw-cur').innerHTML=`<p class="note" style="margin:0">${live?`En ligne : <b>${live} carte${live>1?'s':''}</b> en TOTW depuis le ${fmt.format(new Date(TOTW.ts))}.`:'Aucune TOTW en ligne pour l\'instant.'}${dirty?' <b class="tw-dirty">Modifications pas encore publiées.</b>':''}</p>
+    ${empty.length?`<p class="note" style="margin:0;color:#FFB86B">${empty.map(id=>esc(findP(id).name)).join(', ')} : aucun bonus, ${empty.length>1?'elles ne seront pas publiées':'elle ne sera pas publiée'}.</p>`:''}
+    <div class="row-actions"><button class="btn${twArm?' danger':''}" type="button" id="tw-clear" ${live||ids.length?'':'disabled'}>${twArm?'Confirmer : tout retirer':'Vider la TOTW'}</button><button class="btn primary" type="button" id="tw-pub" ${dirty?'':'disabled'}>Publier la TOTW</button></div>`;
+  $('tw-n').hidden=!ids.length;$('tw-n').textContent=ids.length;
+  $('tw-sel').innerHTML=ids.length?ids.map(id=>{const p=findP(id),b=twDraft[id]||{};
+    return`<div class="tw-row" data-twid="${esc(id)}"><div class="tw-prev">${twPreview(p,twDraft)}</div><div class="tw-ed">
+      ${SKILLS.map(x=>{const v=b[x.k]||0,base=+p.s[x.k]||0;return`<div class="tw-st"><span title="${x.l}">${x.a}</span><button class="tw-b" type="button" data-tk="${x.k}" data-d="-1" ${v?'':'disabled'} aria-label="${x.l} moins">−</button><b class="${v?'on':''}">+${v}</b><button class="tw-b" type="button" data-tk="${x.k}" data-d="1" ${v>=15||base+v>=100?'disabled':''} aria-label="${x.l} plus">+</button><em>${base}${v?` → <u>${Math.min(100,base+v)}</u>`:''}</em></div>`;}).join('')}
+      <div class="tw-acts"><button class="linkbtn" type="button" data-tall="1">+1 partout</button><button class="linkbtn" type="button" data-tall="0">Remettre à 0</button><button class="linkbtn tw-rm" type="button" data-trm>Retirer</button></div></div></div>`;}).join('')
+    :'<p class="note" style="margin:0">Aucune carte pour l\'instant : ajoute des joueurs avec la recherche ci-dessous.</p>';
+  const q=($('tw-q').value||'').trim().toLowerCase(),pool=twEligible().filter(p=>!(p.id in twDraft)&&(!q||nameKey(p).includes(q.normalize('NFD').replace(/[\u0300-\u036f]/g,'')))).sort((a,b)=>a.name.localeCompare(b.name,'fr')||ovr(b.s)-ovr(a.s));
+  $('tw-pick').innerHTML=pool.length?pool.map(p=>`<button class="pk-card" type="button" data-twadd="${esc(p.id)}">${miniHTML(p)}<b>${esc(p.name)}${p.fullart?' · FA':''}</b></button>`).join(''):'<p class="note" style="margin:0">Aucune carte à ajouter.</p>';
+}
+$('tw-q').addEventListener('input',()=>renderTotw());
+$('tw-pick').addEventListener('click',e=>{const b=e.target.closest('[data-twadd]');if(!b)return;twDraft[b.dataset.twadd]={};twArm=0;renderTotw();sfx.ding('silver');
+  const r=document.querySelector(`.tw-row[data-twid="${CSS.escape(b.dataset.twadd)}"]`);if(r)r.scrollIntoView({block:'center',behavior:'smooth'});});
+$('tw-sel').addEventListener('click',e=>{const row=e.target.closest('.tw-row');if(!row)return;const id=row.dataset.twid,p=findP(id),b=twDraft[id]=twDraft[id]||{};
+  const st=e.target.closest('[data-tk]'),all=e.target.closest('[data-tall]');
+  if(st){const k=st.dataset.tk;b[k]=Math.max(0,Math.min(15,100-(+p.s[k]||0),(b[k]||0)+(+st.dataset.d)));if(!b[k])delete b[k];}
+  else if(all){SKILLS.forEach(x=>{if(all.dataset.tall==='0')delete b[x.k];else{const v=Math.min(15,100-(+p.s[x.k]||0),(b[x.k]||0)+1);if(v>0)b[x.k]=v;}});}
+  else if(e.target.closest('[data-trm]'))delete twDraft[id];
+  else return;
+  twArm=0;const y=window.scrollY;renderTotw();window.scrollTo(0,y);});
+$('tw-cur').addEventListener('click',async e=>{
+  if(e.target.closest('#tw-clear')){if(!twArm){twArm=1;renderTotw();setTimeout(()=>{if(twArm){twArm=0;if(!$('tab-totw').hidden)renderTotw();}},4000);return;}
+    twArm=0;twDraft={};await twPublish({},'TOTW retirée : les cartes reprennent leurs stats de base');return;}
+  if(e.target.closest('#tw-pub'))await twPublish(twClean(twDraft),'TOTW publiée pour tout le monde');});
+async function twPublish(cards,ok){
+  if(!net.on){toast('Pas de connexion au serveur : réessaie avec internet.');return;}
+  if(!admTok()){toast('Reconnecte-toi en admin pour publier la TOTW.');return;}
+  const b=$('tw-pub');if(b){b.disabled=true;b.textContent='Envoi…';}
+  try{const j=await api('totw',{token:admTok(),cards});state.totwSeen=j.totw.ts;onTotw(j.totw);twDraft=null;renderTotw(true);toast(ok);sfx.ding('gold');}
+  catch(e){toast(e.code==='not_admin'?'Ton accès admin a expiré : reconnecte-toi.':e.code==='bad_card'?'Une carte de la TOTW n\'est pas dans la liste officielle en ligne : publie d\'abord tes cartes.':netMsg(e));renderTotw();}
+}
+
 /* =================== Partager une carte en image =================== */
 const loadImg=src=>new Promise((res,rej)=>{const im=new Image();im.onload=()=>res(im);im.onerror=rej;im.src=src;});
 function cardPath(ctx,x,y,w,h){ctx.beginPath();[[0,.07],[.09,0],[.91,0],[1,.07],[1,.87],[.5,1],[0,.87]].forEach(([a,b],i)=>i?ctx.lineTo(x+a*w,y+b*h):ctx.moveTo(x+a*w,y+b*h));ctx.closePath();}
@@ -3210,7 +3318,7 @@ function artPath(ctx,x,y,w,h){ctx.beginPath();[[0,.065],[.085,0],[.915,0],[1,.06
 async function drawCardImage(p){
   try{await document.fonts.ready;}catch(e){}
   const W=1080,H=1350,cv=document.createElement('canvas');cv.width=W;cv.height=H;const g=cv.getContext('2d');
-  const t=vt(p),o=ovr(p.s),fa=p.fullart&&p.photo,sg=isSigP(p),dv=isDiv(p);
+  const t=vt(p),tw=twOf(p),es=effS(p),o=ovr(es),fa=p.fullart&&p.photo,sg=isSigP(p),dv=isDiv(p),TWC={bronze:'#F0B48A',silver:'#E6ECF3',gold:'#FFD23F',icon:'#D9C8FF'}[t];
   // fond
   let bg=g.createRadialGradient(W/2,H*.42,50,W/2,H*.42,H*.8);bg.addColorStop(0,'#1C3580');bg.addColorStop(1,'#060C1F');g.fillStyle=bg;g.fillRect(0,0,W,H);
   g.save();g.translate(W/2,H*.44);for(let i=0;i<36;i++){g.rotate(Math.PI/18);g.fillStyle=i%2?'rgba(255,210,63,.05)':'rgba(255,255,255,.03)';g.beginPath();g.moveTo(0,0);g.lineTo(-60,-H);g.lineTo(60,-H);g.closePath();g.fill();}g.restore();
@@ -3219,15 +3327,17 @@ async function drawCardImage(p){
   g.save();g.shadowColor='rgba(0,0,0,.6)';g.shadowBlur=60;g.shadowOffsetY=30;cardPath(g,cx,cy,cw,ch);g.fillStyle='#000';g.fill();g.restore();
   g.save();cardPath(g,cx,cy,cw,ch);g.clip();
   let mg=g.createLinearGradient(cx,cy,cx+cw*.6,cy+ch);METAL.forEach((c,i)=>mg.addColorStop(i/(METAL.length-1),c));g.fillStyle=mg;g.fillRect(cx,cy,cw,ch);
-  if(!fa&&!sg){const EC={bronze:['rgba(70,30,6,.24)','rgba(255,236,214,.55)'],silver:['rgba(30,42,58,.2)','rgba(255,255,255,.8)'],gold:['rgba(105,62,0,.24)','rgba(255,250,215,.7)'],icon:['rgba(70,40,120,.19)','rgba(255,255,255,.75)']}[t]||[];
+  if(tw){const bx=cx+cw*.04,by=cy+ch*.032,bw=cw*.92,bh=ch*.936;artPath(g,bx,by,bw,bh);let bk=g.createRadialGradient(cx+cw/2,cy+ch*.38,20,cx+cw/2,cy+ch*.38,cw*.8);bk.addColorStop(0,t==='icon'?'#241E3A':'#1E2030');bk.addColorStop(1,'#0B0C12');g.fillStyle=bk;g.fill();} // TOTW : fond noir dans le cadre
+  if(tw&&!fa){g.save();g.globalAlpha=.5;engDraw(g,engKey(p),cx,cy,cw,ch,TWC,'rgba(0,0,0,.8)');g.restore();}
+  else if(!fa&&!sg){const EC={bronze:['rgba(70,30,6,.24)','rgba(255,236,214,.55)'],silver:['rgba(30,42,58,.2)','rgba(255,255,255,.8)'],gold:['rgba(105,62,0,.24)','rgba(255,250,215,.7)'],icon:['rgba(70,40,120,.19)','rgba(255,255,255,.75)']}[t]||[];
     engDraw(g,engKey(p),cx,cy,cw,ch,EC[0],EC[1]);} // la gravure du poste
-  let hl=g.createRadialGradient(cx+cw*.75,cy,10,cx+cw*.75,cy,cw*.9);hl.addColorStop(0,'rgba(255,255,255,.6)');hl.addColorStop(1,'rgba(255,255,255,0)');g.fillStyle=hl;g.fillRect(cx,cy,cw,ch);
+  let hl=g.createRadialGradient(cx+cw*.75,cy,10,cx+cw*.75,cy,cw*.9);hl.addColorStop(0,tw?'rgba(255,255,255,.12)':'rgba(255,255,255,.6)');hl.addColorStop(1,'rgba(255,255,255,0)');g.fillStyle=hl;g.fillRect(cx,cy,cw,ch);
   g.strokeStyle='rgba(255,255,255,.08)';g.lineWidth=3;for(let i=-ch;i<cw;i+=26){g.beginPath();g.moveTo(cx+i,cy);g.lineTo(cx+i+ch,cy+ch);g.stroke();}
-  let ink='#20120A';
+  let ink=tw?TWC:'#20120A';
   if(fa){
     ink='#FFFFFF';
     if(sg){const rx=cx+cw*.028,ry=cy+ch*.017;let rg=g.createLinearGradient(rx,ry,rx+cw,ry+ch);['#7A4E00','#FFE97A','#B8860B','#FFF6C8','#C99700','#7A4E00'].forEach((c,i,a)=>rg.addColorStop(i/(a.length-1),c));artPath(g,rx,ry,cw*.944,ch*.966);g.fillStyle=rg;g.fill();}
-    const ax=cx+cw*.042,ay=cy+ch*.03,aw=cw*.916,ah=ch*.94;
+    const ax=cx+cw*(tw?.066:.042),ay=cy+ch*(tw?.05:.03),aw=cw*(tw?.868:.916),ah=ch*(tw?.9:.94); // TOTW : liseré noir autour de la photo
     g.save();artPath(g,ax,ay,aw,ah);g.clip();
     try{const im=await loadImg(p.photo),k=Math.max(aw/im.width,ah/im.height),iw=im.width*k,ih=im.height*k;g.drawImage(im,ax+(aw-iw)/2,ay+(ah-ih)*.3,iw,ih);}catch(e){}
     let sh=g.createLinearGradient(0,ay,0,ay+ah);sh.addColorStop(0,'rgba(0,0,0,.5)');sh.addColorStop(.24,'rgba(0,0,0,0)');sh.addColorStop(.46,'rgba(0,0,0,0)');sh.addColorStop(.74,'rgba(0,0,0,.72)');sh.addColorStop(1,'rgba(0,0,0,.9)');g.fillStyle=sh;g.fillRect(ax,ay,aw,ah);
@@ -3238,7 +3348,8 @@ async function drawCardImage(p){
     g.restore();
   }
   const sh2=fa?{c:'rgba(0,0,0,.9)',b:14}:{c:'transparent',b:0};const txt=(s2,x,y,font,al='left',col=ink)=>{g.save();g.font=font;g.textAlign=al;g.fillStyle=col;g.shadowColor=sh2.c;g.shadowBlur=sh2.b;g.fillText(s2,x,y);g.restore();};
-  if(!sg&&!dv)txt(String(o),cx+cw*.09,cy+ch*.17,'900 150px "Big Shoulders Display","Arial Narrow",Impact,sans-serif');
+  if(!sg&&!dv){txt(String(o),cx+cw*.09,cy+ch*.17,'900 150px "Big Shoulders Display","Arial Narrow",Impact,sans-serif');
+    const d=tw?twOvrUp(p):0;if(d>0){g.save();g.font='900 150px "Big Shoulders Display","Arial Narrow",Impact,sans-serif';const ow=g.measureText(String(o)).width;g.restore();txt('+'+d,cx+cw*.09+ow+8,cy+ch*.1,'800 50px "Chakra Petch",monospace','left','#3BEA7E');}}
   txt(dv?(isGym(p)?'GYM':'OBJET'):p.poste,cx+cw*.095,cy+ch*(sg||dv?.1:.215),'700 44px "Chakra Petch",monospace,sans-serif');
   if(!fa){ // médaillon photo
     const r0=cw*.25,mx0=cx+cw/2,my0=cy+ch*.44;g.save();g.beginPath();g.arc(mx0,my0,r0,0,7);g.fillStyle='rgba(0,0,0,.14)';g.fill();g.clip();
@@ -3254,7 +3365,10 @@ async function drawCardImage(p){
     if(L.length){const n=L.length,w=cw*.8/n;L.forEach((x,i)=>{const xx=cx+cw*.1+w*(i+.5);txt('+'+x.v,xx,cy+ch*.87,`700 ${n>5?44:54}px "Chakra Petch",monospace`,'center');txt(x.a,xx,cy+ch*.87+30,'600 24px "Chakra Petch",monospace','center');});}
     else txt(p.desc||'',cx+cw/2,cy+ch*.865,'italic 600 38px Barlow,sans-serif','center');}
   else SKILLS.forEach((x,i)=>{const col=i%3,row=Math.floor(i/3),xx=cx+cw*(.25+col*.25),yy=cy+ch*(.825+row*.075);
-    txt(String(p.s[x.k]),xx,yy,'700 54px "Chakra Petch",monospace','center');txt(x.a,xx,yy+30,'600 24px "Chakra Petch",monospace','center');});
+    txt(String(es[x.k]),xx,yy,'700 54px "Chakra Petch",monospace','center');txt(x.a,xx,yy+30,'600 24px "Chakra Petch",monospace','center');
+    const u=tw?twUp(p,x.k):0;if(u)txt('+'+u,xx+42,yy-22,'800 30px "Chakra Petch",monospace','left','#3BEA7E');});
+  if(tw){g.save();const bw2=210,bh2=50,bx2=cx+cw/2-bw2/2,by2=cy+ch*.958-bh2/2;g.beginPath();g.roundRect(bx2,by2,bw2,bh2,25);g.fillStyle=TWC;g.shadowColor=TWC;g.shadowBlur=24;g.fill();g.restore();
+    txt('TOTW',cx+cw/2,by2+37,'800 34px "Chakra Petch",monospace','center','#0B0C12');}
   g.restore();
   g.save();g.font='900 46px "Big Shoulders Display",Impact,sans-serif';const w1=g.measureText('CARTES ').width,w2=g.measureText('VOLLEY').width,x0=(W-w1-w2)/2;
   g.textAlign='left';g.fillStyle='#F3F5FF';g.fillText('CARTES ',x0,H-56);g.fillStyle='#FF7A2F';g.fillText('VOLLEY',x0+w1,H-56);g.restore();
@@ -3539,12 +3653,19 @@ async function netSyncPseudo(){ // le pseudo de ce téléphone fait foi : on le 
   try{const j=await api('hello',{pseudo:state.pseudo});net.me=j.me;if(j.me.elo!==state.elo){state.elo=j.me.elo;saveState();}netRank(true);}catch(e){}finally{pseudoBusy=false;}}
 let helloP=null;
 function netHello(){if(!state.pseudoSet)return Promise.resolve();if(!helloP)helloP=netHello1().finally(()=>{helloP=null;});return helloP;}
+// la TOTW publiée par l'admin : gardée sur le téléphone, et tout se redessine quand elle change
+function onTotw(t){if(!t||!t.cards||(t.ts===TOTW.ts&&JSON.stringify(t.cards)===JSON.stringify(TOTW.cards)))return;
+  const was=Object.keys(TOTW.cards).length;TOTW={ts:+t.ts||0,cards:t.cards};try{localStorage.setItem(LS_TOTW,JSON.stringify(TOTW));}catch(e){}
+  const mine=Object.keys(TOTW.cards).filter(id=>owns(id)).map(findP).filter(Boolean);
+  if(Object.keys(TOTW.cards).length&&TOTW.ts>(state.totwSeen||0)){state.totwSeen=TOTW.ts;saveState();toast(mine.length?`Nouvelle Team of the Week ! ${mine.map(p=>p.name).join(', ')} ${mine.length>1?'sont':'est'} dedans : stats boostées.`:'Nouvelle Team of the Week : de nouvelles cartes ont des stats boostées.');}
+  else if(was&&!Object.keys(TOTW.cards).length)toast('La Team of the Week est terminée : les cartes reprennent leurs stats de base.');
+  render();if(!$('tab-binder').hidden)renderBinder();if(!$('tab-team').hidden)renderTeam();if(!$('tab-totw').hidden)renderTotw();netTeamSoon();}
 async function netHello1(){
   if(!SERVER){net.on=false;net.err='off';renderNet();return;}
   ensureProfile();
   if(state.resetPending){try{await api('reset',{pseudo:state.pseudo});state.resetPending=false;await saveState();}catch(e){}}
   try{const w=state.matches.filter(m=>m.win).length,j=await api('hello',{pseudo:state.pseudo,elo:state.elo,w,l:state.matches.length-w});
-    net.on=true;net.err='';netApplyMe(j.me);if(j.chem)setChem(j.chem);netStartPoll();if(j.inbox)netPoll();netRank(true);netCards();teamSent='';netTeamSoon();
+    net.on=true;net.err='';netApplyMe(j.me);if(j.chem)setChem(j.chem);onTotw(j.totw);netStartPoll();if(j.inbox)netPoll();netRank(true);netCards();teamSent='';netTeamSoon();
     if((state.chemPend||[]).length||j.me.cst!==state.camp.st||j.me.ctr!==state.camp.tries)netCamp();if(isAdmin&&!admTok())renderOfficial();}
   catch(e){net.on=false;net.err=e.code;if(e.code==='net'||e.code==='server'||e.code==='http'){clearTimeout(net.retry);net.retry=setTimeout(netHello,15000);}}
   renderNet();
@@ -3555,7 +3676,7 @@ async function netPoll(){
   if(!net.on||net.polling)return;net.polling=true;
   try{const j=await api('inbox',isAdmin&&admTok()?{token:admTok()}:{});netApplyMe(j.me);onPending(j.pending);
     for(const m of j.matches||[]){if(state.played.includes(m.id)){netAck(m.id);continue;}if(!net.queue.some(x=>x.id===m.id))net.queue.push(m);}
-    onChals(j.chals);onFreqs(j.freqs);onTours(j.tours);}
+    onChals(j.chals);onFreqs(j.freqs);onTours(j.tours);onTotw(j.totw);}
   catch(e){if(e.code==='net'){net.on=false;net.err='net';renderNet();clearInterval(net.timer);net.timer=null;setTimeout(netHello,15000);}}
   finally{net.polling=false;}
   netDrain();
@@ -3727,7 +3848,7 @@ const CHAMP_BOOST=2; // moral de champion : +2 à toutes les stats pendant 24 h
 const boostOn=()=>(state.boostUntil||0)>Date.now();
 // les bonus (objet, gymnase, moral de champion) sont déjà ajoutés aux stats des cartes
 const divInfo=()=>{const o={};DIV_SLOTS.forEach(sl=>{const c=divCard(sl.k);if(c)o[sl.k.toLowerCase()]={id:c.id,name:c.name,bon:{...bonOf(c)}};});return o;};
-function myTeam(){if(!teamFull())return null;const ids=teamIds(),b=teamBonus();return{ids,tac:{...(state.tac||{})},chem:chemArr(ids),div:divInfo(),cards:ids.map(id=>{const p=players.find(x=>x.id===id);return{id,name:p.name,s:withBonus(p.s,b),poste:p.poste};})};}
+function myTeam(){if(!teamFull())return null;const ids=teamIds(),b=teamBonus();return{ids,tac:{...(state.tac||{})},chem:chemArr(ids),div:divInfo(),cards:ids.map(id=>{const p=players.find(x=>x.id===id);return{id,name:p.name,s:withBonus(effS(p),b),poste:p.poste};})};}
 function payloadTeamScore(d){return Math.round(d.cards.reduce((t,c,i)=>{const sl=TEAM_SLOTS.find(x=>x.k===SLOT_ORDER[i]);return t+Math.round(Object.entries(POSTE_W[sl.p]).reduce((u,[k,v])=>u+c.s[k]*v,0));},0)/d.cards.length);} // même note que dans l'onglet Équipe (6 ou 7 joueurs)
 function renderMatchTab(){
   ensureProfile();
@@ -3937,7 +4058,7 @@ function openTeamView(name,cards,o={}){
     ${sec.length?`<div class="tv-sec"><b>Moyennes par secteur</b><div>${sec.map(([l,w,v])=>`<div><span>${l}<small>${w}</small></span><i><u style="width:${Math.max(2,Math.min(100,v))}%;background:${TIER_COL[tier(v)]}"></u></i><em>${v}</em></div>`).join('')}</div></div>`:''}
     <div class="tv-list">${cards.map((p,i)=>{const sl=TEAM_SLOTS.find(x=>x.k===slots[i]),v=slotScore(p,sl);
       return`<div class="tv-row">${miniHTML(p)}<div class="tv-info"><div class="tv-pos"><b>${esc(p.name)}</b><span>${sl.l} · note au poste <em style="color:${TIER_COL[tier(v)]}">${v}</em></span></div>
-        <div class="tv-stats">${TV_ST.map(([k,l])=>{const x=Math.round(+p.s[k]||0);return`<div><small>${l}</small><i><u style="width:${Math.max(2,Math.min(100,x))}%;background:${TIER_COL[tier(x)]}"></u></i><b>${x}</b></div>`;}).join('')}</div></div></div>`;}).join('')}</div>
+        <div class="tv-stats">${TV_ST.map(([k,l])=>{const x=Math.round(+p.s[k]||0),u=(TOTW.cards[p.id]||{})[k]||0;return`<div><small>${l}</small><i><u style="width:${Math.max(2,Math.min(100,x))}%;background:${TIER_COL[tier(x)]}"></u></i><b>${x}${twTag(u)}</b></div>`;}).join('')}</div></div></div>`;}).join('')}</div>
     ${o.foot?`<p class="note" style="margin:0">${o.foot}</p>`:''}`;
   $('tview').hidden=false;$('tv-body').scrollTop=0;sfx.flip();
 }
@@ -3946,7 +4067,7 @@ $('tv-close').addEventListener('click',closeTeamView);
 $('t-stats').addEventListener('click',()=>{const sl=activeSlots().filter(x=>teamCard(x));
   if(!sl.length){toast('Place des cartes dans ton équipe pour voir leurs stats.');return;}
   const n=activeSlots().length,b=teamBonus(),bt=bonusTxt(b);
-  openTeamView(state.pseudo||'Mon équipe',sl.map(x=>{const p=teamCard(x);return{...p,s:withBonus(p.s,b)};}),{slots:sl.map(x=>x.k),sub:'Mon équipe',tac:state.tac,tacL:'Tes consignes',div:divInfo(),
+  openTeamView(state.pseudo||'Mon équipe',sl.map(x=>{const p=teamCard(x);return{...p,s:withBonus(effS(p),b)};}),{slots:sl.map(x=>x.k),sub:'Mon équipe',tac:state.tac,tacL:'Tes consignes',div:divInfo(),
     foot:bt?`Stats avec tes bonus (${bt}).`:'',
     subline:sl.length<n?`${sl.length} / ${n} postes remplis`:(state.noLib?'Sans libéro, à 6':'Avec libéro')});});
 
