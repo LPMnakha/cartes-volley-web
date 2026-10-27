@@ -5346,7 +5346,7 @@ async function playMatch(sim,disp,names,myIdx,res){
   const drawBall=()=>{const s2=B0*(1+bh*.28);ball.style.width=ball.style.height=s2+'px';ball.style.left=X(bp[0])+'px';ball.style.top=Y(bp[1])+'px';
     const off=bh*.32;shadow.style.width=shadow.style.height=(B0*(1.1+bh*.1))+'px';shadow.style.left=X(bp[0]+off)+'px';shadow.style.top=Y(bp[1]+off)+'px';shadow.style.opacity=Math.max(.25,1-bh*.12);
     ball.style.rotate=(bp[0]*90+bp[1]*60)+'deg';};
-  const place=(e,[x,y])=>{e.style.left=X(x)+'px';e.style.top=Y(y)+'px';};
+  const place=(e,[x,y])=>{if(!e)return;e._p=[x,y];e.style.left=X(x)+'px';e.style.top=Y(y)+'px';};
   let slow=1;const T=ms=>(mSkip||mFF)?0:ms*slow/mSpeed;
   const sleep=ms=>new Promise(r2=>setTimeout(r2,T(ms)));
   const fly=(to,h,ms)=>new Promise(r2=>{if((mSkip||mFF)||!alive()){bp=to;bh=0;drawBall();return r2();}
@@ -5363,10 +5363,14 @@ async function playMatch(sim,disp,names,myIdx,res){
   const posOf=(r,t,i)=>{const p=r.oc[t].indexOf(i);return p<0?null:p+1;};
   const spot=(r,t,i)=>{const p=posOf(r,t,i);return mir(side(t),p?MPOS[p]:BENCH);};
   const netY=(sd,d)=>sd===0?9+d:9-d; // d mètres dans le camp sd, à partir du filet
+  // une équipe revient à ses places (après une attaque, un contre…), sauf les joueurs encore en action
+  let curR=null;const home=(t,keep=[])=>{if(!curR)return;for(let i=0;i<toks[t].length;i++)if(posOf(curR,t,i)&&!keep.includes(i))place(toks[t][i],spot(curR,t,i));};
+  const toward=(e,[x,y],k=1)=>{if(!e||!e._p)return;place(e,[e._p[0]+(x-e._p[0])*k,e._p[1]+(y-e._p[1])*k]);};
+  const later=(fn,ms)=>setTimeout(()=>{if(alive()&&!(mSkip||mFF))fn();},T(ms));
   const jitter=([x,y],a=1)=>[Math.max(.3,Math.min(8.7,x+(Math.random()-.5)*2*a)),y+(Math.random()-.5)*a];
   window.addEventListener('resize',()=>{if(!M.hidden&&alive()){ppm=fit();}},{once:true});
   for(let ri=0;ri<sim.rallies.length;ri++){
-    if(!alive())return;const r=sim.rallies[ri],srv=r.srv;
+    if(!alive())return;const r=sim.rallies[ri],srv=r.srv;curR=r;
     if(fmt&&r.set!==curSet){run=[0,0];toUsed=[0,0];
       if(curSet>=0){const q=sim.sets[curSet],w=q[0]>q[1]?0:1;renderSets(curSet+1,null);sc[0]=q[0];sc[1]=q[1];setScore(-1);
         if(!mSkip){sfx[w===myIdx?'fanfare':'thump']();await setBreak(`Set pour ${esc(names[w])}`,`${q[myIdx]} – ${q[1-myIdx]}`,w===myIdx?'#3EE08F':'#FF5A5A');}}
@@ -5400,11 +5404,11 @@ async function playMatch(sim,disp,names,myIdx,res){
         const tg=a.k==='recBad'?jitter(mir(side(t),[SETTER_SPOT[0]-1,SETTER_SPOT[1]+2.2]),1.6):mir(side(t),SETTER_SPOT);
         com(a.k==='recGood'?`Réception parfaite de ${nm(t,a.p)}`:a.k==='recBad'?`Réception difficile de ${nm(t,a.p)}`:`Réception de ${nm(t,a.p)}`);
         if(!(nx&&nx.k==='overpass'))await fly(tg,3.2,900);cur=tg;}
-      else if(a.k==='overpass'){const tg=spot(r,o,nx&&nx.k==='free'?nx.p:r.oc[o][5]);com(`La réception de ${nm(t,a.p)} repasse le filet !`);await fly(tg,3.6,1000);}
-      else if(a.k==='free'){flashTok(me2);com(`Balle facile pour ${nm(t,a.p)}`);const tg=mir(side(t),SETTER_SPOT);if(posOf(r,t,5)&&a.p!==5)place(toks[t][5],tg);await fly(tg,3,850);}
+      else if(a.k==='overpass'){const tg=spot(r,o,nx&&nx.k==='free'?nx.p:r.oc[o][5]);com(`La réception de ${nm(t,a.p)} repasse le filet !`);home(o);await fly(tg,3.6,1000);cur=tg;}
+      else if(a.k==='free'){if(cur)place(me2,cur);flashTok(me2);com(`Balle facile pour ${nm(t,a.p)}`);const tg=mir(side(t),SETTER_SPOT);home(t,[a.p,5]);if(posOf(r,t,5)&&a.p!==5)place(toks[t][5],tg);await fly(tg,3,850);cur=tg;}
       else if(a.k==='set'||a.k==='setBad'){
         let at=null;for(let j=ai+1;j<A.length;j++){if(['attack','tip','attErr','stuff'].includes(A[j].k)){at=A[j];break;}}
-        const sp=mir(side(t),SETTER_SPOT);place(me2,sp);flashTok(me2);
+        const sp=cur||mir(side(t),SETTER_SPOT);place(me2,sp);flashTok(me2); // le passeur joue le ballon là où il est (même après une réception ratée)
         let tg=sp;if(at){const p=posOf(r,t,at.p),base=MPOS[p]||MPOS[4];tg=mir(side(t),[base[0],at.back?12.4:10.1]);place(toks[t][at.p],mir(side(t),[base[0],at.back?12.9:10.6]));
           const bt=at.b!=null?toks[o][at.b]:null,ax=mir(side(t),[base[0],0])[0];if(bt)place(bt,[ax,netY(side(o),.7)]);}
         com(a.k==='setBad'?`Passe imprécise de ${nm(t,a.p)}`:at?`Passe de ${nm(t,a.p)} pour ${nm(t,at.p)}`:`Passe de ${nm(t,a.p)}`);
@@ -5414,10 +5418,14 @@ async function playMatch(sim,disp,names,myIdx,res){
         flashTok(me2,'jump',500);if(a.b!=null)flashTok(toks[o][a.b],'jump',500);
         const bx=cur?cur[0]:4.5,kill=nx&&nx.k==='kill';
         const tgt=kill?jitter(a.d!=null?spot(r,o,a.d):mir(side(o),[4.5,13]),1.5):(a.d!=null?spot(r,o,a.d):mir(side(o),[4.5,14]));
-        if(a.k==='tip'){com(`Feinte de ${nm(t,a.p)}`);await fly(jitter([bx,netY(side(o),1.5)],.8),1.6,750);}
+        const def=a.d!=null?toks[o][a.d]:null;
+        later(()=>home(t),380); // l'attaquant et ses partenaires se replacent pendant que le ballon part
+        if(a.k==='tip'){com(`Feinte de ${nm(t,a.p)}`);const tt=jitter([bx,netY(side(o),1.5)],.8);
+          later(()=>{home(o,a.d!=null?[a.d]:[]);if(def)toward(def,tt,kill?.6:1);},150);await fly(tt,1.6,750);cur=tt;}
         else{com(`${a.back?'Attaque de la ligne arrière':'Smash'} de ${nm(t,a.p)}${a.q>.95?' : quelle frappe !':''}`);
-          if(a.b!=null){await fly([bx,netY(side(t),.1)],.5,220);com(`Contre de ${nm(o,a.b)}, le ballon est ralenti`);await fly(tgt,1.4,520);}else await fly(tgt,.45,380);}
-        cur=tgt;}
+          if(a.b!=null){await fly([bx,netY(side(t),.1)],.5,220);com(`Contre de ${nm(o,a.b)}, le ballon est ralenti`);home(o,a.d!=null?[a.d]:[]);if(def)toward(def,tgt,kill?.6:1);await fly(tgt,1.4,520);}
+          else{home(o,a.d!=null?[a.d]:[]);if(def)toward(def,tgt,kill?.6:1);await fly(tgt,.45,380);}
+          cur=tgt;}}
       else if(a.k==='attErr'){flashTok(me2,'jump',500);const bx=cur?cur[0]:4.5;
         if(a.net){await fly([bx,netY(side(t),.2)],.5,300);await fly([bx,netY(side(t),.9)],.2,250);com(`Smash de ${nm(t,a.p)} dans le filet !`);}
         else{await fly(mir(side(o),[Math.random()<.5?-.9:9.9,12+Math.random()*6]),.8,450);com(`Attaque de ${nm(t,a.p)} dehors`);}popTxt('Faute','#FF8A8A');}
@@ -5425,7 +5433,7 @@ async function playMatch(sim,disp,names,myIdx,res){
         if(bk)place(bk,[bx,netY(side(o),.7)]);
         await fly([bx,netY(side(t),.1)],.6,250);await fly(jitter([bx,netY(side(t),2.8)],1.2),.8,380);com(`CONTRE de ${nm(o,a.b)} !`);popTxt('Contre !','#5CD6FF');}
       else if(a.k==='kill'){com(a.tip?`La feinte de ${nm(t,a.p)} tombe !`:a.d!=null?`Point ! ${nm(o,a.d)} ne peut rien faire`:`Point pour ${esc(names[t])}`);if(a.d!=null)flashTok(toks[o][a.d],'miss');popTxt('Point !');}
-      else if(a.k==='dig'||a.k==='digGood'){flashTok(me2);const tg=mir(side(t),SETTER_SPOT);if(posOf(r,t,5)&&a.p!==5)place(toks[t][5],tg);
+      else if(a.k==='dig'||a.k==='digGood'){if(cur)place(me2,cur);flashTok(me2);const tg=mir(side(t),SETTER_SPOT);home(t,[a.p,5]);if(posOf(r,t,5)&&a.p!==5)place(toks[t][5],tg);
         com(a.save?`Sauvetage incroyable de ${nm(t,a.p)} !`:a.k==='digGood'?`Belle défense de ${nm(t,a.p)}`:`Défense de ${nm(t,a.p)}`);
         await fly(a.k==='dig'?jitter(tg,1.4):tg,3.3,850);cur=tg;}
       if(!alive())return;
