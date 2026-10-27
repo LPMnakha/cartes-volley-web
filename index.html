@@ -101,6 +101,29 @@ button{font:inherit;color:inherit;cursor:pointer}
 .face::after{content:"";position:absolute;inset:0;pointer-events:none;mix-blend-mode:overlay;
   background:linear-gradient(110deg,transparent 35%,rgba(255,255,255,.75) 48%,transparent 60%);
   background-size:260% 100%;background-position:var(--mx) 0;animation:sheen 2.4s ease-out .3s both}
+/* gravure du poste : creusée dans le métal (trait sombre, liseré clair dessous) */
+.c-eng{position:absolute;inset:0;width:100%;height:100%;z-index:0;pointer-events:none;color:rgba(70,30,6,.24);filter:drop-shadow(.5px 1px 0 rgba(255,236,214,.55))}
+.card.silver .c-eng,.mini.silver .c-eng{color:rgba(30,42,58,.2);filter:drop-shadow(.5px 1px 0 rgba(255,255,255,.8))}
+.card.gold .c-eng,.mini.gold .c-eng{color:rgba(105,62,0,.24);filter:drop-shadow(.5px 1px 0 rgba(255,250,215,.7))}
+.card.icon .c-eng,.mini.icon .c-eng{color:rgba(70,40,120,.19);filter:drop-shadow(.5px 1px 0 rgba(255,255,255,.75))}
+.c-eng .c-eng-fr,.c-eng .c-eng-tip{opacity:.9}
+.face>.c-eng~*{position:relative;z-index:1}
+/* cartes classiques : tout se règle sur la largeur de la carte, la photo prend plus de place, les 6 stats sur une ligne */
+.card{container-type:inline-size}
+.card:not(.fullart):not(.signature) .face{gap:2.2cqw;padding:8% 8% 16%}
+.card:not(.fullart):not(.signature) .c-ovr{font-size:19cqw}
+.card:not(.fullart):not(.signature) .c-pos{font-size:6.4cqw;margin-top:1.2cqw}
+.card:not(.fullart):not(.signature) .c-hex{width:24%}
+.card:not(.fullart):not(.signature) .c-star{width:22%}
+.card:not(.fullart):not(.signature) .c-photo{max-width:72%;border:1.4cqw solid rgba(0,0,0,.16);box-shadow:0 0 0 .8cqw rgba(255,255,255,.28),inset 0 2cqw 4cqw rgba(0,0,0,.18)}
+.card:not(.fullart):not(.signature) .c-name{font-size:10.5cqw;padding-bottom:1.6cqw}
+.card:not(.fullart):not(.signature):not(.divers) .c-stats{grid-template-columns:repeat(6,1fr);gap:0 .6cqw}
+.card:not(.fullart):not(.signature):not(.divers) .c-stats b{font-size:8.4cqw}
+.card:not(.fullart):not(.signature):not(.divers) .c-stats span{font-size:4.5cqw;letter-spacing:.03em}
+.card.divers:not(.fullart):not(.signature) .c-bon b{font-size:8.4cqw}.card.divers:not(.fullart):not(.signature) .c-bon span{font-size:4.6cqw}
+.card.divers:not(.fullart):not(.signature) .c-kind{font-size:4.6cqw}.card.divers:not(.fullart):not(.signature) .c-desc{font-size:6cqw}
+.mini .c-eng{filter:none;opacity:.85}
+.mini .c-eng .c-eng-tip{display:none}
 .c-top{display:flex;justify-content:space-between;align-items:flex-start;text-align:left}
 .c-ovr{font-family:var(--display);font-weight:900;font-size:clamp(2rem,10vw,2.7rem);line-height:.85}
 .c-pos{display:block;font-family:var(--data);font-weight:700;font-size:.78rem;letter-spacing:.06em;margin-top:4px}
@@ -921,6 +944,10 @@ body.player .tab{font-size:min(1.1rem,2.95vw)} /* sans l'onglet Cartes */
   text-shadow:0 0 24px var(--wc,#FFD23F),0 0 60px var(--wc,#FFD23F);line-height:.95;padding:0 20px;max-width:100vw}
 .walk-txt .w{display:block;animation:slam .55s cubic-bezier(.2,.9,.3,1.35) both}
 .walk-txt .w.big{font-size:clamp(3rem,17vw,6rem)}
+.walk-txt .w.bon{display:flex;flex-direction:column;align-items:center;gap:.1em;font-size:clamp(1.2rem,6.5vw,2.6rem);letter-spacing:.05em}
+.walk-txt .w.bon b{font-family:var(--data);font-size:clamp(4rem,26vw,9rem);line-height:.9;font-variant-numeric:tabular-nums}
+.walk-txt .w.bon.all{flex-direction:row;flex-wrap:wrap;justify-content:center;gap:.25em .7em;max-width:92vw;margin:0 auto;font-family:var(--data);font-size:clamp(1.5rem,8vw,3.2rem)}
+.walk-txt .w.bon.all i{font-style:normal}.walk-txt .w.bon.all small{flex-basis:100%;font-family:var(--display);font-size:.45em;letter-spacing:.12em;text-transform:uppercase;opacity:.85}
 .walk-txt .w.mid{font-size:clamp(1.3rem,7.5vw,3rem);letter-spacing:.05em;max-width:92vw;margin:0 auto;overflow-wrap:anywhere}
 .walk-txt .w.ph{width:min(46vw,200px);aspect-ratio:1;border-radius:50%;overflow:hidden;margin:0 auto;border:4px solid var(--wc,#FFD23F);
   box-shadow:0 0 40px var(--wc,#FFD23F);display:grid;place-items:center;background:#0A1430;font-size:clamp(3rem,16vw,5rem)}
@@ -1933,6 +1960,41 @@ async function remove(id){
 }
 
 /* ---------- Dessin ---------- */
+/* Gravures volley des cartes classiques : le geste du poste gravé dans le métal (repère 100 × 140, la forme de la carte) */
+// l : traits [épaisseur, x1,y1, x2,y2…] · h : tête [x,y,r] · b : ballons [x,y,r] · n : filet [y haut, y bas] · ct : terrain en perspective
+const ENG={
+  PAS:{l:[[5,39,33,45,23.5],[5,61,33,55,23.5],[2,45,23.5,43.8,19.5],[2,45,23.5,47,20],[2,55,23.5,56.2,19.5],[2,55,23.5,53,20]],b:[[50,14.5,6.5]],ring:1},
+  R4:{l:[[5,35,34,44,26,52,17.5],[2,52,17.5,54.5,14.5],[2,52,17.5,55.2,17],[1.3,64.5,9,67.2,7.2],[1.3,65.4,13,68.6,13],[1.3,64.5,17,67.2,18.8]],b:[[57.5,13,6]],ring:1},
+  CEN:{l:[[5,43.5,34,43.5,18],[5,56.5,34,56.5,18],[2,43.5,18,41,13.5],[2,43.5,18,43.5,12.5],[2,43.5,18,46,13.5],[2,56.5,18,59,13.5],[2,56.5,18,56.5,12.5],[2,56.5,18,54,13.5],[1.2,46.5,5.2,44.6,4.4],[1.2,53.5,5.2,55.4,4.4]],b:[[50,6.6,4.4]],n:[50,76]},
+  LIB:{l:[[4,34,30,56,22.5],[4,35,33.5,57,26],[1.3,60.5,21,62,19],[1.3,64.6,22,65.1,20.3]],h:[58.4,24.4,3.2],b:[[64.5,13,6]],ring:1},
+  POL:{l:[[5,50,34,50,27.5],[2,50,27.5,47.4,24.2],[2,50,27.5,50,23.6],[2,50,27.5,52.6,24.2]],dots:[[50,21,.9]],b:[[50,12.5,6]],ring:1},
+  OBJ:{b:[[50,56,38]],l:[[1.6,8,24,24,20],[1.6,6,34,18,32],[1.6,92,88,78,92],[1.6,94,78,82,80]]},
+  GYM:{n:[44,64],ct:1,l:[[2.2,9,44,9,100],[2.2,91,44,91,100]]}};
+ENG.PTU={...ENG.R4,mir:1};
+const engKey=p=>isDiv(p)?(isGym(p)?'GYM':'OBJ'):(ENG[p.poste]?p.poste:'POL');
+// les traits d'une gravure, en commandes de tracé (servent au SVG et à l'image partagée)
+function engShapes(k){const P=ENG[k],X=x=>P.mir?100-x:x,out=[];if(!P)return out;
+  for(const [w,...pt] of P.l||[]){let d='';for(let i=0;i<pt.length;i+=2)d+=(i?'L':'M')+X(pt[i])+' '+pt[i+1];out.push({d,w});}
+  if(P.ring){const x=50,y=64.4,r=36;out.push({c:[x,y,r],w:1.1});const q=(a,b,c2,d2,e,f)=>`M${x+a*r} ${y+b*r}Q${x+c2*r} ${y+d2*r} ${x+e*r} ${y+f*r}`;
+    [q(-.95,-.3,-.1,-.2,.55,-.82),q(-.55,.83,-.35,0,.15,-.98),q(.35,.94,.2,.1,.98,-.2),q(-.75,.66,-.2,.35,.1,.99),q(-.99,.1,-.5,.5,-.2,.98),q(.7,-.7,.45,.1,.9,.45)].forEach(d=>out.push({d,w:.8}));}
+  if(P.h)out.push({c:[X(P.h[0]),P.h[1],P.h[2]],fill:1});
+  for(const [x0,y,r] of P.dots||[])out.push({c:[X(x0),y,r],fill:1});
+  for(const [x0,y,r] of P.b||[]){const x=X(x0);out.push({c:[x,y,r],w:Math.min(2.4,Math.max(1.4,r*.16))});const q=(a,b,c2,d2,e,f)=>`M${x+a*r} ${y+b*r}Q${x+c2*r} ${y+d2*r} ${x+e*r} ${y+f*r}`,w=Math.min(1.5,Math.max(1,r*.11));
+    [q(-.95,-.3,-.1,-.2,.55,-.82),q(-.55,.83,-.35,0,.15,-.98),q(.35,.94,.2,.1,.98,-.2),q(-.75,.66,-.2,.35,.1,.99)].forEach(d=>out.push({d,w}));}
+  if(P.n){const [t,b2]=P.n;out.push({d:`M2 ${t}L98 ${t}`,w:3.2});out.push({d:`M2 ${b2}L98 ${b2}`,w:1.2});
+    let d='';for(let x=6;x<98;x+=6)d+=`M${x} ${t}L${x} ${b2}`;for(let y=t+6;y<b2;y+=6)d+=`M2 ${y}L98 ${y}`;out.push({d,w:.7});}
+  if(P.ct)out.push({d:'M22 76L78 76L96 128L4 128Z M14 102L86 102 M10 115L90 115 M50 76L50 128',w:1.6});
+  return out;}
+const ENG_CACHE={};
+function engSVG(k){if(ENG_CACHE[k])return ENG_CACHE[k];
+  const sh=engShapes(k).map(o=>o.c?`<circle cx="${o.c[0]}" cy="${o.c[1]}" r="${o.c[2]}"${o.fill?' fill="currentColor" stroke="none"':` stroke-width="${o.w}"`}/>`:`<path d="${o.d}" stroke-width="${o.w}"/>`).join('');
+  return ENG_CACHE[k]=`<svg class="c-eng" viewBox="0 0 100 140" preserveAspectRatio="none" aria-hidden="true"><g fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">${sh}</g>`+
+    `<polygon class="c-eng-fr" points="4.5,11.6 11.4,4.5 88.6,4.5 95.5,11.6 95.5,120.6 50,135.4 4.5,120.6" fill="none" stroke="currentColor" stroke-width=".9"/>`+
+    `<g class="c-eng-tip" fill="none" stroke="currentColor"><circle cx="50" cy="131" r="3.4" stroke-width=".9"/><path d="M47.1 129.5Q50 130.4 52.3 128.5M48.4 134Q49.2 131 51.7 129.2" stroke-width=".6"/></g></svg>`;}
+// la même gravure dessinée sur l'image partagée
+function engDraw(g,k,x,y,w,h,col,hi){const sx=w/100,sy=h/140;g.save();g.translate(x,y);g.scale(sx,sy);g.lineCap='round';g.lineJoin='round';
+  const pass=(c,dx,dy)=>{g.save();g.translate(dx,dy);g.strokeStyle=c;g.fillStyle=c;for(const o of engShapes(k)){if(o.c){g.beginPath();g.arc(o.c[0],o.c[1],o.c[2],0,7);if(o.fill)g.fill();else{g.lineWidth=o.w;g.stroke();}}else{g.lineWidth=o.w;g.stroke(new Path2D(o.d));}}g.restore();};
+  g.globalAlpha=.6;pass(hi,.35,.55);g.globalAlpha=1;pass(col,0,0);g.restore();}
 function hexIcon(s){
   const c=20,r=18,pts=SKILLS.map((x,i)=>{const a=-Math.PI/2+i*Math.PI/3,v=(+s[x.k]||0)/100;return(c+Math.cos(a)*r*v).toFixed(1)+','+(c+Math.sin(a)*r*v).toFixed(1)}).join(' ');
   const out=SKILLS.map((_,i)=>{const a=-Math.PI/2+i*Math.PI/3;return(c+Math.cos(a)*r).toFixed(1)+','+(c+Math.sin(a)*r).toFixed(1)}).join(' ');
@@ -1944,7 +2006,7 @@ function cardHTML(p,i=0,tagOk=true){
   return`<button class="card ${vt(p)}${dv?' divers':''}${fa?' fullart':''}${sg?' signature':''}" type="button" data-id="${esc(p.id)}" style="--i:${i}" aria-label="${esc(p.name)}, ${dv?divKindL(p):posteL(p.poste)}, ${sg?'Signature':dv?(bonTxt(p)||'sans bonus'):'note '+o}">
     ${p.example&&tagOk?'<span class="tag">Exemple</span>':''}
     <div class="face">
-      ${sg?'<div class="sig-rim"></div>':''}${fa?`<div class="fa-art"><img src="${p.photo}" alt=""><div class="fa-holo"></div><div class="fa-glit"></div></div>`:''}
+      ${sg?'<div class="sig-rim"></div>':''}${!fa&&!sg?engSVG(engKey(p)):''}${fa?`<div class="fa-art"><img src="${p.photo}" alt=""><div class="fa-holo"></div><div class="fa-glit"></div></div>`:''}
       <div class="c-top"><div>${sg||dv?'':`<div class="c-ovr">${o}</div>`}<span class="c-pos">${dv?(isGym(p)?'GYM':'OBJET'):esc(p.poste)}</span></div>${dv||sg?STAR:hexIcon(p.s)}</div>
       <div class="c-photo">${p.photo?`<img src="${p.photo}" alt="">`:esc(initials(p.name))}</div>
       <div class="c-name">${esc(p.name)}</div>
@@ -2370,7 +2432,7 @@ function packOdds(pool,type='classic'){ // chance d'apparaître, estimée par si
   const map=new Map(pool.map(p=>[p.id,isSigP(p)?Math.min(1,SIG_CHANCE*PACK_TYPES[type].sig)/nSig:cnt.get(p.id)/N]));oddsCache={key,map};return map;
 }
 function packHTML(type='classic'){return`<div class="pack-top"></div><div class="pack-bot"><div class="pack-art">${HEX_BIG}<b>BOOSTER</b><span>${PACK_TYPES[type].sub}</span><i>5 CARTES</i></div></div>`;}
-function miniHTML(p){const o=ovr(p.s),dv=isDiv(p);const fa=p.fullart&&p.photo,sg=p.signature&&p.photo;return`<div class="mini ${vt(p)}${dv?' divers':''}${isGym(p)?' gym':''}${fa?' fullart':''}${sg?' signature':''}"><div class="mface">${sg?'<div class="msr"></div>':''}${fa?`<div class="mfa"><img src="${p.photo}" alt=""></div>`:''}<div class="mo">${sg||dv?'':o}<small>${dv?'':esc(p.poste)}</small></div>
+function miniHTML(p){const o=ovr(p.s),dv=isDiv(p);const fa=p.fullart&&p.photo,sg=p.signature&&p.photo;return`<div class="mini ${vt(p)}${dv?' divers':''}${isGym(p)?' gym':''}${fa?' fullart':''}${sg?' signature':''}"><div class="mface">${sg?'<div class="msr"></div>':''}${!fa&&!sg?engSVG(engKey(p)):''}${fa?`<div class="mfa"><img src="${p.photo}" alt=""></div>`:''}<div class="mo">${sg||dv?'':o}<small>${dv?'':esc(p.poste)}</small></div>
   <div class="mp">${p.photo?`<img src="${p.photo}" alt="">`:esc(initials(p.name))}</div><div class="mn">${esc(p.name)}</div></div></div>`;}
 function renderCycle(){
   const nt=nextType(),c=+state.count||0,pos=c%28; // pos = boosters déjà ouverts dans le cycle en cours
@@ -2794,9 +2856,17 @@ async function openPack(bonusType){
         txt.innerHTML='<span class="w huge rb">ICÔNE</span>';sfx.sparkle();await wait(1400);if(!alive())return;
       }
       const show=async st=>{txt.innerHTML=st;sfx.thump();buzz(40);const[x,y]=centerOf(txt);burst(x,y,fx.c,R===3?70:40,7,{spark:.8});await wait(R===3?1000:900);};
+      if(isDiv(p)){ // objet ou gymnase : son type, puis ses bonus un par un, à la place de la note
+        await show(`<span class="w mid">${divKindL(p)}</span>`);if(!alive())return;
+        const L=bonList(p);
+        if(!L.length){await show('<span class="w mid">Pour la collection</span>');if(!alive())return;}
+        for(const x of L){await show(`<span class="w bon"><b>+${x.v}</b>${esc(x.l)}</span>`);if(!alive())return;}
+        if(L.length){txt.innerHTML=`<span class="w bon all">${L.map(x=>`<i>+${x.v} ${x.a}</i>`).join('')}<small>pour toute l'équipe</small></span>`;}
+      }else{
       await show(`<span class="w mid">${esc(posteL(p.poste))}</span>`);if(!alive())return;
       // la note défile jusqu'à la vraie valeur, avant l'image
       txt.innerHTML='<span class="w cnt" id="op-cnt">0</span>';await countUp($('op-cnt'),o,R===3?1800:1300,alive);if(!alive())return;
+      }
       sfx.boom();shake();flash(R===3?'#F3E8FF':'#FFF6D0');{const[x,y]=centerOf(txt);burst(x,y,fx.c,R===3?160:110,12,{up:2});}
       await wait(900);if(!alive())return;
       if(!isFA){await show(`<span class="w ph">${p.photo?`<img src="${p.photo}" alt="">`:esc(initials(p.name))}</span>`);if(!alive())return;} // Full Art : l'image se découvre quand la carte se fissure
@@ -2817,7 +2887,7 @@ async function openPack(bonusType){
     if(R===3){sfx.fanfare();fireworks(fx.c,3200,alive);buzz([150,80,150,80,300]);
       setTimeout(()=>{if(alive()){const[x,y]=centerOf(fl);burst(x,y,fx.c,220,18,{up:4});flash('#E9DDFF');shake();}},700);}
     tease.className='tease';
-    hint((fresh.has(p.id)?'Nouvelle carte ! ':'Déjà dans ton classeur. ')+(i<4?'Touche pour la suivante':'Touche pour voir ton booster'));
+    hint((isDiv(p)&&!isSig?`${divKindL(p)} : ${bonTxt(p)?bonTxt(p)+' pour toute l\'équipe':'aucun bonus, pour la collection'}. `:'')+(fresh.has(p.id)?'Nouvelle carte ! ':'Déjà dans ton classeur. ')+(i<4?'Touche pour la suivante':'Touche pour voir ton booster'));
     await nextTap();if(!alive())return;hint('',false);
     walk.classList.remove('on','rainbow','gold');O.classList.remove('dark','sig-dark');O.querySelectorAll('.prism,.sig-pen').forEach(e=>e.remove());const fab=$('op-fa');if(fab)fab.remove();
     fl.classList.add('leave');await wait(300);if(!alive())return;fl.remove();
@@ -3149,6 +3219,8 @@ async function drawCardImage(p){
   g.save();g.shadowColor='rgba(0,0,0,.6)';g.shadowBlur=60;g.shadowOffsetY=30;cardPath(g,cx,cy,cw,ch);g.fillStyle='#000';g.fill();g.restore();
   g.save();cardPath(g,cx,cy,cw,ch);g.clip();
   let mg=g.createLinearGradient(cx,cy,cx+cw*.6,cy+ch);METAL.forEach((c,i)=>mg.addColorStop(i/(METAL.length-1),c));g.fillStyle=mg;g.fillRect(cx,cy,cw,ch);
+  if(!fa&&!sg){const EC={bronze:['rgba(70,30,6,.24)','rgba(255,236,214,.55)'],silver:['rgba(30,42,58,.2)','rgba(255,255,255,.8)'],gold:['rgba(105,62,0,.24)','rgba(255,250,215,.7)'],icon:['rgba(70,40,120,.19)','rgba(255,255,255,.75)']}[t]||[];
+    engDraw(g,engKey(p),cx,cy,cw,ch,EC[0],EC[1]);} // la gravure du poste
   let hl=g.createRadialGradient(cx+cw*.75,cy,10,cx+cw*.75,cy,cw*.9);hl.addColorStop(0,'rgba(255,255,255,.6)');hl.addColorStop(1,'rgba(255,255,255,0)');g.fillStyle=hl;g.fillRect(cx,cy,cw,ch);
   g.strokeStyle='rgba(255,255,255,.08)';g.lineWidth=3;for(let i=-ch;i<cw;i+=26){g.beginPath();g.moveTo(cx+i,cy);g.lineTo(cx+i+ch,cy+ch);g.stroke();}
   let ink='#20120A';
@@ -3174,7 +3246,8 @@ async function drawCardImage(p){
     else txt(initials(p.name),mx0,my0+50,'900 150px "Big Shoulders Display",Impact,sans-serif','center');
     g.restore();g.beginPath();g.arc(mx0,my0,r0,0,7);g.strokeStyle='rgba(0,0,0,.2)';g.lineWidth=6;g.stroke();
   }
-  txt(p.name.toUpperCase(),cx+cw/2,cy+ch*.74,'900 92px "Big Shoulders Display","Arial Narrow",Impact,sans-serif','center');
+  {let fs=92;g.save();const nm=p.name.toUpperCase();do{g.font=`900 ${fs}px "Big Shoulders Display","Arial Narrow",Impact,sans-serif`;}while(g.measureText(nm).width>cw*.86&&(fs-=4)>40);g.restore(); // le nom tient dans la carte
+   txt(nm,cx+cw/2,cy+ch*.74,`900 ${fs}px "Big Shoulders Display","Arial Narrow",Impact,sans-serif`,'center');}
   g.fillStyle=fa?'rgba(255,255,255,.5)':'rgba(0,0,0,.28)';g.fillRect(cx+cw*.12,cy+ch*.76,cw*.76,3);
   if(sg)txt('Édition signée',cx+cw/2,cy+ch*.83,'400 72px "Great Vibes","Brush Script MT",cursive','center','#FFE97A');
   else if(dv){const L=bonList(p);txt(isGym(p)?'GYMNASE':'OBJET',cx+cw/2,cy+ch*.805,'700 38px "Chakra Petch",monospace','center');
