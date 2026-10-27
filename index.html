@@ -1200,6 +1200,13 @@ body.player .tabs{grid-template-columns:repeat(4,minmax(0,1fr))} /* sans l'ongle
 .tv-stats small{font-size:.72rem;color:var(--muted)}.tv-stats b{font-family:var(--data);font-size:.8rem;text-align:right}
 .tv-stats i{display:block;height:6px;border-radius:3px;background:rgba(255,255,255,.08);overflow:hidden}.tv-stats u{display:block;height:100%;border-radius:3px}
 @media (max-width:360px){.tv-stats{grid-template-columns:1fr}}
+#t-stats{width:100%;margin:2px 0 4px}
+.tv-sec{display:flex;flex-direction:column;gap:8px;padding:12px 14px;border-radius:16px;background:rgba(255,255,255,.04);border:1px solid var(--line)}
+.tv-sec>b{font-family:var(--data);font-size:.72rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.tv-sec>div{display:grid;gap:7px}.tv-sec>div>div{display:grid;grid-template-columns:minmax(0,9.5em) minmax(20px,1fr) 2.4ch;gap:8px;align-items:center}
+.tv-sec span{font-weight:700;font-size:.86rem;display:flex;flex-direction:column;line-height:1.15}.tv-sec span small{font-weight:500;font-size:.7rem;color:var(--muted)}
+.tv-sec i{display:block;height:7px;border-radius:4px;background:rgba(255,255,255,.08);overflow:hidden}.tv-sec u{display:block;height:100%;border-radius:4px}
+.tv-sec em{font-style:normal;font-family:var(--data);font-weight:700;text-align:right}
 </style>
 
 <header class="appbar">
@@ -1289,6 +1296,7 @@ body.player .tabs{grid-template-columns:repeat(4,minmax(0,1fr))} /* sans l'ongle
     <div class="row-actions"><button class="btn" type="button" id="t-clear">Vider l'équipe</button><button class="btn primary" type="button" id="t-auto">Composer au mieux</button></div>
     <div class="section" id="t-tac-sec"><span class="label">Consignes de jeu</span>
       <p class="note" style="margin:0">Elles servent en campagne et dans tes défis. Chacune a un avantage et un défaut : elle ne rapporte que si elle colle à tes cartes et à celles d'en face. <a class="lnk" data-guide>Comment choisir ?</a></p>
+      <button class="btn" type="button" id="t-stats">Voir les stats de mon équipe</button>
       <div class="tacs" id="t-tac"></div></div>
     <div class="section" id="t-chem-sec"><span class="label">Complicité du passeur</span>
       <p class="note" style="margin:0">Plus ton passeur joue avec un attaquant, meilleures sont ses passes pour lui : +1 tous les 5 matchs ensemble (campagne et défis), jusqu'à +5.</p>
@@ -1588,7 +1596,7 @@ body.player .tabs{grid-template-columns:repeat(4,minmax(0,1fr))} /* sans l'ongle
     <div class="gd-card"><b>Où regarder</b>
       <p><b>Campagne :</b> l'affiche du match montre le jeu de l'adversaire. Le bouton <b>Équipe</b> affiche ses joueurs, poste par poste, avec toutes leurs stats.</p>
       <p><b>Défis :</b> dans le classement, le bouton <b>Équipe</b> à côté de chaque ami montre ses joueurs et leurs stats. Ses consignes, elles, restent une surprise jusqu'à la feuille de match.</p>
-      <p>Pour comparer, regarde les <b>moyennes</b> : tes serveurs, tes centraux, tes ailiers (R4 et pointu), tes défenseurs, ton libéro.</p></div>
+      <p>Pour comparer, ouvre <b>« Voir les stats de mon équipe »</b> dans l'onglet Équipe, puis le bouton <b>Équipe</b> d'en face : les deux fiches donnent les mêmes <b>moyennes par secteur</b> (service, réception, attaque au centre et aux ailes, contre, défense).</p></div>
     <div class="gd-card"><b>Service</b>
       <dl><dt>Fort</dt><dd>Plus d'aces, un peu plus de fautes. À choisir quand tes serveurs ont nettement plus en service que leurs réceptionneurs en réception.</dd>
       <dt>Sûr</dt><dd>Moins de fautes, mais presque plus d'aces. Pour des serveurs fragiles, ou face à une très bonne réception.</dd></dl>
@@ -3524,12 +3532,22 @@ function openSheet(m){
 function closeSheet(){$('sheet').hidden=true;curSheet=null;}
 /* voir une équipe : l'adversaire de campagne ou l'équipe d'un ami (cartes, postes, notes, stats) */
 const TV_ST=[['ser','Service'],['rec','Récep.'],['pas','Passe'],['att','Attaque'],['blo','Contre'],['def','Défense']];
+// moyennes par secteur : ce que comparent les consignes (service, réception, attaque au centre ou aux ailes, contre, défense)
+function teamSectors(cards,slots){
+  const at=k=>{const i=slots.indexOf(k);return i<0?null:cards[i];},lib=at('LIB');
+  const av=(keys,st)=>{const v=keys.map(at).filter(Boolean).map(p=>+p.s[st]||0);return v.length?Math.round(v.reduce((a,b)=>a+b,0)/v.length):null;};
+  return[['Service','tous sauf le libéro',av(['R4a','CEN1','PTU','R4b','CEN2','PAS'],'ser')],
+    ['Réception',lib?'R4 et libéro':'R4 et centraux',av(lib?['R4a','R4b','LIB']:['R4a','R4b','CEN1','CEN2'],'rec')],
+    ['Attaque au centre','centraux',av(['CEN1','CEN2'],'att')],['Attaque aux ailes','R4 et pointu',av(['R4a','R4b','PTU'],'att')],
+    ['Contre','centraux et pointu',av(['CEN1','CEN2','PTU'],'blo')],['Défense',lib?'R4, passeur et libéro':'R4 et passeur',av(lib?['R4a','R4b','PAS','LIB']:['R4a','R4b','PAS'],'def')]].filter(x=>x[2]!=null);}
 function openTeamView(name,cards,o={}){
-  const note=cards.length?Math.round(teamNote({cards})):0,lib=cards.length>6;
+  const slots=o.slots||SLOT_ORDER.slice(0,cards.length),full=!o.slots||slots.length===cards.length&&(cards.length===7||cards.length===6)&&slots.every((k,i)=>k===SLOT_ORDER[i]);
+  const note=cards.length?(full?Math.round(teamNote({cards})):Math.round(cards.reduce((t,p,i)=>t+slotScore(p,TEAM_SLOTS.find(x=>x.k===slots[i])),0)/cards.length)):0,lib=slots.includes('LIB'),sec=teamSectors(cards,slots);
   $('tv-title').textContent=name;
-  $('tv-body').innerHTML=`<div class="tv-head"><div><small>${esc(o.sub||'Équipe')}</small><b>${esc(name)}</b><span>${lib?'Avec libéro':'Sans libéro, à 6'}</span></div><div class="tv-note"><b style="color:${TIER_COL[tier(note)]}">${note}</b><small>note d'équipe</small></div></div>
-    ${o.tac?`<p class="tv-tac"><span>Leur jeu :</span> <b>${esc(tacTxt(o.tac))}</b></p>`:''}
-    <div class="tv-list">${cards.map((p,i)=>{const sl=TEAM_SLOTS.find(x=>x.k===SLOT_ORDER[i]),v=slotScore(p,sl);
+  $('tv-body').innerHTML=`<div class="tv-head"><div><small>${esc(o.sub||'Équipe')}</small><b>${esc(name)}</b><span>${o.subline||(lib?'Avec libéro':'Sans libéro, à 6')}</span></div><div class="tv-note"><b style="color:${TIER_COL[tier(note)]}">${note}</b><small>note d'équipe</small></div></div>
+    ${o.tac?`<p class="tv-tac"><span>${o.tacL||'Leur jeu'} :</span> <b>${esc(tacTxt(o.tac))}</b></p>`:''}
+    ${sec.length?`<div class="tv-sec"><b>Moyennes par secteur</b><div>${sec.map(([l,w,v])=>`<div><span>${l}<small>${w}</small></span><i><u style="width:${Math.max(2,Math.min(100,v))}%;background:${TIER_COL[tier(v)]}"></u></i><em>${v}</em></div>`).join('')}</div></div>`:''}
+    <div class="tv-list">${cards.map((p,i)=>{const sl=TEAM_SLOTS.find(x=>x.k===slots[i]),v=slotScore(p,sl);
       return`<div class="tv-row">${miniHTML(p)}<div class="tv-info"><div class="tv-pos"><b>${esc(p.name)}</b><span>${sl.l} · note au poste <em style="color:${TIER_COL[tier(v)]}">${v}</em></span></div>
         <div class="tv-stats">${TV_ST.map(([k,l])=>{const x=Math.round(+p.s[k]||0);return`<div><small>${l}</small><i><u style="width:${Math.max(2,Math.min(100,x))}%;background:${TIER_COL[tier(x)]}"></u></i><b>${x}</b></div>`;}).join('')}</div></div></div>`;}).join('')}</div>
     ${o.foot?`<p class="note" style="margin:0">${o.foot}</p>`:''}`;
@@ -3537,6 +3555,11 @@ function openTeamView(name,cards,o={}){
 }
 function closeTeamView(){$('tview').hidden=true;}
 $('tv-close').addEventListener('click',closeTeamView);
+$('t-stats').addEventListener('click',()=>{const sl=activeSlots().filter(x=>teamCard(x));
+  if(!sl.length){toast('Place des cartes dans ton équipe pour voir leurs stats.');return;}
+  const n=activeSlots().length;openTeamView(state.pseudo||'Mon équipe',sl.map(x=>teamCard(x)),{slots:sl.map(x=>x.k),sub:'Mon équipe',tac:state.tac,tacL:'Tes consignes',
+    subline:sl.length<n?`${sl.length} / ${n} postes remplis`:(state.noLib?'Sans libéro, à 6':'Avec libéro')});});
+
 async function friendTeam(pid,btn){
   if(!net.on){toast("Pas de connexion au serveur : réessaie avec internet.");return;}
   if(btn)btn.disabled=true;
