@@ -1,5 +1,5 @@
 // Garde l'appli disponible hors connexion.
-const V = 'cartes-volley-v81';
+const V = 'cartes-volley-v82';
 const CORE = ['./', './index.html', './manifest.webmanifest', './icon-192.png', './icon-512.png', './apple-touch-icon.png'];
 self.addEventListener('install', e => { e.waitUntil(caches.open(V).then(c => c.addAll(CORE))); self.skipWaiting(); });
 self.addEventListener('activate', e => {

@@ -2609,25 +2609,25 @@ const PACK_ODDS={classic:{silver:.30,gold:.05,icon:.01,fa:.10,sig:.005},silver:{
 const perSlot=T=>1-Math.pow(1-T,1/PACK_SIZE); // « au moins une sur 5 » → chance pour chaque carte
 // Tirage carte par carte : d'abord la rareté selon les chances du booster, puis Full Art ou non, puis une carte de ce groupe
 // (dans une même rareté, les mieux notées restent un peu plus rares). Les chances tiennent quelle que soit la liste de cartes.
-function drawPack(pool,type='classic'){
+function drawPack(pool,type='classic',R=Math.random){
   const O=PACK_ODDS[type]||PACK_ODDS.classic,sigs=pool.filter(isSigP),out=[];
-  if(sigs.length&&Math.random()<O.sig)out.push(sigs[Math.floor(Math.random()*sigs.length)]);
+  if(sigs.length&&R()<O.sig)out.push(sigs[Math.floor(R()*sigs.length)]);
   const TIERS4=['bronze','silver','gold','icon'],isFA=p=>!!(p.fullart&&p.photo),tierOf=p=>tier(ovr(p.s));
   const left=pool.filter(p=>!isSigP(p));
   const pt={silver:perSlot(O.silver),gold:perSlot(O.gold),icon:perSlot(O.icon)};pt.bronze=Math.max(0,1-pt.silver-pt.gold-pt.icon);
   const inW=p=>{const o=ovr(p.s),[lo,hi]=TIER_RANGE[tierOf(p)];return Math.pow(1/1.5,(o-lo)/(hi-lo));};
-  const pick=list=>{const T=list.reduce((a,p)=>a+inW(p),0);let x=Math.random()*T;for(const p of list){x-=inW(p);if(x<0)return p;}return list[list.length-1];};
+  const pick=list=>{const T=list.reduce((a,p)=>a+inW(p),0);let x=R()*T;for(const p of list){x-=inW(p);if(x<0)return p;}return list[list.length-1];};
   while(out.length<PACK_SIZE&&left.length){
     // chance Full Art dans les raretés qui ont les deux (les raretés « tout Full Art » comptent déjà)
     const has=t=>({fa:left.some(p=>tierOf(p)===t&&isFA(p)),no:left.some(p=>tierOf(p)===t&&!isFA(p))});
     let forced=0,mixed=0;for(const t of TIERS4){const h=has(t);if(h.fa&&!h.no)forced+=pt[t];else if(h.fa&&h.no)mixed+=pt[t];}
     const q=mixed?Math.max(0,Math.min(1,(perSlot(O.fa)-forced)/mixed)):0;
-    let r=Math.random(),t='bronze';for(const k of ['icon','gold','silver','bronze']){if(r<pt[k]){t=k;break;}r-=pt[k];}
+    let r=R(),t='bronze';for(const k of ['icon','gold','silver','bronze']){if(r<pt[k]){t=k;break;}r-=pt[k];}
     // si la rareté tirée n'a plus de carte, on descend d'un cran (puis on remonte)
     const order=[t,...TIERS4.slice(0,TIERS4.indexOf(t)).reverse(),...TIERS4.slice(TIERS4.indexOf(t)+1)];
     let grp=null;for(const k of order){const g=left.filter(p=>tierOf(p)===k);if(g.length){grp=g;break;}}
     if(!grp)break;
-    const fa=grp.filter(isFA),no=grp.filter(p=>!isFA(p)),sub=fa.length&&no.length?(Math.random()<q?fa:no):(fa.length?fa:no);
+    const fa=grp.filter(isFA),no=grp.filter(p=>!isFA(p)),sub=fa.length&&no.length?(R()<q?fa:no):(fa.length?fa:no);
     const c=pick(sub);out.push(c);left.splice(left.indexOf(c),1);
   }
   return out;
@@ -2641,15 +2641,41 @@ function revealOrder(cards){ // ordre au hasard, sauf la plus rare qui sort en d
   return a.concat([best]);
 }
 let oddsCache={key:'',map:null};
-function packOdds(pool,type='classic'){ // chance d'apparaître, estimée par simulation (le tirage sans remise n'a pas de formule simple)
+// chance qu'une carte sorte dans le prochain booster : on rejoue le vrai tirage un grand nombre de fois, toujours avec le même
+// générateur de hasard, pour que les chiffres soient précis et ne bougent pas d'un affichage à l'autre
+function packOdds(pool,type='classic'){
   const key=type+'#'+pool.map(p=>p.id+':'+ovr(p.s)+':'+(p.fullart&&p.photo?1:0)+(isSigP(p)?'s':'')).join('|');
   if(oddsCache.key===key)return oddsCache.map;
-  const N=pool.filter(p=>!isSigP(p)).length<=PACK_SIZE?1:4000,cnt=new Map(pool.map(p=>[p.id,0]));
-  const normal=pool.filter(p=>!isSigP(p));
-  for(let n=0;n<N;n++)drawPack(normal,type).forEach(p=>cnt.set(p.id,cnt.get(p.id)+1));
-  const nSig=pool.filter(isSigP).length;
-  const map=new Map(pool.map(p=>[p.id,isSigP(p)?Math.min(1,SIG_CHANCE*PACK_TYPES[type].sig)/nSig:cnt.get(p.id)/N]));oddsCache={key,map};return map;
+  const O=PACK_ODDS[type]||PACK_ODDS.classic,normal=pool.filter(p=>!isSigP(p)),sigs=pool.filter(isSigP);
+  const N=normal.length<=PACK_SIZE?1:100000,cnt=new Map(pool.map(p=>[p.id,0]));
+  let h=hashStr(key)>>>0;const rng=()=>((h=(Math.imul(h^(h>>>15),2246822519)+0x9E3779B9)>>>0)/4294967296);
+  const hits=simPacks(normal,O,N,rng);normal.forEach((p,i)=>cnt.set(p.id,hits[i]));
+  const map=new Map(pool.map(p=>[p.id,isSigP(p)?O.sig/sigs.length:cnt.get(p.id)/N]));oddsCache={key,map};return map;
 }
+// version rapide de drawPack (mêmes règles, mêmes tirages) pour compter combien de fois chaque carte sort
+function simPacks(normal,O,N,R){
+  const T4=['bronze','silver','gold','icon'],n=normal.length,tierI=new Int8Array(n),fa=new Uint8Array(n),w=new Float64Array(n),hits=new Float64Array(n);
+  normal.forEach((p,i)=>{const t=tier(ovr(p.s));tierI[i]=T4.indexOf(t);fa[i]=p.fullart&&p.photo?1:0;const o=ovr(p.s),[lo,hi]=TIER_RANGE[t];w[i]=Math.pow(1/1.5,(o-lo)/(hi-lo));});
+  const pt=[0,perSlot(O.silver),perSlot(O.gold),perSlot(O.icon)];pt[0]=Math.max(0,1-pt[1]-pt[2]-pt[3]);const pfa=perSlot(O.fa);
+  const taken=new Uint8Array(n),cF=new Int32Array(4),cN=new Int32Array(4),pickOrder=[3,2,1,0];
+  for(let it=0;it<N;it++){
+    taken.fill(0);cF.fill(0);cN.fill(0);for(let i=0;i<n;i++){if(fa[i])cF[tierI[i]]++;else cN[tierI[i]]++;}
+    let slots=PACK_SIZE;if(R()<O.sig){slots--;R();}
+    for(let sl=0;sl<slots;sl++){
+      let forced=0,mixed=0;for(let t=0;t<4;t++){if(cF[t]&&!cN[t])forced+=pt[t];else if(cF[t]&&cN[t])mixed+=pt[t];}
+      const q=mixed?Math.max(0,Math.min(1,(pfa-forced)/mixed)):0;
+      let r=R(),t=0;for(const k of pickOrder){if(r<pt[k]){t=k;break;}r-=pt[k];}
+      let g=-1;const ord=[t];for(let k=t-1;k>=0;k--)ord.push(k);for(let k=t+1;k<4;k++)ord.push(k);for(const k of ord)if(cF[k]+cN[k]){g=k;break;}
+      if(g<0)break;
+      const wantFA=cF[g]&&cN[g]?R()<q:cF[g]>0;
+      let T=0;for(let i=0;i<n;i++)if(!taken[i]&&tierI[i]===g&&fa[i]===(wantFA?1:0))T+=w[i];
+      let x=R()*T,c=-1,last=-1;for(let i=0;i<n;i++)if(!taken[i]&&tierI[i]===g&&fa[i]===(wantFA?1:0)){last=i;x-=w[i];if(x<0){c=i;break;}}
+      if(c<0)c=last;taken[c]=1;hits[c]++;if(fa[c])cF[g]--;else cN[g]--;}
+  }
+  return hits;
+}
+// un pourcentage lisible, même pour les cartes très rares
+const oddTxt=c=>{const v=c*100;if(v<=0)return'0 %';if(v<.01)return'< 0,01 %';return v.toLocaleString('fr-FR',{maximumFractionDigits:v<.1?3:v<1?2:v<10?1:0})+' %';};
 function packHTML(type='classic'){return`<div class="pack-top"></div><div class="pack-bot"><div class="pack-art">${HEX_BIG}<b>BOOSTER</b><span>${PACK_TYPES[type].sub}</span><i>5 CARTES</i></div></div>`;}
 function miniHTML(p){const tw=twOf(p),o=ovr(effS(p)),dv=isDiv(p);const fa=p.fullart&&p.photo,sg=p.signature&&p.photo;return`<div class="mini ${vt(p)}${dv?' divers':''}${isGym(p)?' gym':''}${fa?' fullart':''}${sg?' signature':''}${tw?' totw':''}"><div class="mface">${sg?'<div class="msr"></div>':''}${!fa&&!sg?engSVG(engKey(p)):''}${fa?`<div class="mfa"><img src="${p.photo}" alt=""></div>`:''}<div class="mo">${sg||dv?'':o}${tw?twTag(twOvrUp(p)):''}<small>${dv?'':esc(p.poste)}</small></div>
   <div class="mp">${p.photo?`<img src="${p.photo}" alt="">`:esc(initials(p.name))}</div><div class="mn">${esc(p.name)}</div></div></div>`;}
@@ -2674,7 +2700,7 @@ function renderPacks(){
   const od=few?null:packOdds(pool,nextType());
   const rows=pool.map(p=>({p,o:ovr(p.s),w:isSigP(p)?-1:weightOf(p),c:few?0:od.get(p.id)})).sort((a,b)=>a.w-b.w||b.o-a.o); // de la plus rare à la plus courante
   const col={icon:'#C9B8FF',gold:'#FFD23F',silver:'#DCE3EA',bronze:'#E9A877'};
-  $('odds').innerHTML=rows.map(x=>`<div class="odd"><i style="background:${isSigP(x.p)?'#FFD700':col[tier(x.o)]}"></i><span>${esc(x.p.name)}${x.p.signature&&x.p.photo?' <em class="sig-tag">Signature</em>':x.p.fullart&&x.p.photo?' <em class="fa-tag">FULL ART</em>':''}</span><b>${isSigP(x.p)?'–':x.o}</b><span>${few?'–':(x.c*100).toFixed(x.c<.01?2:x.c<.1?1:0)+' %'}</span></div>`).join('');
+  $('odds').innerHTML=rows.map(x=>`<div class="odd"><i style="background:${isSigP(x.p)?'#FFD700':col[tier(x.o)]}"></i><span>${esc(x.p.name)}${x.p.signature&&x.p.photo?' <em class="sig-tag">Signature</em>':x.p.fullart&&x.p.photo?' <em class="fa-tag">FULL ART</em>':''}</span><b>${isSigP(x.p)?'–':x.o}</b><span>${few?'–':oddTxt(x.c)}</span></div>`).join('');
 }
 function setTab(t){
   if(t==='totw'&&!isAdmin)t='packs';
