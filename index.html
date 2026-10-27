@@ -1791,7 +1791,7 @@ function normalize(p){
   base.fullart=(!!p.fullart||base.signature)&&!!base.photo;
   base.createdAt=+p.createdAt||idTime(base.id)||base.updatedAt;
   if(p.kind==='divers'){ // une carte divers n'a qu'une note : on la recopie partout pour que tri, rareté et boosters marchent pareil
-    const note=clampN(p.note!=null?p.note:(p.s?ovr(p.s):50));
+    const n0=clampN(p.note!=null?p.note:(p.s?ovr(p.s):50)),note=base.signature?n0:DIV_RAR.find(x=>x[0]===tier(n0))[2]; // note fixe selon la rareté : 55, 70, 80 ou 90
     const dt=p.dt==='gym'||p.dt==='objet'?p.dt:(/gymnase|salle|stade/i.test(base.name)?'gym':'objet');
     return{...base,kind:'divers',poste:'DIV',note,desc:String(p.desc||'').slice(0,60),s:allS(note),dt,bon:cleanBon(p.bon)};
   }
@@ -2208,7 +2208,7 @@ $('form').addEventListener('submit',async e=>{
   const isNew=!editing.id;
   const id=editing.id||('p'+Date.now().toString(36)+Math.random().toString(36).slice(2,6));
   if($('f-fullart').checked&&!draftPhoto){$('f-err').textContent='Ajoute une photo pour faire une carte Full Art.';$('f-err').hidden=false;return;}
-  const rt=formRar(),n=editing&&isDiv(editing)&&tier(editing.note)===rt?editing.note:DIV_RAR.find(x=>x[0]===rt)[2]; // on garde l'ancienne note si la rareté ne change pas
+  const rt=formRar(),n=DIV_RAR.find(x=>x[0]===rt)[2]; // note fixe selon la rareté : 55, 70, 80 ou 90
   const signature=$('f-sig').checked,fullart=$('f-fullart').checked||signature;
   const p=formDiv()?{id,fullart,kind:'divers',name,poste:'DIV',note:n,desc:$('f-desc').value.trim().slice(0,60),photo:draftPhoto,s:allS(n),dt:$('f-dt-gym').checked?'gym':'objet',bon:formBon()}
     :{id,fullart,kind:'joueur',name,poste,photo:draftPhoto,s:formS()};
