@@ -1978,6 +1978,10 @@ function fixState(j){
   o.noLib=!!j.noLib;o.tac=j.tac&&typeof j.tac==='object'?{...j.tac}:{};
   o.chem=j.chem&&typeof j.chem==='object'?{...j.chem}:{};o.chemPend=Array.isArray(j.chemPend)?j.chemPend.filter(k=>typeof k==='string').slice(-500):[];
   o.ach=j.ach&&typeof j.ach==='object'?{...j.ach}:{};o.team=j.team&&typeof j.team==='object'?{...j.team}:{};
+  // champs ajoutés au fil des versions : sans ces lignes, ils disparaissaient à chaque relance (capitaine, pseudo choisi…)
+  o.captain=typeof j.captain==='string'?j.captain:'';o.pseudoSet=!!j.pseudoSet;o.boostUntil=+j.boostUntil||0;o.totwSeen=+j.totwSeen||0;
+  o.buyIds=Array.isArray(j.buyIds)?j.buyIds.filter(x=>typeof x==='string').slice(-200):[];
+  o.misSeen=j.misSeen&&typeof j.misSeen==='object'&&typeof j.misSeen.day==='string'?{day:j.misSeen.day,done:Array.isArray(j.misSeen.done)?j.misSeen.done.filter(x=>typeof x==='string'):[]}:null;
   return o;
 }
 function loadState(){try{return fixState(JSON.parse(localStorage.getItem(LS_STATE)||'null'));}catch(e){return blankState();}}
