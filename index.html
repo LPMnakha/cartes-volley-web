@@ -1891,7 +1891,16 @@ let filter='ALL', openId=null, editing=null, draftPhoto=null;
 function readLocal(){
   try{const r=JSON.parse(localStorage.getItem(LS)||'null');return Array.isArray(r)?r.filter(p=>p&&p.id&&!p.example).map(normalize):[];}catch(e){return[];}
 }
-function writeLocal(){try{localStorage.setItem(LS,JSON.stringify(players));}catch(e){}}
+/* Stockage : localStorage est limité à quelques Mo (et partagé par tous les sites en lpmnakha.github.io). Les cartes et la progression
+   sont aussi enregistrées dans IndexedDB, beaucoup plus grand : au lancement, on reprend la copie la plus récente des deux. */
+const KV=(()=>{let dbp=null;const open=()=>dbp||(dbp=new Promise((res,rej)=>{try{const r=indexedDB.open('cartes-volley',1);r.onupgradeneeded=()=>r.result.createObjectStore('kv');r.onsuccess=()=>res(r.result);r.onerror=()=>rej(r.error);}catch(e){rej(e);}}));
+  const run=(mode,fn)=>open().then(db=>new Promise((res,rej)=>{const tx=db.transaction('kv',mode),st=tx.objectStore('kv'),r=fn(st);tx.oncomplete=()=>res(r&&r.result);tx.onerror=()=>rej(tx.error);tx.onabort=()=>rej(tx.error);}));
+  return{get:k=>run('readonly',st=>st.get(k)),set:(k,v)=>run('readwrite',st=>{st.put(v,k);})};})();
+// les copies d'IndexedDB ne sont réécrites qu'après la reprise du lancement (sinon une vieille copie écraserait la bonne)
+let kvBootDone;const KV_BOOT=new Promise(r=>kvBootDone=r);
+const BOOT_SEQ=(()=>{try{return{p:+(localStorage.getItem('cartes-volley-v1-seq')||0),s:+(localStorage.getItem('cartes-volley-etat-t')||0)};}catch(e){return{p:0,s:0};}})();
+function writeLocal(){const seq=Date.now();try{localStorage.setItem(LS,JSON.stringify(players));localStorage.setItem(LS+'-seq',String(seq));}catch(e){}
+  KV_BOOT.then(()=>KV.set('players',{seq,list:players})).catch(()=>{});}
 function idTime(id){const m=/^p([0-9a-z]{8})/.exec(id);if(!m)return 0;const t=parseInt(m[1],36);return t>1.6e12&&t<4e12?t:0;}
 function normalize(p){
   const base={id:String(p.id),name:Array.from(String(p.name||'')).slice(0,18).join('')||'Sans nom',
@@ -1952,7 +1961,8 @@ function mergeState(o){
 }
 async function saveState(){
   state.rev=(state.rev||0)+1;state.owned=Object.keys(state.counts);
-  try{localStorage.setItem(LS_STATE,JSON.stringify(state));}catch(e){}
+  const t=Date.now();try{localStorage.setItem(LS_STATE,JSON.stringify(state));localStorage.setItem(LS_STATE+'-t',String(t));}catch(e){}
+  KV_BOOT.then(()=>KV.set('state',{t,data:JSON.parse(JSON.stringify(state))})).catch(()=>{});
   if(mode==='cloud'&&col){try{await col.doc('_state').set(JSON.parse(JSON.stringify(state)));}catch(e){}}
 }
 const owns=id=>(state.counts[id]||0)>0;
@@ -5191,6 +5201,14 @@ setMode('pending');render();renderAch();renderDups();
 setTimeout(()=>{const na=checkAch(true);if(na.length)showAch(na);},1500);
 try{const t=localStorage.getItem('cartes-volley-onglet');if(['packs','binder','team','match','multi'].includes(t))setTab(t);else if(!isAdmin)setTab('packs');}catch(e){}
 appReady=true;applyRole();if(isAdmin)renderOfficial();
+// si une écriture dans localStorage a échoué (espace plein), la copie d'IndexedDB est plus récente : on la reprend
+(async()=>{let ch=false;try{
+  const d=await KV.get('players');
+  if(d&&Array.isArray(d.list)&&d.list.length&&(+d.seq||0)>BOOT_SEQ.p){players=d.list.filter(p=>p&&p.id&&!p.example).map(normalize);ch=true;}
+  const st=await KV.get('state');if(st&&st.data&&typeof st.data==='object'&&(+st.t||0)>BOOT_SEQ.s){state=fixState(st.data);ch=true;}
+}catch(e){}
+  kvBootDone();if(ch){writeLocal();saveState();}
+  if(ch){render();renderAch();renderDups();renderPacks();if(!$('tab-binder').hidden)renderBinder();if(!$('tab-team').hidden)renderTeam();if(!$('tab-multi').hidden)renderMatchTab();if(isAdmin)renderOfficial();}})();
 setTimeout(checkUpdate,2500);
 connect();
 setTimeout(()=>{if(!pseudoGate())netHello();},600);
