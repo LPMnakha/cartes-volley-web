@@ -2948,13 +2948,24 @@ $('pk-cap').addEventListener('click',async()=>{const p=pickSlot&&teamCard(pickSl
 $('t-tac').addEventListener('click',async e=>{const b=e.target.closest('[data-tk]');if(!b)return;state.tac={...(state.tac||{})};if(b.dataset.tv)state.tac[b.dataset.tk]=b.dataset.tv;else delete state.tac[b.dataset.tk];await saveState();renderTac();netTeamSoon();});
 $('t-lib').addEventListener('change',async()=>{state.noLib=!$('t-lib').checked;if(state.noLib&&state.tac&&state.tac.rec){state.tac={...state.tac};delete state.tac.rec;}await saveState();renderTeam();});
 $('t-clear').addEventListener('click',async()=>{state.team={};await saveState();renderTeam();});
-$('t-auto').addEventListener('click',async()=>{ // les postes les plus exigeants d'abord, puis la meilleure carte disponible
-  const used=new Set(),team={};
-  for(const k of ['PAS','LIB','CEN1','CEN2','PTU','R4a','R4b']){if(k==='LIB'&&state.noLib)continue;const sl=TEAM_SLOTS.find(x=>x.k===k);
-    const best=players.filter(p=>fitsSlot(p,sl)&&!used.has(p.id)).sort((a,b)=>slotScore(b,sl)-slotScore(a,sl))[0];
-    if(best){team[k]=best.id;used.add(best.id);}}
-  if(!Object.keys(team).length){toast("Aucune carte de ton classeur ne peut encore jouer. Ouvre des boosters !");return;}
-  state.team=team;await saveState();renderTeam();sfx.sparkle();const na=checkAch(true);if(na.length)showAch(na);
+// composer au mieux : la meilleure répartition possible des cartes sur les postes (note d'équipe la plus haute), par la méthode hongroise
+function bestAssign(S){const n=S.length,m=Math.max(n,S[0]?S[0].length:0),INF=1e9;
+  const a=[...Array(n+1)].map((_,i)=>[...Array(m+1)].map((_,j)=>i&&j?-(j<=S[i-1].length?S[i-1][j-1]:-1e6):0));
+  const u=Array(n+1).fill(0),v=Array(m+1).fill(0),p=Array(m+1).fill(0),way=Array(m+1).fill(0);
+  for(let i=1;i<=n;i++){p[0]=i;let j0=0;const minv=Array(m+1).fill(INF),used=Array(m+1).fill(false);
+    do{used[j0]=true;const i0=p[j0];let d=INF,j1=0;for(let j=1;j<=m;j++)if(!used[j]){const c=a[i0][j]-u[i0]-v[j];if(c<minv[j]){minv[j]=c;way[j]=j0;}if(minv[j]<d){d=minv[j];j1=j;}}
+      for(let j=0;j<=m;j++)if(used[j]){u[p[j]]+=d;v[j]-=d;}else minv[j]-=d;j0=j1;}while(p[j0]!==0);
+    do{const j1=way[j0];p[j0]=p[j1];j0=j1;}while(j0);}
+  const res=Array(n).fill(-1);for(let j=1;j<=m;j++)if(p[j]&&j<=S[p[j]-1].length)res[p[j]-1]=j-1;return res;}
+$('t-auto').addEventListener('click',async()=>{
+  const slots=activeSlots(),cards=players.filter(p=>fitsSlot(p,slots[0]));
+  if(!cards.length){toast("Aucune carte de ton classeur ne peut encore jouer. Ouvre des boosters !");return;}
+  const before=teamScore(),as=bestAssign(slots.map(sl=>cards.map(p=>slotScore(p,sl)))),team={};
+  as.forEach((j,i)=>{if(j>=0)team[slots[i].k]=cards[j].id;});
+  if(state.noLib&&state.team.LIB&&!Object.values(team).includes(state.team.LIB))team.LIB=state.team.LIB; // le libéro mis de côté reste prêt
+  state.team=team;await saveState();renderTeam();sfx.sparkle();const after=teamScore();
+  toast(after>before?`Équipe optimisée : note ${before||'–'} → ${after}`:after===before&&before?`Ton équipe était déjà la meilleure possible (${after})`:`Note d'équipe : ${after}`);
+  const na=checkAch(true);if(na.length)showAch(na);
 });
 
 /* =================== Carte du jour =================== */
