@@ -409,6 +409,10 @@ body.player #tab-btn-cards,body.player #fab,body.player #m-export-cards,body.pla
 .shop-it.t-silver{border-color:rgba(232,238,245,.35)}.shop-it.t-gold{border-color:rgba(255,210,63,.45)}.shop-it.t-icon{border-color:rgba(201,184,255,.45)}
 .shop-it:disabled{opacity:.45;cursor:default}.shop-it:not(:disabled):active{transform:scale(.97)}
 .shop-it.arm{outline:2px solid #FFD23F;outline-offset:2px}
+.odds summary{cursor:pointer;color:var(--cyan);font-weight:600;font-size:.9rem}
+.odds table{width:100%;border-collapse:collapse;margin-top:8px;font-family:var(--data);font-size:.74rem;font-variant-numeric:tabular-nums}
+.odds th,.odds td{padding:5px 2px;text-align:center;border-bottom:1px solid var(--line)}.odds thead th{color:var(--muted);font-weight:600;font-size:.66rem}
+.odds tbody th{text-align:left;font-family:var(--display);font-size:.84rem;text-transform:uppercase}
 .coin-won{display:inline-flex;align-items:center;gap:6px;font-family:var(--data);font-weight:800;font-size:1.1rem;color:#FFD23F;text-shadow:0 0 10px rgba(255,210,63,.45)}
 .streak{display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:12px;background:rgba(255,122,47,.1);border:1px solid rgba(255,122,47,.35)}
 .streak svg{width:30px;height:30px;flex:none}
@@ -1391,7 +1395,8 @@ body.player .tab{font-size:min(1.1rem,2.95vw)} /* sans l'onglet Cartes */
     <div class="section" id="bonus-sec" hidden><span class="label">Boosters bonus</span><div class="bonus-list" id="bonus-list"></div></div>
     <div class="section shop" id="shop"><div class="rank-head"><span class="label">Boutique</span><span class="coin-bal" id="shop-bal"></span></div>
       <p class="note" style="margin:0" id="shop-note">Gagne des pièces en jouant : <b>10</b> par victoire et <b>5</b> par défaite (le premier défi du jour contre chaque ami, et chaque match de tournoi), <b>20</b> pour une finale de tournoi gagnée.</p>
-      <div class="shop-list" id="shop-list"></div></div>
+      <div class="shop-list" id="shop-list"></div>
+      <details class="odds"><summary>Chances par booster</summary><div id="shop-odds"></div></details></div>
     <div class="section cycle" id="cycle">
       <div class="cycle-head"><b id="cy-now">Booster</b><span id="cy-next"></span></div>
       <div class="cycle-bar" id="cy-bar" aria-hidden="true"></div>
@@ -2479,17 +2484,32 @@ const PACK_TYPES={
 const typeForN=n=>n%28===0?'icon':n%14===0?'gold':n%7===0?'silver':'classic';
 let adminType='classic';
 const nextType=()=>isAdmin?adminType:typeForN((+state.count||0)+1);
-function drawPack(pool,type='classic'){ // 0,5 % de chance d'une Signature (au hasard parmi toutes), le reste en tirage pondéré sans remise
-  const sigs=pool.filter(isSigP),out=[];
-  const T_=PACK_TYPES[type]||PACK_TYPES.classic;
-  if(sigs.length&&Math.random()<SIG_CHANCE*T_.sig)out.push(sigs[Math.floor(Math.random()*sigs.length)]);
-  // la réduction des bronzes dans les gros boosters ne touche pas les bronzes Full Art
-  const mOf=p=>{const t=tier(ovr(p.s));return t==='bronze'&&p.fullart&&p.photo?1:T_.mult[t];};
-  const left=pool.filter(p=>!isSigP(p)).map(p=>({p,w:weightOf(p)*mOf(p)}));
+// Chances voulues par booster : au moins une carte de ce type dans les 5 (Argent, Or, Icône, Full Art, Signature)
+const PACK_ODDS={classic:{silver:.30,gold:.05,icon:.01,fa:.10,sig:.005},silver:{silver:.80,gold:.15,icon:.03,fa:.30,sig:.01},
+  gold:{silver:.85,gold:.50,icon:.10,fa:.50,sig:.025},icon:{silver:.95,gold:.75,icon:.25,fa:.75,sig:.05}};
+const perSlot=T=>1-Math.pow(1-T,1/PACK_SIZE); // « au moins une sur 5 » → chance pour chaque carte
+// Tirage carte par carte : d'abord la rareté selon les chances du booster, puis Full Art ou non, puis une carte de ce groupe
+// (dans une même rareté, les mieux notées restent un peu plus rares). Les chances tiennent quelle que soit la liste de cartes.
+function drawPack(pool,type='classic'){
+  const O=PACK_ODDS[type]||PACK_ODDS.classic,sigs=pool.filter(isSigP),out=[];
+  if(sigs.length&&Math.random()<O.sig)out.push(sigs[Math.floor(Math.random()*sigs.length)]);
+  const TIERS4=['bronze','silver','gold','icon'],isFA=p=>!!(p.fullart&&p.photo),tierOf=p=>tier(ovr(p.s));
+  const left=pool.filter(p=>!isSigP(p));
+  const pt={silver:perSlot(O.silver),gold:perSlot(O.gold),icon:perSlot(O.icon)};pt.bronze=Math.max(0,1-pt.silver-pt.gold-pt.icon);
+  const inW=p=>{const o=ovr(p.s),[lo,hi]=TIER_RANGE[tierOf(p)];return Math.pow(1/1.5,(o-lo)/(hi-lo));};
+  const pick=list=>{const T=list.reduce((a,p)=>a+inW(p),0);let x=Math.random()*T;for(const p of list){x-=inW(p);if(x<0)return p;}return list[list.length-1];};
   while(out.length<PACK_SIZE&&left.length){
-    const T=left.reduce((a,b)=>a+b.w,0);let x=Math.random()*T,i=0;
-    while(i<left.length-1&&x>=left[i].w){x-=left[i].w;i++;}
-    out.push(left.splice(i,1)[0].p);
+    // chance Full Art dans les raretés qui ont les deux (les raretés « tout Full Art » comptent déjà)
+    const has=t=>({fa:left.some(p=>tierOf(p)===t&&isFA(p)),no:left.some(p=>tierOf(p)===t&&!isFA(p))});
+    let forced=0,mixed=0;for(const t of TIERS4){const h=has(t);if(h.fa&&!h.no)forced+=pt[t];else if(h.fa&&h.no)mixed+=pt[t];}
+    const q=mixed?Math.max(0,Math.min(1,(perSlot(O.fa)-forced)/mixed)):0;
+    let r=Math.random(),t='bronze';for(const k of ['icon','gold','silver','bronze']){if(r<pt[k]){t=k;break;}r-=pt[k];}
+    // si la rareté tirée n'a plus de carte, on descend d'un cran (puis on remonte)
+    const order=[t,...TIERS4.slice(0,TIERS4.indexOf(t)).reverse(),...TIERS4.slice(TIERS4.indexOf(t)+1)];
+    let grp=null;for(const k of order){const g=left.filter(p=>tierOf(p)===k);if(g.length){grp=g;break;}}
+    if(!grp)break;
+    const fa=grp.filter(isFA),no=grp.filter(p=>!isFA(p)),sub=fa.length&&no.length?(Math.random()<q?fa:no):(fa.length?fa:no);
+    const c=pick(sub);out.push(c);left.splice(left.indexOf(c),1);
   }
   return out;
 }
@@ -3020,10 +3040,13 @@ $('dups').addEventListener('click',async e=>{
 });
 /* =================== Boutique =================== */
 const COIN_SVG='<svg class="coin" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10" fill="#E3A21A"/><circle cx="12" cy="12" r="8" fill="#FFD23F" stroke="#B87A0B" stroke-width="1"/><path d="M8.2 8.6c2.4-.6 5.2-.6 7.6 0M8.4 15.4c2.4.6 4.8.6 7.2 0M12 6.5c-1.6 1.8-1.6 9.2 0 11M12 6.5c1.6 1.8 1.6 9.2 0 11" fill="none" stroke="#B87A0B" stroke-width="1.1" stroke-linecap="round"/></svg>';
-const SHOP=[{t:'classic',l:'Booster Bronze',p:30,d:'Comme le booster gratuit'},{t:'silver',l:'Booster Argent',p:100,d:'Plus d\'argent et d\'or'},{t:'gold',l:'Booster Or',p:250,d:'Les cartes or 8 fois plus souvent'},{t:'icon',l:'Booster Icône',p:500,d:'Le meilleur pour les icônes'}];
+const SHOP=[{t:'classic',l:'Booster Bronze',p:30,d:'Comme le booster gratuit'},{t:'silver',l:'Booster Argent',p:100,d:'80 % d\'avoir une argent'},{t:'gold',l:'Booster Or',p:250,d:'50 % d\'avoir une or'},{t:'icon',l:'Booster Icône',p:500,d:'25 % d\'avoir une icône'}];
 let shopBusy=false,shopArm=null;
 const myCoins=()=>net.me&&net.me.coins!=null?net.me.coins:null; // net est déclaré plus bas : renderShop ne sert qu'après le chargement
+const pctTxt=v=>(v*100).toLocaleString('fr-FR',{maximumFractionDigits:1})+' %';
+function renderOdds(){$('shop-odds').innerHTML=`<table><thead><tr><th>Au moins 1…</th><th>Argent</th><th>Or</th><th>Icône</th><th>Full Art</th><th>Signature</th></tr></thead><tbody>${SHOP.map(x=>{const O=PACK_ODDS[x.t];return`<tr><th>${x.l.replace('Booster ','')}</th>${['silver','gold','icon','fa','sig'].map(k=>`<td>${pctTxt(O[k])}</td>`).join('')}</tr>`;}).join('')}</tbody></table><p class="note" style="margin:6px 0 0">Chance d'avoir au moins une carte de ce type dans les 5 cartes du booster. Les mêmes chances valent pour les boosters gratuits et les boosters bonus.</p>`;}
 function renderShop(){
+  if(!$('shop-odds').innerHTML)renderOdds();
   const c=myCoins(),few=players.filter(p=>!isSigP(p)).length<PACK_SIZE;
   $('shop-bal').innerHTML=`${COIN_SVG}${c==null?'–':c}`;
   $('shop-list').innerHTML=SHOP.map(x=>{const ok=net.on&&c!=null&&c>=x.p&&!few&&!shopBusy,arm=shopArm===x.t;
