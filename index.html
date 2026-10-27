@@ -394,6 +394,22 @@ body.player #tab-btn-cards,body.player #fab,body.player #m-export-cards,body.pla
 .bonus-btn b{font-family:var(--display);font-weight:900;font-size:1.15rem;text-transform:uppercase}
 .bonus-btn.t-silver{border-color:rgba(232,238,245,.5)}.bonus-btn.t-gold{border-color:rgba(255,210,63,.6)}.bonus-btn.t-icon{border-color:rgba(201,184,255,.6)}
 .bonus-btn small{font-family:var(--data);color:var(--muted)}
+.coin{width:1.05em;height:1.05em;vertical-align:-.17em;flex:none}
+.coin-bal{display:inline-flex;align-items:center;gap:5px;font-family:var(--data);font-weight:800;font-size:1.05rem;color:#FFD23F;padding:3px 10px;border-radius:99px;background:rgba(255,210,63,.1);border:1px solid rgba(255,210,63,.35)}
+.shop-list{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
+.shop-it{position:relative;display:flex;flex-direction:column;align-items:center;gap:6px;padding:12px 8px 10px;border-radius:14px;border:1px solid var(--line);background:rgba(255,255,255,.04);text-align:center;font:inherit;color:var(--ink);cursor:pointer}
+.shop-it .sp{width:46%;aspect-ratio:5/7;border-radius:8px;display:grid;place-items:center;font-family:var(--display);font-weight:900;font-size:.72rem;letter-spacing:.06em;color:#1B0A00;box-shadow:0 8px 16px rgba(0,0,0,.4),inset 0 0 0 2px rgba(255,255,255,.35)}
+.shop-it.t-classic .sp{background:linear-gradient(160deg,#E9B489,#A8643A 55%,#6E3B1E)}
+.shop-it.t-silver .sp{background:linear-gradient(160deg,#F4F7FA,#B9C3CE 55%,#7D8896)}
+.shop-it.t-gold .sp{background:linear-gradient(160deg,#FFF0A8,#E3B23C 55%,#A97818)}
+.shop-it.t-icon .sp{background:linear-gradient(140deg,#FFD6F5,#B8E6FF 35%,#C9FFD9 65%,#FFF3B0)}
+.shop-it b{font-family:var(--display);font-weight:900;font-size:1rem;text-transform:uppercase;line-height:1.05}
+.shop-it .pr{display:inline-flex;align-items:center;gap:4px;font-family:var(--data);font-weight:800;color:#FFD23F}
+.shop-it small{color:var(--muted);font-size:.74rem;line-height:1.2}
+.shop-it.t-silver{border-color:rgba(232,238,245,.35)}.shop-it.t-gold{border-color:rgba(255,210,63,.45)}.shop-it.t-icon{border-color:rgba(201,184,255,.45)}
+.shop-it:disabled{opacity:.45;cursor:default}.shop-it:not(:disabled):active{transform:scale(.97)}
+.shop-it.arm{outline:2px solid #FFD23F;outline-offset:2px}
+.coin-won{display:inline-flex;align-items:center;gap:6px;font-family:var(--data);font-weight:800;font-size:1.1rem;color:#FFD23F;text-shadow:0 0 10px rgba(255,210,63,.45)}
 .streak{display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:12px;background:rgba(255,122,47,.1);border:1px solid rgba(255,122,47,.35)}
 .streak svg{width:30px;height:30px;flex:none}
 .streak b{font-family:var(--display);font-weight:900;font-size:1.5rem;line-height:1}
@@ -1373,6 +1389,9 @@ body.player .tab{font-size:min(1.1rem,2.95vw)} /* sans l'onglet Cartes */
     <div class="banner" id="pack-few" hidden><span>Il faut au moins <b>5 cartes</b> pour ouvrir un booster : tu en as <b id="pack-few-n">0</b> (les Signature ne comptent pas). Crée-en d'autres dans l'onglet Cartes.</span></div>
     <div class="streak" id="streak"></div>
     <div class="section" id="bonus-sec" hidden><span class="label">Boosters bonus</span><div class="bonus-list" id="bonus-list"></div></div>
+    <div class="section shop" id="shop"><div class="rank-head"><span class="label">Boutique</span><span class="coin-bal" id="shop-bal"></span></div>
+      <p class="note" style="margin:0" id="shop-note">Gagne des pièces en jouant : <b>10</b> par victoire et <b>5</b> par défaite (le premier défi du jour contre chaque ami, et chaque match de tournoi), <b>20</b> pour une finale de tournoi gagnée.</p>
+      <div class="shop-list" id="shop-list"></div></div>
     <div class="section cycle" id="cycle">
       <div class="cycle-head"><b id="cy-now">Booster</b><span id="cy-next"></span></div>
       <div class="cycle-bar" id="cy-bar" aria-hidden="true"></div>
@@ -2999,7 +3018,32 @@ $('dups').addEventListener('click',async e=>{
   toast(`${DUP_COST} doublons ${d.l.toLowerCase()} échangés : 1 ${PACK_TYPES[d.pack].l.toLowerCase()} bonus dans l'onglet Packs`);
   const na=checkAch(true);if(na.length)showAch(na);
 });
+/* =================== Boutique =================== */
+const COIN_SVG='<svg class="coin" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10" fill="#E3A21A"/><circle cx="12" cy="12" r="8" fill="#FFD23F" stroke="#B87A0B" stroke-width="1"/><path d="M8.2 8.6c2.4-.6 5.2-.6 7.6 0M8.4 15.4c2.4.6 4.8.6 7.2 0M12 6.5c-1.6 1.8-1.6 9.2 0 11M12 6.5c1.6 1.8 1.6 9.2 0 11" fill="none" stroke="#B87A0B" stroke-width="1.1" stroke-linecap="round"/></svg>';
+const SHOP=[{t:'classic',l:'Booster Bronze',p:30,d:'Comme le booster gratuit'},{t:'silver',l:'Booster Argent',p:100,d:'Plus d\'argent et d\'or'},{t:'gold',l:'Booster Or',p:250,d:'Les cartes or 8 fois plus souvent'},{t:'icon',l:'Booster Icône',p:500,d:'Le meilleur pour les icônes'}];
+let shopBusy=false,shopArm=null;
+const myCoins=()=>net.me&&net.me.coins!=null?net.me.coins:null; // net est déclaré plus bas : renderShop ne sert qu'après le chargement
+function renderShop(){
+  const c=myCoins(),few=players.filter(p=>!isSigP(p)).length<PACK_SIZE;
+  $('shop-bal').innerHTML=`${COIN_SVG}${c==null?'–':c}`;
+  $('shop-list').innerHTML=SHOP.map(x=>{const ok=net.on&&c!=null&&c>=x.p&&!few&&!shopBusy,arm=shopArm===x.t;
+    return`<button class="shop-it t-${x.t}${arm?' arm':''}" type="button" data-shop="${x.t}" ${ok?'':'disabled'}><span class="sp">${x.t==='classic'?'BRONZE':PACK_TYPES[x.t].sub}</span><b>${x.l}</b><span class="pr">${COIN_SVG}${x.p}</span><small>${arm?'Touche encore pour acheter':!net.on?'Hors connexion':c!=null&&c<x.p?`Encore ${x.p-c} pièces`:x.d}</small></button>`;}).join('');
+}
+$('shop-list').addEventListener('click',async e=>{const b=e.target.closest('[data-shop]');if(!b||b.disabled||shopBusy)return;const t=b.dataset.shop,x=SHOP.find(y=>y.t===t);
+  if(shopArm!==t){shopArm=t;renderShop();sfx.ding('silver');clearTimeout(renderShop.tm);renderShop.tm=setTimeout(()=>{shopArm=null;renderShop();},4000);return;} // deux appuis pour acheter
+  shopArm=null;shopBusy=true;renderShop();
+  try{const j=await api('buy',{type:t});if(net.me)net.me.coins=j.coins;await onBuys(j.buys,true);toast(`${x.l} acheté : ${x.p} pièces`);sfx.ding('gold');
+    if(!$('tab-packs').hidden&&(state.bonus[t]||0)>0)openPack(t);}
+  catch(err){toast(err.code==='not_enough'?`Il te manque ${(err.data&&err.data.price||x.p)-(err.data&&err.data.coins||0)} pièces.`:netMsg(err));if(err.data&&err.data.coins!=null&&net.me)net.me.coins=err.data.coins;}
+  finally{shopBusy=false;renderShop();}});
+// boosters achetés mais pas encore reçus par ce téléphone : on les ajoute à la réserve, une seule fois chacun, puis on prévient le serveur
+async function onBuys(list,quiet){if(!Array.isArray(list)||!list.length)return;state.buyIds=state.buyIds||[];const got=[];
+  for(const x of list){if(!PACK_TYPES[x.type])continue;if(!state.buyIds.includes(x.id)){state.bonus[x.type]=(state.bonus[x.type]||0)+1;state.buyIds.push(x.id);if(!quiet)got.push(x.type);}}
+  state.buyIds=state.buyIds.slice(-200);await saveState();renderExtras();renderShop();
+  if(got.length)toast(`${got.length>1?got.length+' boosters achetés t\'attendent':'Un booster acheté t\'attend'} dans Boosters bonus.`);
+  try{await api('claim',{ids:list.map(x=>x.id)});}catch(e){}}
 function renderExtras(){
+  try{renderShop();}catch(e){} // net n'existe pas encore au tout premier affichage
   // Boosters bonus
   const types=Object.keys(PACK_TYPES).filter(t=>(state.bonus[t]||0)>0),few=players.filter(p=>!isSigP(p)).length<PACK_SIZE;
   $('bonus-sec').hidden=!types.length;
@@ -3646,7 +3690,7 @@ function netMsg(e,who){const c=e&&e.code;who=who?esc(who):'ton pote';
   if(c==='blocked')return"Ton compte a été bloqué par l'admin.";
   if(c==='bad_key'||c==='unknown_player')return"Ton compte en ligne n'est pas reconnu. Réessaie dans un instant.";
   return"Le serveur a refusé la demande. Réessaie dans un instant.";}
-function netApplyMe(me){if(!me)return;net.me=me;if((me.boost||0)!==(state.boostUntil||0)){state.boostUntil=me.boost||0;saveState();}if(typeof renderBoost==='function')renderBoost();if(typeof renderAccState==='function')renderAccState();if(state.elo!==me.elo){state.elo=me.elo;saveState();}if(me.pseudo!==state.pseudo)netSyncPseudo();}
+function netApplyMe(me){if(!me)return;net.me=me;if(typeof renderShop==='function')renderShop();if((me.boost||0)!==(state.boostUntil||0)){state.boostUntil=me.boost||0;saveState();}if(typeof renderBoost==='function')renderBoost();if(typeof renderAccState==='function')renderAccState();if(state.elo!==me.elo){state.elo=me.elo;saveState();}if(me.pseudo!==state.pseudo)netSyncPseudo();}
 let pseudoBusy=false;
 async function netSyncPseudo(){ // le pseudo de ce téléphone fait foi : on le renvoie au serveur tant qu'il n'y est pas
   if(!net.on||pseudoBusy||!state.pseudo||(net.me&&net.me.pseudo===state.pseudo))return;pseudoBusy=true;
@@ -3665,7 +3709,7 @@ async function netHello1(){
   ensureProfile();
   if(state.resetPending){try{await api('reset',{pseudo:state.pseudo});state.resetPending=false;await saveState();}catch(e){}}
   try{const w=state.matches.filter(m=>m.win).length,j=await api('hello',{pseudo:state.pseudo,elo:state.elo,w,l:state.matches.length-w});
-    net.on=true;net.err='';netApplyMe(j.me);if(j.chem)setChem(j.chem);onTotw(j.totw);netStartPoll();if(j.inbox)netPoll();netRank(true);netCards();teamSent='';netTeamSoon();
+    net.on=true;net.err='';netApplyMe(j.me);if(j.chem)setChem(j.chem);onTotw(j.totw);onBuys(j.buys);netStartPoll();if(j.inbox)netPoll();netRank(true);netCards();teamSent='';netTeamSoon();
     if((state.chemPend||[]).length||j.me.cst!==state.camp.st||j.me.ctr!==state.camp.tries)netCamp();if(isAdmin&&!admTok())renderOfficial();}
   catch(e){net.on=false;net.err=e.code;if(e.code==='net'||e.code==='server'||e.code==='http'){clearTimeout(net.retry);net.retry=setTimeout(netHello,15000);}}
   renderNet();
@@ -3676,7 +3720,7 @@ async function netPoll(){
   if(!net.on||net.polling)return;net.polling=true;
   try{const j=await api('inbox',isAdmin&&admTok()?{token:admTok()}:{});netApplyMe(j.me);onPending(j.pending);
     for(const m of j.matches||[]){if(state.played.includes(m.id)){netAck(m.id);continue;}if(!net.queue.some(x=>x.id===m.id))net.queue.push(m);}
-    onChals(j.chals);onFreqs(j.freqs);onTours(j.tours);onTotw(j.totw);}
+    onChals(j.chals);onFreqs(j.freqs);onTours(j.tours);onTotw(j.totw);onBuys(j.buys);}
   catch(e){if(e.code==='net'){net.on=false;net.err='net';renderNet();clearInterval(net.timer);net.timer=null;setTimeout(netHello,15000);}}
   finally{net.polling=false;}
   netDrain();
@@ -4696,6 +4740,7 @@ async function arenaOutro(sim,disp,names,myIdx,res,rec){
       :win?`Qualifié pour ${nxt==='Finale'?'la finale':'les '+(nxt||'').toLowerCase()} : demain à 20 h.`:`Éliminé en ${({'Quarts de finale':'quart de finale','Demi-finales':'demi-finale'})[T.rname]||(T.rname||'').toLowerCase()}.`;
     f.innerHTML=`<div>${T&&T.final&&win?`<span class="cp-end-tro" style="color:#FFD23F">${TROPHY}</span>`:''}<b class="res ${win?'w':'l'}"${T&&T.final&&win?' style="color:#FFD23F"':''}>${T&&T.final&&win?'Champion !':win?'Victoire !':'Défaite'}</b><span class="sc">${fs[me]} – ${fs[1-me]}<small>${sim.sets&&sim.sets.length>1?sim.sets.map(q=>q[me]+'-'+q[1-me]).join(' · ')+' · ':''}contre ${esc(names[op])}</small></span>
       ${T?`<span class="el">${esc(T.rname)}</span><span class="note" style="max-width:32ch">${tTxt}</span>`:res.friendly?`<span class="el">Match amical</span><span class="note" style="max-width:32ch">Vous avez déjà joué un match classé aujourd'hui : celui-ci ne change pas l'élo.</span>`:`<span class="el">Élo <span data-elo>${res.before}</span> <i class="${res.d>=0?'':'n'}">${res.d>=0?'+':''}${res.d}</i></span><span class="note">${rankName(res.after)}</span>`}
+      ${res.coins?`<span class="coin-won">${COIN_SVG}+${res.coins} pièces</span>`:''}
       ${res.incoming==='acc'?`<span class="note" style="max-width:32ch">${esc(res.opName)} verra le match à sa prochaine ouverture de l'appli.</span>`:''}
       <div class="row-actions"><button class="btn" type="button" data-sh>Feuille de match</button><button class="btn primary" type="button" data-end>Terminer</button></div></div>`;
     $('arena').appendChild(f);
@@ -4945,7 +4990,7 @@ async function playOnline(m,incoming){
   const tour=m.kind==='tourn'&&m.tour?{...m.tour,owner:(((net.tours||[]).find(t=>t.id===m.tour.tid)||{}).ownerPseudo)||'',names:(((net.tours||[]).find(t=>t.id===m.tour.tid)||{}).names)||({4:['Demi-finales','Finale'],8:['Quarts de finale','Demi-finales','Finale']})[m.tour.size]||null}:null;
   const fmtTxt=tour?(fmt.sets===3?'3 sets gagnants · 5e set à 15':'2 sets gagnants de 25'):'1 set de 25 points';
   if(incoming)await arenaIntro(sim,disp,names,myIdx,{ranked:m.ranked,how:incoming==='acc'?'acc':m.acc===op.pid?'accepted':'defi',opName:op.pseudo,tour,fmtTxt});
-  const pm=playMatch(sim,disp,names,myIdx,{arena:true,win,d:e?e.d:0,before:e?e.before:state.elo,after:e?e.after:state.elo,ts:m.ts,online:true,incoming:tour?'tourn':incoming,opName:op.pseudo,friendly:!m.ranked,fmt,tour,title:tour?`Tournoi · ${tour.rname} · ${fmtTxt}`:m.ranked?'Défi classé · 1 set de 25 points':'Match amical · 1 set de 25 points'});
+  const pm=playMatch(sim,disp,names,myIdx,{arena:true,win,d:e?e.d:0,before:e?e.before:state.elo,after:e?e.after:state.elo,ts:m.ts,online:true,incoming:tour?'tourn':incoming,opName:op.pseudo,friendly:!m.ranked,coins:m.coins&&m.coins[state.pid]||0,fmt,tour,title:tour?`Tournoi · ${tour.rname} · ${fmtTxt}`:m.ranked?'Défi classé · 1 set de 25 points':'Match amical · 1 set de 25 points'});
   arFade();await pm;
   if(na.length)showAch(na);
   netRank(true);
