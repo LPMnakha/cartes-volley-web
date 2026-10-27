@@ -1400,7 +1400,7 @@ body.player .tab{font-size:min(1.1rem,2.95vw)} /* sans l'onglet Cartes */
     <div class="section cycle" id="cycle">
       <div class="cycle-head"><b id="cy-now">Booster</b><span id="cy-next"></span></div>
       <div class="cycle-bar" id="cy-bar" aria-hidden="true"></div>
-      <div class="cycle-legend"><span><i style="background:#DCE3EA"></i>Argent : 7e et 21e</span><span><i style="background:#FFD23F"></i>Or : 14e</span><span><i style="background:linear-gradient(90deg,#FF8BE0,#7AD8FF,#8CFFB0)"></i>Icône : 28e</span></div>
+      <div class="cycle-legend"><span><i style="background:#DCE3EA"></i>Argent : 7e, 14e et 21e</span><span><i style="background:#FFD23F"></i>Or : 9e et 19e</span><span><i style="background:linear-gradient(90deg,#FF8BE0,#7AD8FF,#8CFFB0)"></i>Icône : 28e</span></div>
       <div class="chips" id="adm-types" role="group" aria-label="Type de booster (admin)" hidden></div>
     </div>
     <div class="pack-zone" id="pack-zone"><div class="rays"></div><button class="pack" id="pack" type="button" aria-label="Ouvrir le booster"></button></div>
@@ -1421,7 +1421,7 @@ body.player .tab{font-size:min(1.1rem,2.95vw)} /* sans l'onglet Cartes */
     <div class="b-dots" id="b-dots"></div>
     <p class="empty-filter" id="b-empty" hidden>Crée des cartes dans l'onglet Cartes : chacune aura sa place dans le classeur.</p>
     <div class="section"><span class="label">Doublons</span>
-      <p class="note" style="margin:0">25 doublons d'une rareté = 1 booster bonus de la même rareté. Les Full Art comptent dans leur rareté, les Signature comme icône.</p>
+      <p class="note" style="margin:0">15 doublons d'une rareté = 1 booster bonus de la même rareté. Les Full Art comptent dans leur rareté, les Signature comme icône.</p>
       <div class="dups" id="dups"></div></div>
     <div class="section"><span class="label">Succès <span id="ach-count"></span></span><div class="achs" id="achs"></div></div>
   </div>
@@ -2486,13 +2486,13 @@ const TIER_RANGE={bronze:[0,64],silver:[65,74],gold:[75,84],icon:[85,100]};
 const weightOf=p=>{const o=ovr(p.s),t=tier(o),[lo,hi]=TIER_RANGE[t],k=(o-lo)/(hi-lo);
   return TIER_WEIGHT[t]*Math.pow(1/1.5,k)/(p.signature&&p.photo?SIGNATURE_RARITY:p.fullart&&p.photo?FULLART_RARITY:1);};
 const PACK_SIZE=5;
-// Types de booster : le 7e et le 21e sont argent, le 14e or, le 28e icône, puis le cycle recommence
+// Types de booster : 7e, 14e et 21e argent, 9e et 19e or, 28e icône, puis le cycle recommence
 const PACK_TYPES={
   classic:{l:'Booster',sub:'CARTES VOLLEY',mult:{bronze:1,silver:1,gold:1,icon:1},sig:1},
   silver:{l:'Booster Argent',sub:'ARGENT',mult:{bronze:0.5,silver:2,gold:2,icon:2},sig:2},
   gold:{l:'Booster Or',sub:'OR',mult:{bronze:0.25,silver:2,gold:8,icon:8},sig:8},
   icon:{l:'Booster Icône',sub:'ICÔNE',mult:{bronze:0.1,silver:2,gold:8,icon:16},sig:16}};
-const typeForN=n=>n%28===0?'icon':n%14===0?'gold':n%7===0?'silver':'classic';
+const typeForN=n=>{const k=((n-1)%28+28)%28+1;return k===28?'icon':k===9||k===19?'gold':k===7||k===14||k===21?'silver':'classic';};
 let adminType='classic';
 const nextType=()=>isAdmin?adminType:typeForN((+state.count||0)+1);
 // Chances voulues par booster : au moins une carte de ce type dans les 5 (Argent, Or, Icône, Full Art, Signature)
@@ -3028,7 +3028,7 @@ window.addEventListener('resize',()=>{if(!$('opening').hidden)fxSize();});
 
 
 /* =================== Doublons et boosters bonus =================== */
-const DUP_COST=25; // doublons à échanger contre un booster bonus
+const DUP_COST=15; // doublons à échanger contre un booster bonus
 const DUP_TIERS=[{t:'bronze',l:'Bronze',pack:'classic',c:'#E9A877'},{t:'silver',l:'Argent',pack:'silver',c:'#DCE3EA'},{t:'gold',l:'Or',pack:'gold',c:'#FFD23F'},{t:'icon',l:'Icône',pack:'icon',c:'#C9B8FF'}];
 const dupTier=p=>isSigP(p)?'icon':tier(ovr(p.s));
 function dupStock(t){return players.filter(p=>dupTier(p)===t).reduce((n,p)=>n+Math.max(0,(state.counts[p.id]||0)-1),0);}
@@ -3129,7 +3129,7 @@ const ACH=[
   {k:'s7',t:"7 jours d'affilée",d:'Une série de 7 jours',ok:()=>state.streak.best>=7},
   {k:'s30',t:"30 jours d'affilée",d:'Une série de 30 jours',ok:()=>state.streak.best>=30},
   {k:'pIcon',t:'Booster Icône',d:'Ouvre ton premier booster Icône (hors bonus)',ok:()=>realHist().some(h=>h.type==='icon'&&h.how==='jour')},
-  {k:'ex1',t:'Premier échange',d:'Échange 25 doublons contre un booster',ok:()=>state.exchanges>0},
+  {k:'ex1',t:'Premier échange',d:'Échange 15 doublons contre un booster',ok:()=>state.exchanges>0},
   {k:'team',t:'Équipe au complet',d:'Complète ton équipe (6 ou 7 joueurs)',ok:()=>teamFull()},
   {k:'team80',t:'Équipe de choc',d:'Une équipe complète notée 80 ou plus',ok:()=>teamFull()&&teamScore()>=80},
   {k:'m1',t:'Premier match',d:'Joue un match contre un pote',ok:()=>state.matches.length>0},
