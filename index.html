@@ -1182,6 +1182,24 @@ body.player .tabs{grid-template-columns:repeat(4,minmax(0,1fr))} /* sans l'ongle
 .gd .gd-card.intro{border-color:rgba(255,210,63,.4);background:linear-gradient(135deg,rgba(255,210,63,.1),transparent)}
 .gd p{margin:0;font-size:.9rem;line-height:1.45}.gd dl{margin:0;display:grid;gap:6px}.gd dt{font-weight:800;color:#FFD23F;font-size:.88rem}.gd dd{margin:0;font-size:.88rem;line-height:1.4;color:var(--ink)}
 .gd .gd-tip{color:var(--muted);font-size:.82rem;padding-left:10px;border-left:3px solid var(--cyan)}
+.rank-row .rk-acts{display:flex;gap:6px;overflow:visible}
+.cp-team{padding:6px 12px;font-size:.8rem;border-radius:9px;margin-right:6px}
+.lnk{color:var(--cyan);font-weight:700;cursor:pointer}
+.tv-head{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:12px 14px;border-radius:16px;background:rgba(255,255,255,.05);border:1px solid var(--line)}
+.tv-head>div:first-child{display:flex;flex-direction:column;gap:2px;min-width:0}.tv-head small{font-family:var(--data);font-size:.7rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
+.tv-head b{font-family:var(--display);font-weight:900;font-size:1.6rem;text-transform:uppercase;line-height:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.tv-head span{font-size:.82rem;color:var(--muted)}
+.tv-note{display:flex;flex-direction:column;align-items:center}.tv-note b{font-size:2.4rem}
+.tv-tac{margin:0;font-size:.86rem}.tv-tac span{color:var(--muted)}
+.tv-list{display:flex;flex-direction:column;gap:10px}
+.tv-row{display:grid;grid-template-columns:64px minmax(0,1fr);gap:10px;align-items:center;padding:10px;border-radius:14px;background:rgba(255,255,255,.04);border:1px solid var(--line)}
+.tv-row .mini{width:64px}
+.tv-info{display:flex;flex-direction:column;gap:6px;min-width:0}
+.tv-pos{display:flex;flex-direction:column;gap:1px}.tv-pos b{font-weight:800;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.tv-pos span{font-size:.78rem;color:var(--muted)}.tv-pos em{font-style:normal;font-family:var(--data);font-weight:700}
+.tv-stats{display:grid;grid-template-columns:1fr 1fr;gap:4px 10px}
+.tv-stats>div{display:grid;grid-template-columns:3.9em minmax(14px,1fr) 2.4ch;gap:5px;align-items:center}
+.tv-stats small{font-size:.72rem;color:var(--muted)}.tv-stats b{font-family:var(--data);font-size:.8rem;text-align:right}
+.tv-stats i{display:block;height:6px;border-radius:3px;background:rgba(255,255,255,.08);overflow:hidden}.tv-stats u{display:block;height:100%;border-radius:3px}
+@media (max-width:360px){.tv-stats{grid-template-columns:1fr}}
 </style>
 
 <header class="appbar">
@@ -1270,8 +1288,7 @@ body.player .tabs{grid-template-columns:repeat(4,minmax(0,1fr))} /* sans l'ongle
     <div class="bench"><div id="lib-slot"></div><p id="t-lib-txt">Le libéro remplace un central en défense. Il est noté sur sa réception et sa défense.</p></div>
     <div class="row-actions"><button class="btn" type="button" id="t-clear">Vider l'équipe</button><button class="btn primary" type="button" id="t-auto">Composer au mieux</button></div>
     <div class="section" id="t-tac-sec"><span class="label">Consignes de jeu</span>
-      <p class="note" style="margin:0">Elles servent en campagne et dans tes défis. Chacune a un avantage et un défaut : elle ne rapporte que si elle colle à tes cartes et à celles d'en face. L'option marquée d'une étoile est conseillée pour ton équipe.</p>
-      <div class="tadv" id="t-adv"></div>
+      <p class="note" style="margin:0">Elles servent en campagne et dans tes défis. Chacune a un avantage et un défaut : elle ne rapporte que si elle colle à tes cartes et à celles d'en face. <a class="lnk" data-guide>Comment choisir ?</a></p>
       <div class="tacs" id="t-tac"></div></div>
     <div class="section" id="t-chem-sec"><span class="label">Complicité du passeur</span>
       <p class="note" style="margin:0">Plus ton passeur joue avec un attaquant, meilleures sont ses passes pour lui : +1 tous les 5 matchs ensemble (campagne et défis), jusqu'à +5.</p>
@@ -1569,8 +1586,8 @@ body.player .tabs{grid-template-columns:repeat(4,minmax(0,1fr))} /* sans l'ongle
       <p>Chaque consigne a <b>un avantage et un défaut</b>. Elle ne rapporte que si elle colle à <b>tes cartes</b> et à <b>celles d'en face</b>. Sinon, elle te coûte des points.</p>
       <p>Le jeu normal ne prend aucun risque. Une consigne bien choisie rapporte en général 1 à 3 % de chances de gagner ; toutes bien choisies ensemble, souvent 5 à 10 %. Mal choisies, c'est autant en moins.</p></div>
     <div class="gd-card"><b>Où regarder</b>
-      <p><b>Campagne :</b> l'affiche du match montre l'équipe adverse, ses notes et son jeu. Le « conseil pour ce match » compare tes cartes aux siennes.</p>
-      <p><b>Défis :</b> tu ne vois pas l'équipe de ton ami avant le match. Le conseil de l'onglet Équipe imagine une équipe de ton niveau : il te dit surtout comment jouer avec tes points forts.</p>
+      <p><b>Campagne :</b> l'affiche du match montre le jeu de l'adversaire. Le bouton <b>Équipe</b> affiche ses joueurs, poste par poste, avec toutes leurs stats.</p>
+      <p><b>Défis :</b> dans le classement, le bouton <b>Équipe</b> à côté de chaque ami montre ses joueurs et leurs stats. Ses consignes, elles, restent une surprise jusqu'à la feuille de match.</p>
       <p>Pour comparer, regarde les <b>moyennes</b> : tes serveurs, tes centraux, tes ailiers (R4 et pointu), tes défenseurs, ton libéro.</p></div>
     <div class="gd-card"><b>Service</b>
       <dl><dt>Fort</dt><dd>Plus d'aces, un peu plus de fautes. À choisir quand tes serveurs ont nettement plus en service que leurs réceptionneurs en réception.</dd>
@@ -1592,10 +1609,17 @@ body.player .tabs{grid-template-columns:repeat(4,minmax(0,1fr))} /* sans l'ongle
       <dl><dt>Libéro partout</dt><dd>Ton libéro prend presque tous les services : s'il réceptionne nettement mieux que tes R4.</dd>
       <dt>Partagée</dt><dd>Tes trois réceptionneurs prennent autant de services : si tes R4 réceptionnent aussi bien que ton libéro.</dd></dl>
       <p class="gd-tip">Sans libéro, cette consigne n'existe pas.</p></div>
-    <div class="gd-card"><b>Le conseil automatique</b>
-      <p>L'étoile et le bouton « Appliquer les conseils » viennent d'un calcul fait sur des milliers de matchs simulés avec le même moteur que le jeu. Le conseil ne propose une consigne que si elle rapporte vraiment ; sinon il laisse le jeu normal.</p>
-      <p>Les adversaires de la campagne choisissent aussi leur jeu selon leurs points forts. Leur jeu est affiché sur l'affiche : à toi de t'adapter.</p></div>
+    <div class="gd-card"><b>Bon à savoir</b>
+      <p>Les adversaires de la campagne choisissent leur jeu selon leurs points forts : regarde leur équipe et leur jeu sur l'affiche, puis adapte le tien.</p>
+      <p>Tes consignes valent pour la campagne et pour tous tes défis : pense à les revoir avant un gros match.</div>
   </div>
+</section>
+<section class="msheet" id="tview" hidden aria-label="Équipe">
+  <div class="sh-bar">
+    <button class="icon-btn" type="button" id="tv-close" aria-label="Fermer"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button>
+    <h2 id="tv-title">Équipe</h2>
+  </div>
+  <div class="sh-body" id="tv-body"></div>
 </section>
 <div class="toast" id="toast" role="status" hidden></div>
 
@@ -2135,6 +2159,7 @@ window.__back=function(){
   if(!$('chp').hidden){$('chp-later').click();return true;}
   if(!$('frp').hidden){$('frp-later').click();return true;}
   if(!$('upd').hidden){if(upd.step!=='dl')$('upd-later').click();return true;}
+  if(!$('tview').hidden){closeTeamView();return true;}
   if(!$('guide').hidden){closeGuide();return true;}
   if(!$('sheet').hidden){closeSheet();return true;}
   if(!$('arena').hidden){arBack();return true;}
@@ -2847,15 +2872,9 @@ function tacAdvTxt(ad){const ks=Object.keys(ad.tac);return ks.length?ks.map(k=>t
 const tacSame=(a,b)=>TAC_DEF.every(d=>((a||{})[d.k]||'')===((b||{})[d.k]||''));
 async function applyTac(t,src){state.tac={...t};if(state.noLib&&state.tac.rec)delete state.tac.rec;await saveState();renderTac();if(typeof netTeamSoon==='function')netTeamSoon();toast(src||'Consignes appliquées');sfx.ding('silver');}
 function renderTac(){
-  const box=$('t-tac');if(!box)return;const t=state.tac||{},me=myTeam(),ad=me?tacAdvice(me,tacMirror(me)):null;
-  const ab=$('t-adv');if(ab){if(!ad)ab.innerHTML=`<p class="note" style="margin:0">Complète ton équipe pour voir les consignes conseillées.</p>`;
-    else{const ks=Object.keys(ad.tac),same=tacSame(ad.tac,t);
-      ab.innerHTML=`<div class="tadv-h"><b>Conseil pour ton équipe</b><small>face à une équipe de ton niveau</small></div>
-        <p class="tadv-t">${esc(tacAdvTxt(ad))}</p>${ks.length?`<ul class="tadv-l">${ks.map(k=>`<li>${esc(tacLbl(k,ad.tac[k]))} : ${TAC_WHY[ad.tac[k]](ad.f)}.</li>`).join('')}</ul>`:'<p class="note" style="margin:0">Ton équipe est équilibrée : le jeu normal est le plus sûr.</p>'}
-        <div class="row-actions"><button class="btn" type="button" data-guide>Comment choisir ?</button><button class="btn primary" type="button" id="t-adv-go"${same?' disabled':''}>${same?'Tu suis les conseils':'Appliquer les conseils'}</button></div>`;
-      const go=$('t-adv-go');if(go)go.onclick=()=>applyTac(ad.tac,'Consignes conseillées appliquées');}}
-  box.innerHTML=TAC_DEF.filter(d=>!(d.k==='rec'&&state.noLib)).map(d=>{const cur=d.o.find(x=>x[0]===(t[d.k]||''))||d.o[1],rec=ad?(ad.tac[d.k]||''):null;
-    return`<div class="tac"><b>${d.l}</b><div class="mseg small" role="group" aria-label="${d.l}">${d.o.map(o=>`<button type="button" data-tk="${d.k}" data-tv="${o[0]}" aria-pressed="${o===cur}"${rec===o[0]?' class="adv" title="Conseillé pour ton équipe"':''}>${o[1]}</button>`).join('')}</div><small>${cur[2]}</small></div>`;}).join('');
+  const box=$('t-tac');if(!box)return;const t=state.tac||{};
+  box.innerHTML=TAC_DEF.filter(d=>!(d.k==='rec'&&state.noLib)).map(d=>{const cur=d.o.find(x=>x[0]===(t[d.k]||''))||d.o[1];
+    return`<div class="tac"><b>${d.l}</b><div class="mseg small" role="group" aria-label="${d.l}">${d.o.map(o=>`<button type="button" data-tk="${d.k}" data-tv="${o[0]}" aria-pressed="${o===cur}">${o[1]}</button>`).join('')}</div><small>${cur[2]}</small></div>`;}).join('');
 }
 function renderChem(){
   const setter=teamCard(TEAM_SLOTS.find(x=>x.k==='PAS')),box=$('t-chem');
@@ -3443,7 +3462,9 @@ function renderMatchTab(){
   const frIds=new Set(net.rank?net.rank.friends.map(f=>f.pid):[]);
   $('m-rank').innerHTML=RR.rows.map((x,i)=>{const meRow=x.pid===state.pid,pos=x.pos||i+1,sep=x.pos&&x.pos>RR.rows.length?'<div class="rank-sep">…</div>':'';
     const cIn=((net.chals||{}).incoming||[]).find(c=>c.pid===x.pid),cOut=((net.chals||{}).outgoing||[]).find(c=>c.pid===x.pid&&c.st==='wait');
-    const act=meRow||!net.on?'':frIds.has(x.pid)?(cIn?`<button class="btn rb def" type="button" data-chok="${esc(cIn.id)}">Accepter</button>`:cOut?'<button class="btn rb" type="button" disabled>En attente</button>':`<button class="btn rb def" type="button" data-defi="${esc(x.pid)}"${x.team?'':' disabled title="Pas encore d\'équipe enregistrée"'}>Défier</button>`):addBtn(x.pid,frState(x.pid));
+    const tb=frIds.has(x.pid)&&x.team&&!meRow&&net.on?`<button class="btn rb" type="button" data-fteam="${esc(x.pid)}">Équipe</button>`:'';
+    const act0=meRow||!net.on?'':frIds.has(x.pid)?(cIn?`<button class="btn rb def" type="button" data-chok="${esc(cIn.id)}">Accepter</button>`:cOut?'<button class="btn rb" type="button" disabled>En attente</button>':`<button class="btn rb def" type="button" data-defi="${esc(x.pid)}"${x.team?'':' disabled title="Pas encore d\'équipe enregistrée"'}>Défier</button>`):addBtn(x.pid,frState(x.pid));
+    const act=act0?`<span class="rk-acts">${tb}${act0}</span>`:'';
     return`${sep}<div class="rank-row${meRow?' me':''}${pos<=3?' top':''}${act?' act':''}"><b>${pos}</b><span>${esc(meRow?state.pseudo:x.pseudo)}${meRow?' (toi)':''}${!meRow&&frIds.has(x.pid)&&!x.team?' <em>sans équipe</em>':''}</span><small>${x.w}V ${x.l}D</small><b>${x.elo}</b>${act}</div>`;}).join('')+
     (RR.note?`<p class="note" style="margin:4px 0 0">${RR.note}</p>`:'');
   netRank();
@@ -3455,7 +3476,7 @@ $('m-hist').addEventListener('click',e=>{const r=e.target.closest('.mh-row.has')
 $('m-pseudo').addEventListener('change',async()=>{const v=cleanPseudo($('m-pseudo').value);if(!v){$('m-pseudo').value=state.pseudo;return;}if(v===state.pseudo){$('m-pseudo').value=v;return;}state.pseudo=v;$('m-pseudo').value=v;await saveState();renderMatchTab();netSyncPseudo();});
 $('m-pseudo').setAttribute('maxlength','40'); // la vraie limite (16 caractères, emojis compris) est appliquée à la validation
 $('m-pseudo').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();e.target.blur();}});
-$('m-rank').addEventListener('click',e=>{const ok=e.target.closest('[data-chok]');if(ok){answerChal(ok.dataset.chok,true,ok);return;}const fo=e.target.closest('[data-frok]');if(fo){answerFreq(fo.dataset.frok,true,fo);return;}const d=e.target.closest('[data-defi]'),a=e.target.closest('[data-add]');if(d&&!d.disabled)challenge(d.dataset.defi,d);else if(a)addFriend(a.dataset.add,a);});
+$('m-rank').addEventListener('click',e=>{const ft=e.target.closest('[data-fteam]');if(ft){friendTeam(ft.dataset.fteam,ft);return;}const ok=e.target.closest('[data-chok]');if(ok){answerChal(ok.dataset.chok,true,ok);return;}const fo=e.target.closest('[data-frok]');if(fo){answerFreq(fo.dataset.frok,true,fo);return;}const d=e.target.closest('[data-defi]'),a=e.target.closest('[data-add]');if(d&&!d.disabled)challenge(d.dataset.defi,d);else if(a)addFriend(a.dataset.add,a);});
 $('f-res').addEventListener('click',e=>{const a=e.target.closest('[data-add]'),d=e.target.closest('[data-defi]'),fo=e.target.closest('[data-frok]');if(fo){answerFreq(fo.dataset.frok,true,fo);fo.textContent='Ami ✓';return;}if(a)addFriend(a.dataset.add,a);else if(d&&!d.disabled)challenge(d.dataset.defi,d);});
 /* =================== Feuille de match =================== */
 // colonnes : points, aces, attaques gagnantes, contres gagnants, défenses, fautes
@@ -3501,6 +3522,32 @@ function openSheet(m){
   $('sheet').hidden=false;$('sh-body').scrollTop=0;
 }
 function closeSheet(){$('sheet').hidden=true;curSheet=null;}
+/* voir une équipe : l'adversaire de campagne ou l'équipe d'un ami (cartes, postes, notes, stats) */
+const TV_ST=[['ser','Service'],['rec','Récep.'],['pas','Passe'],['att','Attaque'],['blo','Contre'],['def','Défense']];
+function openTeamView(name,cards,o={}){
+  const note=cards.length?Math.round(teamNote({cards})):0,lib=cards.length>6;
+  $('tv-title').textContent=name;
+  $('tv-body').innerHTML=`<div class="tv-head"><div><small>${esc(o.sub||'Équipe')}</small><b>${esc(name)}</b><span>${lib?'Avec libéro':'Sans libéro, à 6'}</span></div><div class="tv-note"><b style="color:${TIER_COL[tier(note)]}">${note}</b><small>note d'équipe</small></div></div>
+    ${o.tac?`<p class="tv-tac"><span>Leur jeu :</span> <b>${esc(tacTxt(o.tac))}</b></p>`:''}
+    <div class="tv-list">${cards.map((p,i)=>{const sl=TEAM_SLOTS.find(x=>x.k===SLOT_ORDER[i]),v=slotScore(p,sl);
+      return`<div class="tv-row">${miniHTML(p)}<div class="tv-info"><div class="tv-pos"><b>${esc(p.name)}</b><span>${sl.l} · note au poste <em style="color:${TIER_COL[tier(v)]}">${v}</em></span></div>
+        <div class="tv-stats">${TV_ST.map(([k,l])=>{const x=Math.round(+p.s[k]||0);return`<div><small>${l}</small><i><u style="width:${Math.max(2,Math.min(100,x))}%;background:${TIER_COL[tier(x)]}"></u></i><b>${x}</b></div>`;}).join('')}</div></div></div>`;}).join('')}</div>
+    ${o.foot?`<p class="note" style="margin:0">${o.foot}</p>`:''}`;
+  $('tview').hidden=false;$('tv-body').scrollTop=0;sfx.flip();
+}
+function closeTeamView(){$('tview').hidden=true;}
+$('tv-close').addEventListener('click',closeTeamView);
+async function friendTeam(pid,btn){
+  if(!net.on){toast("Pas de connexion au serveur : réessaie avec internet.");return;}
+  if(btn)btn.disabled=true;
+  try{const j=await api('fteam',{code:pid});
+    if(!j.team){toast(`${j.friend.pseudo} n'a pas encore d'équipe complète.`);return;}
+    const cards=j.team.cards.map((c,i)=>players.find(p=>p.id===c.id)||{...c,id:'ft'+i,kind:'joueur',photo:null});
+    openTeamView(j.friend.pseudo,cards,{sub:`Équipe de ton ami · ${j.friend.elo} élo`,foot:'Ses consignes de jeu restent secrètes : tu les découvriras sur la feuille de match.'});}
+  catch(e){toast(e.code==='not_friend'?"Vous n'êtes pas (encore) amis.":netMsg(e));}
+  finally{if(btn)btn.disabled=false;}
+}
+
 /* guide des consignes */
 function openGuide(){$('guide').hidden=false;document.querySelector('#guide .sh-body').scrollTop=0;}
 function closeGuide(){$('guide').hidden=true;}
@@ -3674,7 +3721,7 @@ function renderCamp(){
       <div class="cp-p-top"><small>${esc(T.venue)} · ${esc(T.n)}</small><b class="cp-round">${esc(rd.r)}</b></div>
       <div class="cp-p-vs"><div><span>${esc(state.pseudo||'Ton équipe')}</span><b>${myLv??'–'}</b><small>note d'équipe</small></div><i>VS</i><div><span>${esc(op.name)}</span><b>${op.lv}</b><small>note d'équipe</small></div></div>
       <div class="cp-tac"><div><span>Leur jeu :</span> <b>${esc(tacTxt(op.tac))}</b></div><div><span>Tes consignes :</span> <b>${esc(tacTxt(state.tac))}</b> · <a data-go-team>modifier</a></div>
-        ${me?(()=>{const ad=tacAdvice(me,op),same=tacSame(ad.tac,state.tac);return`<div class="cp-adv"><span>Conseil pour ce match :</span> <b>${esc(tacAdvTxt(ad))}</b>${same?' <i>✓ suivi</i>':` · <a data-adv-go>appliquer</a>`} · <a data-guide>comment choisir ?</a></div>`;})():''}</div>
+        <div><button class="btn cp-team" type="button" data-cp-team>Équipe</button> <a data-guide>comment choisir ?</a></div></div>
       <div class="cp-chips"><span>${cpFmtL(T.fmt)}</span>${rew?cpReward(rew):''}</div>
       <p class="cp-stake">${esc(cpStake(st))}</p>
       <div class="cp-opp">${op.cards.map((x,i)=>miniHTML({...x,id:'cpo'+i,kind:'joueur',photo:null})).join('')}</div>
@@ -3695,7 +3742,7 @@ function renderCamp(){
   renderCampRank();if(net.on)netRank();
   const pb=$('cp-play');if(pb)pb.addEventListener('click',cpPlay);
   root.querySelectorAll('[data-go-team]').forEach(a=>a.addEventListener('click',()=>{setTab('team');$('t-tac-sec').scrollIntoView({block:'start',behavior:'smooth'});}));
-  root.querySelectorAll('[data-adv-go]').forEach(a=>a.addEventListener('click',async()=>{const me=myTeam();if(!me)return;await applyTac(tacAdvice(me,cpTeam(state.camp.st)).tac,'Consignes conseillées pour ce match appliquées');renderCamp();}));
+  root.querySelectorAll('[data-cp-team]').forEach(a=>a.addEventListener('click',()=>{const op=cpTeam(state.camp.st);openTeamView(op.name,op.cards.map((x,i)=>({...x,id:'cpo'+i,kind:'joueur',photo:null})),{sub:`Adversaire · ${cpRound(state.camp.st).r}`,tac:op.tac});}));
   const rb=$('cp-retry');if(rb)rb.addEventListener('click',cpRefresh);
   const sb=$('cp-sheet');if(sb)sb.addEventListener('click',()=>openSheet(state.camp.last));
   if(cpStatus==='locked'&&!done){const l=$('cp-left');const tick=()=>{const n=estNow();if(n==null||!l)return;const ms=msToMidnight(n);
