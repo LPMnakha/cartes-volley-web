@@ -2018,15 +2018,16 @@ async function connect(){
     try{const st=await col.doc('_state').get();if(st.exists)mergeState(st.data());}catch(e){}
     saveState();
     col.onSnapshot(s=>{
-      players=s.docs.filter(d=>d.id!=='_state').map(d=>normalize({...d.data(),id:d.id}));
+      // un joueur suit la liste officielle du serveur : la copie en ligne des cartes ne sert qu'à l'admin (elle peut être ancienne)
+      if(isAdmin||!off.ver)players=s.docs.filter(d=>d.id!=='_state').map(d=>normalize({...d.data(),id:d.id}));
       const sd=s.docs.find(d=>d.id==='_state');if(sd&&mergeState(sd.data())){try{localStorage.setItem(LS_STATE,JSON.stringify(state));}catch(e){}}
       writeLocal();render();refreshOpen();
     },()=>{setMode('local');});
   }catch(e){setMode('local');}
 }
 
-async function persist(p){
-  p.updatedAt=Date.now();setTimeout(()=>{if(isAdmin&&typeof renderOfficial==='function')renderOfficial();},0);
+async function persist(p,keepTime){
+  if(!keepTime)p.updatedAt=Date.now(); // une carte officielle reçue garde sa date (sinon elle passerait pour une modification)setTimeout(()=>{if(isAdmin&&typeof renderOfficial==='function')renderOfficial();},0);
   const i=players.findIndex(x=>x.id===p.id);
   if(i>=0)players[i]=p;else players.push(p);
   writeLocal();render();
@@ -3641,7 +3642,7 @@ function cleanOwned(){const ids=new Set(players.map(p=>p.id));let ch=false;
   state.owned=Object.keys(state.counts);return ch;}
 async function applyOfficial(list,ver){
   const norm=list.map(normalize);
-  if(mode==='cloud'){const keep=new Set(norm.map(p=>p.id));for(const p of players.filter(p=>!keep.has(p.id)))await remove(p.id);for(const p of norm){const u=p.updatedAt;await persist(p);p.updatedAt=u;}}
+  if(mode==='cloud'){const keep=new Set(norm.map(p=>p.id));for(const p of players.filter(p=>!keep.has(p.id)))await remove(p.id);for(const p of norm)await persist(p,true);}
   players=norm;writeLocal();
   off={ver,snap:snapOf(norm)};saveOff();
   if(cleanOwned())await saveState();netTeamSoon();
@@ -3654,11 +3655,16 @@ async function applyOfficial(list,ver){
 let offBusy=false;
 async function netCards(force){
   if(!net.on||offBusy)return;offBusy=true;
-  try{const j=await api('cards',{ver:force?-1:off.ver});
+  // un joueur dont les cartes ne correspondent plus à la liste officielle connue la retélécharge entière
+  try{const j=await api('cards',{ver:force||(!isAdmin&&off.ver&&offDiff().n)?-1:off.ver});
     if(j.same||!Array.isArray(j.cards)||!j.cards.length)return; // pas encore de liste officielle : chacun garde ses cartes
     if(isAdmin&&!force){ // l'admin ne perd jamais ses cartes : ses écarts avec la liste en ligne restent « non publiés »
       if(!off.ver){off={ver:j.ver,snap:snapOf(j.cards.map(normalize))};saveOff();renderOfficial();return;}
-      if(offDiff().n){toast('Une nouvelle liste officielle existe, mais tu as des modifications non publiées.');return;}}
+      if(offDiff().n){
+        // la liste en ligne vient d'un autre appareil admin : si aucune carte de ce téléphone n'est plus récente qu'en ligne, on prend la liste en ligne
+        const on=new Map(j.cards.map(c=>[c.id,+c.updatedAt||0])),mineNewer=players.filter(p=>on.has(p.id)?(+p.updatedAt||0)>on.get(p.id):!(p.id in off.snap)); // une carte créée ici et jamais publiée compte comme une modification à garder
+        if(mineNewer.length){toast('Une nouvelle liste officielle existe, mais tu as des modifications non publiées (onglet Cartes).');return;}
+        toast('Liste officielle mise à jour depuis ton autre appareil');}}
     const first=!off.ver;await applyOfficial(j.cards,j.ver);
     if(!isAdmin)toast(first?`Cartes officielles chargées : ${j.cards.length} cartes`:'Cartes officielles mises à jour');
   }catch(e){}finally{offBusy=false;if(isAdmin)renderOfficial();}
