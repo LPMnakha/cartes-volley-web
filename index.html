@@ -413,6 +413,19 @@ body.player #tab-btn-cards,body.player #fab,body.player #m-export-cards,body.pla
 .odds table{width:100%;border-collapse:collapse;margin-top:8px;font-family:var(--data);font-size:.74rem;font-variant-numeric:tabular-nums}
 .odds th,.odds td{padding:5px 2px;text-align:center;border-bottom:1px solid var(--line)}.odds thead th{color:var(--muted);font-weight:600;font-size:.66rem}
 .odds tbody th{text-align:left;font-family:var(--display);font-size:.84rem;text-transform:uppercase}
+.mis-t{font-size:.78rem;color:var(--muted)}
+.mis-list{display:flex;flex-direction:column;gap:8px}
+.mis-row{display:grid;grid-template-columns:34px 1fr auto;gap:10px;align-items:center;padding:10px 12px;border-radius:12px;background:rgba(255,255,255,.04);border:1px solid var(--line)}
+.mis-row .mis-ic{width:34px;height:34px;border-radius:10px;display:grid;place-items:center;background:rgba(255,255,255,.07);color:var(--muted)}
+.mis-row .mis-ic svg{width:20px;height:20px}
+.mis-row b{display:block;font-weight:700;font-size:.92rem;line-height:1.2}
+.mis-row .track{display:block;height:6px;margin-top:6px;border-radius:99px;background:rgba(255,255,255,.08);overflow:hidden}
+.mis-row .track i{display:block;height:100%;border-radius:99px;background:linear-gradient(90deg,var(--orange),var(--ball))}
+.mis-row em{font-style:normal;text-align:right;font-family:var(--data);font-weight:700;font-size:.82rem;color:var(--muted);display:flex;flex-direction:column;align-items:flex-end;gap:3px}
+.mis-row em small{display:inline-flex;align-items:center;gap:3px;color:#FFD23F;font-size:.8rem}
+.mis-row.done{border-color:rgba(59,234,126,.45);background:rgba(59,234,126,.07)}
+.mis-row.done .mis-ic{background:#3BEA7E;color:#06240F}.mis-row.done .track i{background:#3BEA7E}.mis-row.done em{color:#3BEA7E}
+.mis-row.done b{opacity:.85}
 .coin-won{display:inline-flex;align-items:center;gap:6px;font-family:var(--data);font-weight:800;font-size:1.1rem;color:#FFD23F;text-shadow:0 0 10px rgba(255,210,63,.45)}
 .streak{display:flex;align-items:center;gap:12px;padding:10px 12px;border-radius:12px;background:rgba(255,122,47,.1);border:1px solid rgba(255,122,47,.35)}
 .streak svg{width:30px;height:30px;flex:none}
@@ -1392,9 +1405,10 @@ body.player .tab{font-size:min(1.1rem,2.95vw)} /* sans l'onglet Cartes */
     <div class="banner" id="pack-ex" hidden><span>Tirage parmi les <b>exemples</b> tant que tu n'as pas créé de cartes.</span></div>
     <div class="banner" id="pack-few" hidden><span>Il faut au moins <b>5 cartes</b> pour ouvrir un booster : tu en as <b id="pack-few-n">0</b> (les Signature ne comptent pas). Crée-en d'autres dans l'onglet Cartes.</span></div>
     <div class="streak" id="streak"></div>
+    <div class="section mis" id="mis-sec" hidden><div class="rank-head"><span class="label">Missions du jour</span><span class="mis-t" id="mis-t"></span></div><div class="mis-list" id="mis-list"></div></div>
     <div class="section" id="bonus-sec" hidden><span class="label">Boosters bonus</span><div class="bonus-list" id="bonus-list"></div></div>
     <div class="section shop" id="shop"><div class="rank-head"><span class="label">Boutique</span><span class="coin-bal" id="shop-bal"></span></div>
-      <p class="note" style="margin:0" id="shop-note">Gagne des pièces en jouant : <b>10</b> par victoire et <b>5</b> par défaite (le premier défi du jour contre chaque ami, et chaque match de tournoi), <b>20</b> pour une finale de tournoi gagnée.</p>
+      <p class="note" style="margin:0" id="shop-note">Gagne des pièces en jouant : <b>10</b> par victoire et <b>5</b> par défaite (le premier défi du jour contre chaque ami, et chaque match de tournoi), <b>20</b> pour une finale de tournoi gagnée, et <b>5</b> par mission du jour.</p>
       <div class="shop-list" id="shop-list"></div>
       <details class="odds"><summary>Chances par booster</summary><div id="shop-odds"></div></details></div>
     <div class="section cycle" id="cycle">
@@ -2885,6 +2899,7 @@ async function openPack(bonusType){
     st.cur=st.lastDay===yest?st.cur+1:st.lastDay===today?st.cur:1;st.lastDay=today;st.best=Math.max(st.best,st.cur);
   }
   pulled.forEach(p=>addCard(p.id));
+  if(typeof netMev==='function')netMev('pack'); // mission du jour « ouvre des boosters »
   state.history.unshift({ts:now||Date.now(),type:ptype,how:isBonus?'bonus':isAdmin?'admin':'jour',ids:pulled.map(p=>p.id),fresh:[...fresh]});
   state.history=state.history.slice(0,30);
   const newPages=fullPages().filter(k=>!pagesBefore.includes(k)),allNow=!allBefore&&binderComplete();
@@ -3049,6 +3064,27 @@ $('dups').addEventListener('click',async e=>{
   toast(`${DUP_COST} doublons ${d.l.toLowerCase()} échangés : 1 ${PACK_TYPES[d.pack].l.toLowerCase()} bonus dans l'onglet Packs`);
   const na=checkAch(true);if(na.length)showAch(na);
 });
+/* =================== Missions du jour =================== */
+const MIS_IC={defi:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 17.5L3 6V3h3l11.5 11.5M13 19l6-6M16 16l4 4M19 21l2-2"/></svg>',
+  camp:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M8 21h8M12 17v4M7 4h10v5a5 5 0 01-10 0V4zM7 6H4v2a3 3 0 003 3M17 6h3v2a3 3 0 01-3 3"/></svg>',
+  pack:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><rect x="5" y="3" width="14" height="18" rx="2"/><path d="M5 8h14M9 13l3-3 3 3"/></svg>',
+  tourn:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linejoin="round"><path d="M4 4h5v6H4zM4 14h5v6H4zM9 7h4v10H9M13 12h7"/></svg>',
+  ok:'<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12l5 5 9-10"/></svg>'};
+let MIS=null;
+function onMissions(m){if(!m||!Array.isArray(m.list))return;const prev=MIS;MIS=m;
+  const seen=state.misSeen&&state.misSeen.day===m.day?state.misSeen.done:[],newly=m.list.filter(x=>x.d&&!seen.includes(x.k));
+  if(newly.length){if(prev||seen.length||state.misSeen)newly.forEach((x,i)=>setTimeout(()=>{toast(`Mission accomplie : ${x.l} · +5 pièces`);sfx.ding('gold');},i*1800));
+    state.misSeen={day:m.day,done:m.list.filter(x=>x.d).map(x=>x.k)};saveState();}
+  else if(!state.misSeen||state.misSeen.day!==m.day){state.misSeen={day:m.day,done:[]};saveState();}
+  renderMissions();}
+function renderMissions(){const sec=$('mis-sec');if(!sec)return;if(!MIS){sec.hidden=true;return;}sec.hidden=false;
+  const parts=new Intl.DateTimeFormat('fr-FR',{timeZone:'Europe/Paris',hour:'numeric',minute:'numeric',hourCycle:'h23'}).formatToParts(new Date()),hh=+parts.find(x=>x.type==='hour').value,mm=+parts.find(x=>x.type==='minute').value,left=24*60-(hh*60+mm);
+  const all=MIS.list.every(x=>x.d);
+  $('mis-t').textContent=all?`Toutes faites ! Nouvelles dans ${left>=60?Math.floor(left/60)+' h':left+' min'}`:`Nouvelles dans ${left>=60?Math.floor(left/60)+' h':left+' min'}`;
+  $('mis-list').innerHTML=MIS.list.map(x=>{const ic=x.d?MIS_IC.ok:MIS_IC[x.k.split('_')[0]]||MIS_IC.pack;
+    return`<div class="mis-row${x.d?' done':''}"><i class="mis-ic">${ic}</i><div><b>${esc(x.l)}</b><span class="track"><i style="width:${Math.round(100*x.n/x.g)}%"></i></span></div><em>${x.d?'Fait':x.n+' / '+x.g}<small>${COIN_SVG}+5</small></em></div>`;}).join('');}
+async function netMev(k){if(!net.on)return;try{const j=await api('mev',{k});netApplyMe(j.me);onMissions(j.missions);}catch(e){}}
+
 /* =================== Boutique =================== */
 const COIN_SVG='<svg class="coin" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10" fill="#E3A21A"/><circle cx="12" cy="12" r="8" fill="#FFD23F" stroke="#B87A0B" stroke-width="1"/><path d="M8.2 8.6c2.4-.6 5.2-.6 7.6 0M8.4 15.4c2.4.6 4.8.6 7.2 0M12 6.5c-1.6 1.8-1.6 9.2 0 11M12 6.5c1.6 1.8 1.6 9.2 0 11" fill="none" stroke="#B87A0B" stroke-width="1.1" stroke-linecap="round"/></svg>';
 const SHOP=[{t:'classic',l:'Booster Bronze',p:30,d:'Comme le booster gratuit'},{t:'silver',l:'Booster Argent',p:100,d:'80 % d\'avoir une argent'},{t:'gold',l:'Booster Or',p:250,d:'50 % d\'avoir une or'},{t:'icon',l:'Booster Icône',p:500,d:'25 % d\'avoir une icône'}];
@@ -3077,7 +3113,7 @@ async function onBuys(list,quiet){if(!Array.isArray(list)||!list.length)return;s
   if(got.length)toast(`${got.length>1?got.length+' boosters achetés t\'attendent':'Un booster acheté t\'attend'} dans Boosters bonus.`);
   try{await api('claim',{ids:list.map(x=>x.id)});}catch(e){}}
 function renderExtras(){
-  try{renderShop();}catch(e){} // net n'existe pas encore au tout premier affichage
+  try{renderShop();renderMissions();}catch(e){} // net n'existe pas encore au tout premier affichage
   // Boosters bonus
   const types=Object.keys(PACK_TYPES).filter(t=>(state.bonus[t]||0)>0),few=players.filter(p=>!isSigP(p)).length<PACK_SIZE;
   $('bonus-sec').hidden=!types.length;
@@ -3751,7 +3787,7 @@ async function netHello1(){
   ensureProfile();
   if(state.resetPending){try{await api('reset',{pseudo:state.pseudo});state.resetPending=false;await saveState();}catch(e){}}
   try{const w=state.matches.filter(m=>m.win).length,j=await api('hello',{pseudo:state.pseudo,elo:state.elo,w,l:state.matches.length-w});
-    net.on=true;net.err='';netApplyMe(j.me);if(j.chem)setChem(j.chem);onTotw(j.totw);onBuys(j.buys);netStartPoll();if(j.inbox)netPoll();netRank(true);netCards();teamSent='';netTeamSoon();
+    net.on=true;net.err='';netApplyMe(j.me);if(j.chem)setChem(j.chem);onTotw(j.totw);onBuys(j.buys);onMissions(j.missions);netStartPoll();if(j.inbox)netPoll();netRank(true);netCards();teamSent='';netTeamSoon();
     if((state.chemPend||[]).length||j.me.cst!==state.camp.st||j.me.ctr!==state.camp.tries)netCamp();if(isAdmin&&!admTok())renderOfficial();}
   catch(e){net.on=false;net.err=e.code;if(e.code==='net'||e.code==='server'||e.code==='http'){clearTimeout(net.retry);net.retry=setTimeout(netHello,15000);}}
   renderNet();
@@ -3762,7 +3798,7 @@ async function netPoll(){
   if(!net.on||net.polling)return;net.polling=true;
   try{const j=await api('inbox',isAdmin&&admTok()?{token:admTok()}:{});netApplyMe(j.me);onPending(j.pending);
     for(const m of j.matches||[]){if(state.played.includes(m.id)){netAck(m.id);continue;}if(!net.queue.some(x=>x.id===m.id))net.queue.push(m);}
-    onChals(j.chals);onFreqs(j.freqs);onTours(j.tours);onTotw(j.totw);onBuys(j.buys);}
+    onChals(j.chals);onFreqs(j.freqs);onTours(j.tours);onTotw(j.totw);onBuys(j.buys);onMissions(j.missions);}
   catch(e){if(e.code==='net'){net.on=false;net.err='net';renderNet();clearInterval(net.timer);net.timer=null;setTimeout(netHello,15000);}}
   finally{net.polling=false;}
   netDrain();
@@ -3902,7 +3938,7 @@ async function answerChal(id,accept,btn){
 /* complicité reçue du serveur, plus ce qui n'est pas encore envoyé */
 function setChem(srv){const c={...(srv||{})};(state.chemPend||[]).forEach(k=>c[k]=(c[k]||0)+1);state.chem=c;saveState();}
 async function netCamp(){if(!net.on)return;const pend=(state.chemPend||[]).slice();
-  try{const j=await api('camp',{st:state.camp.st,tries:state.camp.tries,duos:pend});state.chemPend=(state.chemPend||[]).slice(pend.length);setChem(j.chem);if(net.me){net.me.cst=j.me.cst;net.me.ctr=j.me.ctr;}}catch(e){}}
+  try{const j=await api('camp',{st:state.camp.st,tries:state.camp.tries,duos:pend});state.chemPend=(state.chemPend||[]).slice(pend.length);setChem(j.chem);if(net.me){net.me.cst=j.me.cst;net.me.ctr=j.me.ctr;net.me.coins=j.me.coins;}onMissions(j.missions);renderShop();}catch(e){}}
 document.querySelectorAll('#r-seg button').forEach(b=>b.addEventListener('click',()=>{rankView=b.dataset.r;try{localStorage.setItem('cartes-volley-rank',rankView);}catch(e){}renderMatchTab();}));
 function rankRows(){
   const R=net.rank,me=state.pid;
