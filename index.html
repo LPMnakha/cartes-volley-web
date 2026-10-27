@@ -3628,7 +3628,10 @@ document.addEventListener('visibilitychange',()=>{if(document.hidden||!updCan())
 
 /* =================== Cartes officielles (publiées par l'admin sur le serveur) =================== */
 const LS_OFF='cartes-volley-officiel',LS_ADMTOK='cartes-volley-admin-jeton';
-let off={ver:0,snap:{}};try{const o=JSON.parse(localStorage.getItem(LS_OFF)||'null');if(o&&typeof o==='object')off={ver:+o.ver||0,snap:o.snap||{}};}catch(e){}
+// CARD_SCHEMA : augmente quand les cartes gagnent des champs (2 = objets et gymnases avec bonus). Une liste reçue par une version plus ancienne
+// de l'appli (par exemple une page restée ouverte depuis la veille) a perdu ces champs : elle est retéléchargée.
+const CARD_SCHEMA=2;
+let off={ver:0,snap:{},sv:0};try{const o=JSON.parse(localStorage.getItem(LS_OFF)||'null');if(o&&typeof o==='object')off={ver:+o.ver||0,snap:o.snap||{},sv:+o.sv||0};}catch(e){}
 const saveOff=()=>{try{localStorage.setItem(LS_OFF,JSON.stringify(off));}catch(e){}};
 const admTok=()=>{try{return localStorage.getItem(LS_ADMTOK)||'';}catch(e){return'';}};
 const snapOf=list=>Object.fromEntries(list.map(p=>[p.id,+p.updatedAt||0]));
@@ -3644,7 +3647,7 @@ async function applyOfficial(list,ver){
   const norm=list.map(normalize);
   if(mode==='cloud'){const keep=new Set(norm.map(p=>p.id));for(const p of players.filter(p=>!keep.has(p.id)))await remove(p.id);for(const p of norm)await persist(p,true);}
   players=norm;writeLocal();
-  off={ver,snap:snapOf(norm)};saveOff();
+  off={ver,snap:snapOf(norm),sv:CARD_SCHEMA};saveOff();
   if(cleanOwned())await saveState();netTeamSoon();
   if(false){ // QR refait avec les cartes à jour, ou retiré si l'équipe n'est plus complète
   }
@@ -3656,10 +3659,10 @@ let offBusy=false;
 async function netCards(force){
   if(!net.on||offBusy)return;offBusy=true;
   // un joueur dont les cartes ne correspondent plus à la liste officielle connue la retélécharge entière
-  try{const j=await api('cards',{ver:force||(!isAdmin&&off.ver&&offDiff().n)?-1:off.ver});
+  try{const stale=off.ver&&off.sv!==CARD_SCHEMA,j=await api('cards',{ver:force||stale||(!isAdmin&&off.ver&&offDiff().n)?-1:off.ver});
     if(j.same||!Array.isArray(j.cards)||!j.cards.length)return; // pas encore de liste officielle : chacun garde ses cartes
     if(isAdmin&&!force){ // l'admin ne perd jamais ses cartes : ses écarts avec la liste en ligne restent « non publiés »
-      if(!off.ver){off={ver:j.ver,snap:snapOf(j.cards.map(normalize))};saveOff();renderOfficial();return;}
+      if(!off.ver){off={ver:j.ver,snap:snapOf(j.cards.map(normalize)),sv:CARD_SCHEMA};saveOff();renderOfficial();return;}
       if(offDiff().n){
         // la liste en ligne vient d'un autre appareil admin : si aucune carte de ce téléphone n'est plus récente qu'en ligne, on prend la liste en ligne
         const on=new Map(j.cards.map(c=>[c.id,+c.updatedAt||0])),mineNewer=players.filter(p=>on.has(p.id)?(+p.updatedAt||0)>on.get(p.id):!(p.id in off.snap)); // une carte créée ici et jamais publiée compte comme une modification à garder
@@ -3687,7 +3690,7 @@ $('off-pub').addEventListener('click',()=>{const d=offDiff();offErr('');if(!admT
 $('off-cancel').addEventListener('click',()=>{$('off-confirm').hidden=true;});
 $('off-ok').addEventListener('click',async()=>{const b=$('off-ok');b.disabled=true;b.textContent='Envoi…';offErr('');
   try{const j=await api('publish',{token:admTok(),cards:players.map(p=>({id:p.id,...body(p),updatedAt:p.updatedAt}))});
-    off={ver:j.ver,snap:snapOf(players)};saveOff();$('off-confirm').hidden=true;toast(`Liste officielle publiée : ${j.n} cartes`);sfx.ding('gold');}
+    off={ver:j.ver,snap:snapOf(players),sv:CARD_SCHEMA};saveOff();$('off-confirm').hidden=true;toast(`Liste officielle publiée : ${j.n} cartes`);sfx.ding('gold');}
   catch(e){if(e.code==='not_admin'){try{localStorage.removeItem(LS_ADMTOK);}catch(x){}offErr('Connexion admin expirée : entre à nouveau le mot de passe.');}
     else offErr(e.code==='too_big'?'Liste trop lourde : retire quelques photos.':netMsg(e));}
   finally{b.disabled=false;b.textContent='Publier';renderOfficial();}});
