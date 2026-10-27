@@ -413,6 +413,24 @@ body.player #tab-btn-cards,body.player #fab,body.player #m-export-cards,body.pla
 .odds table{width:100%;border-collapse:collapse;margin-top:8px;font-family:var(--data);font-size:.74rem;font-variant-numeric:tabular-nums}
 .odds th,.odds td{padding:5px 2px;text-align:center;border-bottom:1px solid var(--line)}.odds thead th{color:var(--muted);font-weight:600;font-size:.66rem}
 .odds tbody th{text-align:left;font-family:var(--display);font-size:.84rem;text-transform:uppercase}
+.pf-head{display:grid;grid-template-columns:auto 1fr auto;gap:12px;align-items:center;padding:14px;border-radius:16px;background:linear-gradient(135deg,rgba(255,122,47,.16),rgba(92,214,255,.08));border:1px solid var(--line)}
+.pf-av{width:56px;height:56px;border-radius:50%;display:grid;place-items:center;font-family:var(--display);font-weight:900;font-size:1.5rem;background:linear-gradient(160deg,var(--orange),#B8420C);color:#fff;box-shadow:0 0 0 3px rgba(255,255,255,.15)}
+.pf-id{min-width:0}.pf-id small{display:block;font-family:var(--data);font-size:.66rem;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
+.pf-id b{display:block;font-family:var(--display);font-weight:900;font-size:1.45rem;text-transform:uppercase;line-height:1.05;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.pf-id span{font-size:.82rem;color:var(--muted)}
+.pf-elo{text-align:center}.pf-elo b{display:block;font-family:var(--data);font-weight:800;font-size:1.6rem;color:var(--ball);line-height:1}.pf-elo small{font-family:var(--data);font-size:.66rem;color:var(--muted);letter-spacing:.12em;text-transform:uppercase}
+.pf-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:12px}
+.pf-tile{padding:12px;border-radius:14px;background:rgba(255,255,255,.04);border:1px solid var(--line);display:flex;flex-direction:column;gap:6px;min-width:0}
+.pf-tile.wide{grid-column:1/-1}.pf-row>b{white-space:nowrap}
+.pf-row{display:grid;grid-template-columns:auto 1fr auto;gap:8px;align-items:center;font-size:.84rem}
+.pf-row>span{color:var(--muted);white-space:nowrap}.pf-row>b{font-family:var(--data);font-weight:700;text-align:right;grid-column:3}.pf-row>b small{color:var(--muted);font-weight:600}
+.pf-bar{display:block;height:7px;border-radius:99px;background:rgba(255,255,255,.08);overflow:hidden}.pf-bar u{display:block;height:100%;border-radius:99px;background:linear-gradient(90deg,var(--orange),var(--ball))}
+.pf-tile>.pf-bar{margin:2px 0 4px}
+.pf-big{display:flex;align-items:baseline;gap:10px}.pf-big b{font-family:var(--data);font-weight:800;font-size:1.8rem;color:var(--ball)}.pf-big span{color:var(--muted);font-size:.86rem}
+.pf-tro{display:flex;align-items:center;gap:8px}.pf-tro svg{width:30px;height:30px;color:#FFD23F}.pf-tro b{font-family:var(--data);font-weight:800;font-size:1.5rem;color:#FFD23F}.pf-tro span{font-size:.8rem;color:var(--muted)}
+.pf-rare{display:grid;grid-template-columns:62px 1fr;gap:10px;align-items:center;margin-top:6px;padding-top:8px;border-top:1px solid var(--line)}
+.pf-rare small{display:block;font-size:.72rem;color:var(--muted)}.pf-rare b{display:block;font-family:var(--display);font-weight:900;text-transform:uppercase;font-size:1.05rem}.pf-rare span{font-size:.8rem;color:var(--muted)}
+.pf-team{margin-top:14px;display:flex;flex-direction:column;gap:10px}
 .mis-t{font-size:.78rem;color:var(--muted)}
 .mis-list{display:flex;flex-direction:column;gap:8px}
 .mis-row{display:grid;grid-template-columns:34px 1fr auto;gap:10px;align-items:center;padding:10px 12px;border-radius:12px;background:rgba(255,255,255,.04);border:1px solid var(--line)}
@@ -1977,6 +1995,7 @@ async function saveState(){
   state.rev=(state.rev||0)+1;state.owned=Object.keys(state.counts);
   const t=Date.now();try{localStorage.setItem(LS_STATE,JSON.stringify(state));localStorage.setItem(LS_STATE+'-t',String(t));}catch(e){}
   KV_BOOT.then(()=>KV.set('state',{t,data:JSON.parse(JSON.stringify(state))})).catch(()=>{});
+  if(typeof netProfSoon==='function'&&appReady)netProfSoon(); // le profil suit la collection
   if(mode==='cloud'&&col){try{await col.doc('_state').set(JSON.parse(JSON.stringify(state)));}catch(e){}}
 }
 const owns=id=>(state.counts[id]||0)>0;
@@ -3787,7 +3806,7 @@ async function netHello1(){
   ensureProfile();
   if(state.resetPending){try{await api('reset',{pseudo:state.pseudo});state.resetPending=false;await saveState();}catch(e){}}
   try{const w=state.matches.filter(m=>m.win).length,j=await api('hello',{pseudo:state.pseudo,elo:state.elo,w,l:state.matches.length-w});
-    net.on=true;net.err='';netApplyMe(j.me);if(j.chem)setChem(j.chem);onTotw(j.totw);onBuys(j.buys);onMissions(j.missions);netStartPoll();if(j.inbox)netPoll();netRank(true);netCards();teamSent='';netTeamSoon();
+    net.on=true;net.err='';netApplyMe(j.me);if(j.chem)setChem(j.chem);onTotw(j.totw);onBuys(j.buys);onMissions(j.missions);netProfSoon();netStartPoll();if(j.inbox)netPoll();netRank(true);netCards();teamSent='';netTeamSoon();
     if((state.chemPend||[]).length||j.me.cst!==state.camp.st||j.me.ctr!==state.camp.tries)netCamp();if(isAdmin&&!admTok())renderOfficial();}
   catch(e){net.on=false;net.err=e.code;if(e.code==='net'||e.code==='server'||e.code==='http'){clearTimeout(net.retry);net.retry=setTimeout(netHello,15000);}}
   renderNet();
@@ -3985,9 +4004,9 @@ function renderMatchTab(){
   const frIds=new Set(net.rank?net.rank.friends.map(f=>f.pid):[]);
   $('m-rank').innerHTML=RR.rows.map((x,i)=>{const meRow=x.pid===state.pid,pos=x.pos||i+1,sep=x.pos&&x.pos>RR.rows.length?'<div class="rank-sep">…</div>':'';
     const cIn=((net.chals||{}).incoming||[]).find(c=>c.pid===x.pid),cOut=((net.chals||{}).outgoing||[]).find(c=>c.pid===x.pid&&c.st==='wait');
-    const tb=frIds.has(x.pid)&&x.team&&!meRow&&net.on?`<button class="btn rb" type="button" data-fteam="${esc(x.pid)}">Équipe</button>`:'';
+    const tb=net.on?`<button class="btn rb" type="button" data-prof="${esc(x.pid)}">Profil</button>`:''; // le profil, équipe comprise, pour tout le monde
     const act0=meRow||!net.on?'':frIds.has(x.pid)?(cIn?`<button class="btn rb def" type="button" data-chok="${esc(cIn.id)}">Accepter</button>`:cOut?`<button class="btn rb" type="button" data-chcancel="${esc(cOut.id)}" title="Annuler ton défi">Annuler</button>`:`<button class="btn rb def" type="button" data-defi="${esc(x.pid)}"${x.team?'':' disabled title="Pas encore d\'équipe enregistrée"'}>Défier</button>`):addBtn(x.pid,frState(x.pid));
-    const act=act0?`<span class="rk-acts">${tb}${act0}</span>`:'';
+    const act=tb||act0?`<span class="rk-acts">${tb}${act0}</span>`:'';
     return`${sep}<div class="rank-row${meRow?' me':''}${pos<=3?' top':''}${act?' act':''}"><b>${pos}</b><span>${esc(meRow?state.pseudo:x.pseudo)}${meRow?' (toi)':''}${!meRow&&frIds.has(x.pid)&&!x.team?' <em>sans équipe</em>':''}${!meRow&&frIds.has(x.pid)&&cOut?' <em>défi en attente</em>':''}${!meRow&&!frIds.has(x.pid)&&frState(x.pid)==='sent'?' <em>demande envoyée</em>':''}${!meRow&&!frIds.has(x.pid)&&frState(x.pid)==='got'?' <em>veut être ton ami</em>':''}</span><small>${x.w}V ${x.l}D</small><b>${x.elo}</b>${act}</div>`;}).join('')+
     (RR.note?`<p class="note" style="margin:4px 0 0">${RR.note}</p>`:'');
   netRank();
@@ -4114,7 +4133,7 @@ function renderBoost(){const on=boostOn(),until=state.boostUntil,w=on?toWhen(unt
 setInterval(()=>{if(state.boostUntil&&!boostOn()&&!$('t-boost').hidden)renderBoost();},60000);
 $('m-pseudo').setAttribute('maxlength','40'); // la vraie limite (16 caractères, emojis compris) est appliquée à la validation
 $('m-pseudo').addEventListener('keydown',e=>{if(e.key==='Enter'){e.preventDefault();e.target.blur();}});
-$('m-rank').addEventListener('click',e=>{const ft=e.target.closest('[data-fteam]');if(ft){friendTeam(ft.dataset.fteam,ft);return;}const cc=e.target.closest('[data-chcancel]');if(cc){answerChal(cc.dataset.chcancel,'cancel',cc);return;}const fc=e.target.closest('[data-frcancel]');if(fc){answerFreq(fc.dataset.frcancel,'cancel',fc);return;}const ok=e.target.closest('[data-chok]');if(ok){answerChal(ok.dataset.chok,true,ok);return;}const fo=e.target.closest('[data-frok]');if(fo){answerFreq(fo.dataset.frok,true,fo);return;}const d=e.target.closest('[data-defi]'),a=e.target.closest('[data-add]');if(d&&!d.disabled)challenge(d.dataset.defi,d);else if(a)addFriend(a.dataset.add,a);});
+$('m-rank').addEventListener('click',e=>{const pf=e.target.closest('[data-prof]');if(pf){openProfile(pf.dataset.prof,pf);return;}const ft=e.target.closest('[data-fteam]');if(ft){friendTeam(ft.dataset.fteam,ft);return;}const cc=e.target.closest('[data-chcancel]');if(cc){answerChal(cc.dataset.chcancel,'cancel',cc);return;}const fc=e.target.closest('[data-frcancel]');if(fc){answerFreq(fc.dataset.frcancel,'cancel',fc);return;}const ok=e.target.closest('[data-chok]');if(ok){answerChal(ok.dataset.chok,true,ok);return;}const fo=e.target.closest('[data-frok]');if(fo){answerFreq(fo.dataset.frok,true,fo);return;}const d=e.target.closest('[data-defi]'),a=e.target.closest('[data-add]');if(d&&!d.disabled)challenge(d.dataset.defi,d);else if(a)addFriend(a.dataset.add,a);});
 $('f-res').addEventListener('click',e=>{const fc=e.target.closest('[data-frcancel]');if(fc){const pid=fc.dataset.frcancel;answerFreq(pid,'cancel',fc).then(()=>{if(!fc.isConnected)return;fc.textContent='Ajouter';fc.removeAttribute('data-frcancel');fc.dataset.add=pid;fc.disabled=false;});return;}const a=e.target.closest('[data-add]'),d=e.target.closest('[data-defi]'),fo=e.target.closest('[data-frok]');if(fo){answerFreq(fo.dataset.frok,true,fo);fo.textContent='Ami ✓';return;}if(a)addFriend(a.dataset.add,a);else if(d&&!d.disabled)challenge(d.dataset.defi,d);});
 /* =================== Feuille de match =================== */
 // colonnes : points, aces, attaques gagnantes, contres gagnants, défenses, fautes
@@ -4170,11 +4189,10 @@ function teamSectors(cards,slots){
     ['Réception',lib?'R4 et libéro':'R4 et centraux',av(lib?['R4a','R4b','LIB']:['R4a','R4b','CEN1','CEN2'],'rec')],
     ['Attaque au centre','centraux',av(['CEN1','CEN2'],'att')],['Attaque aux ailes','R4 et pointu',av(['R4a','R4b','PTU'],'att')],
     ['Contre','centraux et pointu',av(['CEN1','CEN2','PTU'],'blo')],['Défense',lib?'R4, passeur et libéro':'R4 et passeur',av(lib?['R4a','R4b','PAS','LIB']:['R4a','R4b','PAS'],'def')]].filter(x=>x[2]!=null);}
-function openTeamView(name,cards,o={}){
+function teamViewHTML(name,cards,o={}){
   const slots=o.slots||SLOT_ORDER.slice(0,cards.length),full=!o.slots||slots.length===cards.length&&(cards.length===7||cards.length===6)&&slots.every((k,i)=>k===SLOT_ORDER[i]);
   const note=cards.length?(full?Math.round(teamNote({cards})):Math.round(cards.reduce((t,p,i)=>t+slotScore(p,TEAM_SLOTS.find(x=>x.k===slots[i])),0)/cards.length)):0,lib=slots.includes('LIB'),sec=teamSectors(cards,slots);
-  $('tv-title').textContent=name;
-  $('tv-body').innerHTML=`<div class="tv-head"><div><small>${esc(o.sub||'Équipe')}</small><b>${esc(name)}</b><span>${o.subline||(lib?'Avec libéro':'Sans libéro, à 6')}</span></div><div class="tv-note"><b style="color:${TIER_COL[tier(note)]}">${note}</b><small>note d'équipe</small></div></div>
+  return`<div class="tv-head"><div><small>${esc(o.sub||'Équipe')}</small><b>${esc(name)}</b><span>${o.subline||(lib?'Avec libéro':'Sans libéro, à 6')}</span></div><div class="tv-note"><b style="color:${TIER_COL[tier(note)]}">${note}</b><small>note d'équipe</small></div></div>
     ${o.tac?`<p class="tv-tac"><span>${o.tacL||'Leur jeu'} :</span> <b>${esc(tacTxt(o.tac))}</b></p>`:''}
     ${o.div&&(o.div.obj||o.div.gym)?`<p class="tv-tac">${[['obj','Objet'],['gym','Gymnase']].filter(([k])=>o.div[k]).map(([k,l])=>`<span>${l} :</span> <b>${esc(o.div[k].name)}</b>${bonShort({kind:'divers',bon:o.div[k].bon})?` <small>(${esc(bonShort({kind:'divers',bon:o.div[k].bon}))})</small>`:''}`).join(' &nbsp; ')}</p>`:''}
     ${sec.length?`<div class="tv-sec"><b>Moyennes par secteur</b><div>${sec.map(([l,w,v])=>`<div><span>${l}<small>${w}</small></span><i><u style="width:${Math.max(2,Math.min(100,v))}%;background:${TIER_COL[tier(v)]}"></u></i><em>${v}</em></div>`).join('')}</div></div>`:''}
@@ -4182,8 +4200,8 @@ function openTeamView(name,cards,o={}){
       return`<div class="tv-row">${miniHTML(p)}<div class="tv-info"><div class="tv-pos"><b>${esc(p.name)}</b><span>${sl.l} · note au poste <em style="color:${TIER_COL[tier(v)]}">${v}</em></span></div>
         <div class="tv-stats">${TV_ST.map(([k,l])=>{const x=Math.round(+p.s[k]||0),u=(TOTW.cards[p.id]||{})[k]||0;return`<div><small>${l}</small><i><u style="width:${Math.max(2,Math.min(100,x))}%;background:${TIER_COL[tier(x)]}"></u></i><b>${x}${twTag(u)}</b></div>`;}).join('')}</div></div></div>`;}).join('')}</div>
     ${o.foot?`<p class="note" style="margin:0">${o.foot}</p>`:''}`;
-  $('tview').hidden=false;$('tv-body').scrollTop=0;sfx.flip();
 }
+function openTeamView(name,cards,o={}){$('tv-title').textContent=name;$('tv-body').innerHTML=teamViewHTML(name,cards,o);$('tview').hidden=false;$('tv-body').scrollTop=0;sfx.flip();}
 function closeTeamView(){$('tview').hidden=true;}
 $('tv-close').addEventListener('click',closeTeamView);
 $('t-stats').addEventListener('click',()=>{const sl=activeSlots().filter(x=>teamCard(x));
@@ -4193,6 +4211,45 @@ $('t-stats').addEventListener('click',()=>{const sl=activeSlots().filter(x=>team
     foot:bt?`Stats avec tes bonus (${bt}).`:'',
     subline:sl.length<n?`${sl.length} / ${n} postes remplis`:(state.noLib?'Sans libéro, à 6':'Avec libéro')});});
 
+/* =================== Profil =================== */
+// le résumé de ma collection, envoyé au serveur pour mon profil (le serveur ne connaît pas les classeurs)
+function collSummary(){const L=players.filter(p=>!p.example),own=L.filter(p=>owns(p.id)),pr=f=>{const a=L.filter(f);return[a.filter(p=>owns(p.id)).length,a.length];};
+  const tiers={};['bronze','silver','gold','icon'].forEach(t=>tiers[t]=pr(p=>!isSigP(p)&&!isDiv(p)&&tier(ovr(p.s))===t));
+  let rare=null;for(const p of own)if(!rare||rarer(p,rare))rare=p;
+  return{own:own.length,total:L.length,tiers,fa:pr(p=>!isSigP(p)&&!!(p.fullart&&p.photo)),sig:pr(isSigP),div:pr(p=>isDiv(p)&&!isSigP(p)),rare:rare?rare.id:null};}
+let profSent='',profTimer=null;
+function netProfSoon(){clearTimeout(profTimer);profTimer=setTimeout(async()=>{if(!net.on||!players.length)return;const c=collSummary(),k=JSON.stringify(c);if(k===profSent)return;try{await api('prof',{coll:c});profSent=k;}catch(e){}},3000);}
+const pfBar=(a,b,col)=>`<i class="pf-bar"><u style="width:${b?Math.round(100*a/b):0}%;${col?'background:'+col:''}"></u></i>`;
+async function openProfile(pid,btn){
+  if(!net.on){toast("Pas de connexion au serveur : réessaie avec internet.");return;}
+  if(btn)btn.disabled=true;
+  try{const j=await api('profile',{code:pid}),P=j.player,R=j.rec,n=R.w+R.l,C=j.coll,fmt=new Intl.DateTimeFormat('fr-FR',{month:'long',year:'numeric'});
+    const tile=(t,body,w)=>`<div class="pf-tile${w?' wide':''}"><span class="label">${t}</span>${body}</div>`,row=(l,v)=>`<div class="pf-row"><span>${l}</span><b>${v}</b></div>`;
+    const rare=C&&C.rare?players.find(p=>p.id===C.rare):null;
+    const coll=!C?'<p class="note" style="margin:0">Pas encore de collection connue : elle apparaîtra quand ce joueur aura ouvert l\'appli à jour.</p>'
+      :`<div class="pf-big"><b>${C.total?Math.round(100*C.own/C.total):0} %</b><span>${C.own} / ${C.total} cartes</span></div>${pfBar(C.own,C.total)}
+        ${[['bronze','Bronze'],['silver','Argent'],['gold','Or'],['icon','Icône']].map(([t,l])=>{const v=C.tiers[t]||[0,0];return v[1]?`<div class="pf-row"><span style="color:${TIER_COL[t]}">${l}</span>${pfBar(v[0],v[1],TIER_COL[t])}<b>${v[0]} / ${v[1]}</b></div>`:'';}).join('')}
+        ${C.fa[1]?`<div class="pf-row"><span>Full Art</span>${pfBar(C.fa[0],C.fa[1],'linear-gradient(90deg,#FF8BE0,#7AD8FF,#8CFFB0)')}<b>${C.fa[0]} / ${C.fa[1]}</b></div>`:''}
+        ${C.sig[1]?`<div class="pf-row"><span style="color:#FFD700">Signature</span>${pfBar(C.sig[0],C.sig[1],'#FFD700')}<b>${C.sig[0]} / ${C.sig[1]}</b></div>`:''}
+        ${C.div[1]?`<div class="pf-row"><span>Objets et gymnases</span>${pfBar(C.div[0],C.div[1],'#5CD6FF')}<b>${C.div[0]} / ${C.div[1]}</b></div>`:''}
+        ${rare?`<div class="pf-rare">${miniHTML(rare)}<div><small>Sa carte la plus rare</small><b>${esc(rare.name)}</b><span>${isSigP(rare)?'Signature':TIER_L[tier(ovr(rare.s))]}${rare.fullart&&rare.photo&&!isSigP(rare)?' · Full Art':''}</span></div></div>`:''}`;
+    const camp=j.camp.st>CP_N?'Qualifié pour les Régionales !':`Étape ${j.camp.st} / ${CP_N}`;
+    let team='<p class="note" style="margin:0">Pas encore d\'équipe complète enregistrée.</p>';
+    if(j.team){const cards=j.team.cards.map((c,i)=>{const p=players.find(q=>q.id===c.id);return p?{...p,s:c.s}:{...c,id:'pf'+i,kind:'joueur',photo:null};});
+      team=teamViewHTML(P.pseudo,cards,{sub:'Son équipe',div:j.team.div,foot:(j.team.div&&(j.team.div.obj||j.team.div.gym)||j.team.boost?'Stats avec ses bonus. ':'')+(j.me?'':'Ses consignes de jeu restent secrètes.')});}
+    $('tv-title').textContent=j.me?'Mon profil':'Profil';
+    $('tv-body').innerHTML=`<div class="pf-head"><div class="pf-av">${esc(initials(P.pseudo))}</div><div class="pf-id"><small>${j.me?'Toi':j.friend?'Ton ami':'Joueur'}</small><b>${esc(P.pseudo)}</b><span>${rankName(P.elo)}${j.since?' · depuis '+fmt.format(new Date(j.since)):''}</span></div><div class="pf-elo"><b>${P.elo}</b><small>élo</small></div></div>
+      <div class="pf-grid">
+        ${tile('Élo',row('Actuel',P.elo)+row('Meilleur atteint',j.bestElo)+row('Classement',`${j.rank.pos}<small> / ${j.rank.total}</small>`))}
+        ${tile('Bilan',row('Défis classés',n?`${R.w} V · ${R.l} D`:'aucun')+row('Victoires',n?Math.round(100*R.w/n)+' %':'–')+row('Meilleure série',R.best+(R.best>1?' victoires':R.best?' victoire':''))+row('Série en cours',R.cur))}
+        ${tile('Trophées',`<div class="pf-tro">${TROPHY}<b>${j.tours.won}</b><span>tournoi${j.tours.won>1?'s':''} gagné${j.tours.won>1?'s':''}</span></div>`+row('Finales jouées',j.tours.finals)+row('Tournois joués',j.tours.played)+row('Campagne',camp),1)}
+        ${tile('Collection',coll,1)}
+      </div>
+      <div class="pf-team"><span class="label">Équipe</span>${team}</div>`;
+    $('tview').hidden=false;$('tv-body').scrollTop=0;sfx.flip();}
+  catch(e){toast(e.code==='unknown_player'?'Ce joueur n\'existe plus.':netMsg(e));}
+  finally{if(btn)btn.disabled=false;}
+}
 async function friendTeam(pid,btn){
   if(!net.on){toast("Pas de connexion au serveur : réessaie avec internet.");return;}
   if(btn)btn.disabled=true;
