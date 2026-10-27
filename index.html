@@ -2487,7 +2487,10 @@ $('form').addEventListener('submit',async e=>{
 });
 
 /* ---------- Menu : sauvegarde ---------- */
-$('menu-btn').addEventListener('click',()=>show('menu'));
+function renderMe(){ensureProfile();if(document.activeElement!==$('m-pseudo'))$('m-pseudo').value=state.pseudo;$('m-elo').textContent=state.elo;$('m-rankname').textContent=rankName(state.elo);
+  const rk=state.matches.filter(m=>!m.friendly),w=rk.filter(m=>m.win).length,l=rk.length-w;
+  $('m-record').textContent=rk.length?`${w} victoire${w>1?'s':''} · ${l} défaite${l>1?'s':''}`:'Tout le monde commence à '+ELO_START+' d\'élo. Gagner contre plus fort que toi rapporte plus.';}
+$('menu-btn').addEventListener('click',()=>{renderMe();show('menu');});
 let exportCardsOnly=false;
 // sauvegarde = ta progression (classeur, équipe, succès, campagne, élo…), sans les cartes, qui viennent de la liste officielle
 // « Exporter les cartes seulement » (admin) reste un fichier à part
@@ -4616,7 +4619,7 @@ function renderCamp(){
     const nodes=[];for(let n=t.a;n<=t.b;n++){const r=cpRound(n),rw=CP_REW[n],res=c.res[n],cls=n<c.st?'done':n===c.st?'cur':'lock';
       nodes.push(`<div class="cp-node ${cls} k${r.ko}" title="${esc(r.r)}"><span>${n<c.st?'✓':n}</span>${rw?`<i class="cp-nrw" style="--rc:${CP_REWC[rw[0]]}">${rw[1]>1?'×'+rw[1]:''}</i>`:''}<small>${esc(r.s)}</small>${res&&n<c.st&&res.sc?`<em>${res.sets&&res.sets.length===1?res.sets[0].join('-'):res.sc.join('-')}</em>`:''}</div>`);}
     return`<div class="cp-tier ${state2}" style="--c:${t.col}">
-      <div class="cp-th"><div><b>${esc(t.n)}</b><small>${state2==='lock'?'🔒 ':''}${esc(t.lvl)} · niveau ${t.lo} à ${t.hi} · ${t.fmt.sets===1?'1 set':t.fmt.sets+' sets gagnants'}</small></div>${state2==='won'?`<span class="cp-tbadge">${TROPHY}</span>`:''}</div>
+      <div class="cp-th"><div><b>${esc(t.n)}</b><small>${state2==='lock'?'🔒 ':''}${t.fmt.sets===1?'1 set':t.fmt.sets+' sets gagnants'}</small></div>${state2==='won'?`<span class="cp-tbadge">${TROPHY}</span>`:''}</div>
       <div class="cp-nodes">${nodes.join('')}</div></div>`;}).join('');
   const last=c.last?`<div class="cp-last"><span>Dernier match · étape ${c.last.st} : <b class="${c.last.win?'w':'l'}">${c.last.win?'victoire':'défaite'}</b> ${c.last.sh.sc.join('-')}</span><button class="btn" type="button" id="cp-sheet">Feuille de match</button></div>`:'';
   root.innerHTML=hero+poster+last+`<div class="section" id="cp-rank-sec"><div class="rank-head"><span class="label">Classement de la campagne</span><div class="mseg small" id="cr-seg" role="group" aria-label="Classement de la campagne"><button type="button" data-r="friends">Amis</button><button type="button" data-r="all">Général</button></div></div><div class="rank" id="cp-rank"></div></div>`+`<div class="section cp-road"><span class="label">Les 30 étapes</span>${road}</div>`;
@@ -4734,7 +4737,7 @@ function cpEnd(M,sim,res){
   else{head=rd.ko?'Éliminé…':'Défaite';sub=rd.ko?`Fin de l'aventure en ${esc(rd.r.toLowerCase())}… pour aujourd'hui. Reviens demain, tu rejoues ce match.`:`Reviens demain pour retenter ta chance contre ${esc(op.name)}.`;}
   if(rew)extra+=`<div class="cp-end-rew">${cpReward(rew,true)}<small>ajouté${rew[1]>1?'s':''} à tes boosters bonus</small></div>`;
   if(cp.next&&!last){const no=cpTeam(cp.next),nr=cpRound(cp.next);
-    extra+=newTier?`<div class="cp-next new" style="--c:${nT.col}"><small>Nouveau palier débloqué</small><b>${esc(nT.n)}</b><span>${esc(nT.lvl)} · niveau ${nT.lo} à ${nT.hi} · ${cpFmtL(nT.fmt)}</span></div>`
+    extra+=newTier?`<div class="cp-next new" style="--c:${nT.col}"><small>Nouveau palier débloqué</small><b>${esc(nT.n)}</b><span>${cpFmtL(nT.fmt)}</span></div>`
       :`<div class="cp-next" style="--c:${T.col}"><small>Demain · ${esc(nr.r)}</small><b>${esc(no.name)}</b><span>note d'équipe ${no.lv}</span></div>`;}
   const end=document.createElement('div');end.className='mt-end cp-end'+(win?' win':'')+(champ||last?' champ':'');end.style.setProperty('--c',T.col);
   end.innerHTML=`<div>${champ||last?`<span class="cp-end-tro">${TROPHY}</span>`:''}<b class="${win?'w':'l'}">${head}</b><span class="sc">${sim.sets.length===1?sim.sets[0][0]+' – '+sim.sets[0][1]:sim.score[0]+' – '+sim.score[1]}</span>
@@ -5138,7 +5141,7 @@ function cpEndInfo(cp){const {st,win,rd,T,op}=cp,champ=win&&st===T.b,last=win&&s
   else{head=rd.ko?'Éliminé…':'Défaite';sub=rd.ko?`Fin de l'aventure en ${esc(rd.r.toLowerCase())}… pour aujourd'hui. Reviens demain, tu rejoues ce match.`:`Reviens demain pour retenter ta chance contre ${esc(op.name)}.`;}
   if(cp.rew)extra+=`<div class="cp-end-rew">${cpReward(cp.rew,true)}<small>ajouté${cp.rew[1]>1?'s':''} à tes boosters bonus</small></div>`;
   if(cp.next&&!last){const no=cpTeam(cp.next),nr=cpRound(cp.next);
-    extra+=newTier?`<div class="cp-next new" style="--c:${nT.col}"><small>Nouveau palier débloqué</small><b>${esc(nT.n)}</b><span>${esc(nT.lvl)} · niveau ${nT.lo} à ${nT.hi} · ${cpFmtL(nT.fmt)}</span></div>`
+    extra+=newTier?`<div class="cp-next new" style="--c:${nT.col}"><small>Nouveau palier débloqué</small><b>${esc(nT.n)}</b><span>${cpFmtL(nT.fmt)}</span></div>`
       :`<div class="cp-next" style="--c:${T.col}"><small>Demain · ${esc(nr.r)}</small><b>${esc(no.name)}</b><span>note d'équipe ${no.lv}</span></div>`;}
   return{head,sub,extra,champ,last};}
 // la photo des champions, à enregistrer
