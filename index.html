@@ -1382,7 +1382,7 @@ body.player .tab{font-size:min(1.1rem,2.95vw)} /* sans l'onglet Cartes */
     <div class="section" id="fr-sec" hidden><span class="label">Demandes d'ami</span><div class="rank" id="fr-list"></div></div>
     <div class="section" id="ch-sec" hidden><span class="label">Défis</span><div class="rank" id="ch-list"></div></div>
     <div class="section" id="to-sec"><span class="label">Tournois</span>
-      <p class="note" style="margin:0">Invite 3 ou 7 amis. Une phase par jour à 20 h : 2 sets gagnants, et une finale en 3 sets gagnants. Le vainqueur gagne le moral de champion : +3 à tous ses joueurs pendant 24 h.</p>
+      <p class="note" style="margin:0">Invite 3 ou 7 amis. Une phase par jour à 20 h : 2 sets gagnants, et une finale en 3 sets gagnants. Le vainqueur gagne le moral de champion : +2 à tous ses joueurs pendant 24 h.</p>
       <div class="to-list" id="to-list"></div>
       <button class="btn primary" type="button" id="to-new">Créer un tournoi</button></div>
     <div class="section"><div class="rank-head"><span class="label">Classement</span><div class="mseg small" id="r-seg" role="group" aria-label="Classement"><button type="button" data-r="friends" aria-pressed="true">Amis</button><button type="button" data-r="all" aria-pressed="false">Général</button></div></div>
@@ -2975,7 +2975,7 @@ const DIV_SLOTS=[{k:'OBJ',l:'Objet',dt:'objet',div:1},{k:'GYM',l:'Gymnase',dt:'g
 const fitsDiv=(p,sl)=>!!p&&owns(p.id)&&isDiv(p)&&!isSigP(p)&&(p.dt||'objet')===sl.dt;
 const divCard=k=>{const sl=DIV_SLOTS.find(x=>x.k===k),p=players.find(x=>x.id===state.team[k]);return fitsDiv(p,sl)?p:null;};
 // bonus par stat : objet + gymnase (leur moral compte partout), plus le moral de champion
-function teamBonus(withBoost=true){const r={},bo=withBoost&&typeof boostOn==='function'&&boostOn()?3:0,cs=DIV_SLOTS.map(x=>divCard(x.k)).filter(Boolean);
+function teamBonus(withBoost=true){const r={},bo=withBoost&&typeof boostOn==='function'&&boostOn()?CHAMP_BOOST:0,cs=DIV_SLOTS.map(x=>divCard(x.k)).filter(Boolean);
   SKILLS.forEach(x=>r[x.k]=bo+cs.reduce((t,c)=>t+(bonOf(c)[x.k]||0)+(bonOf(c).mor||0),0));return r;}
 const bonusTxt=b=>DIV_BON.filter(x=>x.k!=='mor'&&b[x.k]).map(x=>`+${b[x.k]} ${x.l.toLowerCase()}`).join(' · ');
 const withBonus=(s,b)=>{const o={...s};for(const k in b)if(b[k])o[k]=Math.min(100,(+o[k]||0)+b[k]);return o;};
@@ -3650,6 +3650,7 @@ const teamIds=()=>SLOT_ORDER.slice(0,activeSlots().length).map(k=>{const c=teamC
 const duosOf=ids=>ids.slice(0,5).map(a=>ids[5]+'>'+a);
 const chemArr=ids=>ids.map((id,i)=>i<5?Math.min(CHEM_MAX,Math.floor(((state.chem||{})[ids[5]+'>'+id]||0)/CHEM_STEP)):0);
 // mon équipe, telle qu'elle joue (campagne et défis)
+const CHAMP_BOOST=2; // moral de champion : +2 à toutes les stats pendant 24 h
 const boostOn=()=>(state.boostUntil||0)>Date.now();
 // les bonus (objet, gymnase, moral de champion) sont déjà ajoutés aux stats des cartes
 const divInfo=()=>{const o={};DIV_SLOTS.forEach(sl=>{const c=divCard(sl.k);if(c)o[sl.k.toLowerCase()]={id:c.id,name:c.name,bon:{...bonOf(c)}};});return o;};
@@ -3787,12 +3788,12 @@ function openTourView(id){const t=(net.tours||[]).find(x=>x.id===id);if(!t)retur
   const col=(r,R)=>`<div class="tb-col"><b>${esc(t.names[r])}</b>${R.map(g=>{const done=g.w===0||g.w===1,me=g.a===state.pid||g.b===state.pid,sc=g.sc?`${g.sc[0]}-${g.sc[1]}`:g.ff?'forfait':'';
     return`<div class="tb-m${me?' me':''}"><span class="${done&&g.w===0?'w':done?'l':''}">${esc(g.pa)}</span><span class="${done&&g.w===1?'w':done?'l':''}">${esc(g.pb)}</span><small>${done?sc:toWhen(t.next)}</small></div>`;}).join('')}</div>`;
   const cols=t.names.map((n,r)=>t.rounds[r]?col(r,t.rounds[r]):`<div class="tb-col"><b>${esc(n)}</b><div class="tb-m tbd"><span>À venir</span><small>${r===t.round+1&&t.next?toWhen(t.next+864e5):''}</small></div></div>`).join('');
-  $('tv2-body').innerHTML=`${t.champ?`<div class="tb-champ">${TROPHY}<b>${esc(t.champPseudo)}</b><span>remporte le tournoi${t.champ===state.pid?' : moral de champion +3 pendant 24 h !':''}</span></div>`:''}
+  $('tv2-body').innerHTML=`${t.champ?`<div class="tb-champ">${TROPHY}<b>${esc(t.champPseudo)}</b><span>remporte le tournoi${t.champ===state.pid?' : moral de champion +2 pendant 24 h !':''}</span></div>`:''}
     <p class="note" style="margin:0">${t.size} joueurs · 2 sets gagnants de 25, finale en 3 sets gagnants (5e set à 15) · une phase par jour à 20 h.</p><div class="tb">${cols}</div>`;
   $('to-view').hidden=false;}
 $('tv2-close').addEventListener('click',()=>{$('to-view').hidden=true;toViewId=null;});
 // le moral de champion
-function renderBoost(){const on=boostOn(),until=state.boostUntil,w=on?toWhen(until):'',txt=on?`<b>Moral de champion</b><span>+3 à tous tes joueurs jusqu'${w.startsWith('le ')?'au '+w.slice(3):'à '+w}</span>`:'';
+function renderBoost(){const on=boostOn(),until=state.boostUntil,w=on?toWhen(until):'',txt=on?`<b>Moral de champion</b><span>+2 à tous tes joueurs jusqu'${w.startsWith('le ')?'au '+w.slice(3):'à '+w}</span>`:'';
   for(const id of ['t-boost','c-boost']){const e=$(id);if(e){e.hidden=!on;e.innerHTML=txt;}}}
 setInterval(()=>{if(state.boostUntil&&!boostOn()&&!$('t-boost').hidden)renderBoost();},60000);
 $('m-pseudo').setAttribute('maxlength','40'); // la vraie limite (16 caractères, emojis compris) est appliquée à la validation
@@ -4487,7 +4488,7 @@ async function arenaOutro(sim,disp,names,myIdx,res,rec){
     top.innerHTML=`<div class="ar-in"><span class="ar-kick">${esc(res.tour.owner?'Tournoi de '+res.tour.owner:'Tournoi')}</span><b class="ar-h s" style="--tc:rgba(255,210,63,.7)">La coupe du tournoi</b></div>`;arRoll(16,1100);
     const cw=parseFloat(ce.style.width),cx=parseFloat(ce.style.left),cy=parseFloat(ce.style.top);arCupAt(cup,cx,-20,cw*1.3,false,true);cup.classList.remove('gone');setTimeout(()=>{arCupAt(cup,cx,cy-cw*1.4*.7,cw*1.3,false);arSpot([ce]);},60);
     await arWait(1300);if(AR.skip)return;
-    top.innerHTML=`<div class="ar-in"><span class="ar-kick">${esc(names[me])}</span><b class="ar-h s" style="--tc:rgba(255,210,63,.8)">${esc(disp[me][AR.cap].name)} soulève la coupe !</b><span class="ar-sub">Moral de champion : +3 à tous tes joueurs pendant 24 h</span></div>`;
+    top.innerHTML=`<div class="ar-in"><span class="ar-kick">${esc(names[me])}</span><b class="ar-h s" style="--tc:rgba(255,210,63,.8)">${esc(disp[me][AR.cap].name)} soulève la coupe !</b><span class="ar-sub">Moral de champion : +2 à tous tes joueurs pendant 24 h</span></div>`;
     cup.classList.add('lift');ce.classList.add('lift');C.ex=1;C.party=0;C.partyS=1.4;C.dim=.05;C.sweep=1;CrowdSnd.cheer(2);CrowdSnd.chant(3);C.fw(12);C.flash(26);C.flames&&C.flames(1200);
     cpConfetti($('arena'),['#FFD23F','#FFF3B0','#FF7A2F','#ffffff','#5CD6FF'],180);sfx.fanfare();setTimeout(()=>{if(!AR.skip)sfx.bell();},900);buzz([120,60,120,60,300]);
     AR.cards[0].forEach((e,i)=>{if(i!==AR.cap){e.style.setProperty('--dl',(i*.07)+'s');e.classList.add('cheer');}});
@@ -4497,7 +4498,7 @@ async function arenaOutro(sim,disp,names,myIdx,res,rec){
   clear();AR.stageHi=false;arLayout();top.innerHTML='';stage.innerHTML='';C.dim=.3;C.ex=win?.6:.25;C.sweep=win?.4:0;CrowdSnd.level(win?.035:.015);$('ar-skip').hidden=true;$('ar-tap').hidden=true;
   return new Promise(done=>{
     const f=document.createElement('div');f.className='ar-final';
-    const T=res.tour,nxt=T&&T.names?T.names[T.round+1]:'',tTxt=!T?'':T.final?(win?'Vainqueur du tournoi ! Moral de champion : +3 à tous tes joueurs pendant 24 h.':'Finaliste : bravo pour le parcours !')
+    const T=res.tour,nxt=T&&T.names?T.names[T.round+1]:'',tTxt=!T?'':T.final?(win?'Vainqueur du tournoi ! Moral de champion : +2 à tous tes joueurs pendant 24 h.':'Finaliste : bravo pour le parcours !')
       :win?`Qualifié pour ${nxt==='Finale'?'la finale':'les '+(nxt||'').toLowerCase()} : demain à 20 h.`:`Éliminé en ${({'Quarts de finale':'quart de finale','Demi-finales':'demi-finale'})[T.rname]||(T.rname||'').toLowerCase()}.`;
     f.innerHTML=`<div>${T&&T.final&&win?`<span class="cp-end-tro" style="color:#FFD23F">${TROPHY}</span>`:''}<b class="res ${win?'w':'l'}"${T&&T.final&&win?' style="color:#FFD23F"':''}>${T&&T.final&&win?'Champion !':win?'Victoire !':'Défaite'}</b><span class="sc">${fs[me]} – ${fs[1-me]}<small>${sim.sets&&sim.sets.length>1?sim.sets.map(q=>q[me]+'-'+q[1-me]).join(' · ')+' · ':''}contre ${esc(names[op])}</small></span>
       ${T?`<span class="el">${esc(T.rname)}</span><span class="note" style="max-width:32ch">${tTxt}</span>`:res.friendly?`<span class="el">Match amical</span><span class="note" style="max-width:32ch">Vous avez déjà joué un match classé aujourd'hui : celui-ci ne change pas l'élo.</span>`:`<span class="el">Élo <span data-elo>${res.before}</span> <i class="${res.d>=0?'':'n'}">${res.d>=0?'+':''}${res.d}</i></span><span class="note">${rankName(res.after)}</span>`}
