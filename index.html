@@ -490,6 +490,9 @@ body.player #tab-btn-cards,body.player #fab,body.player #m-export-cards,body.pla
 .pf-id span{font-size:.82rem;color:var(--muted)}
 .pf-title,.rk-title{display:flex;align-items:center;gap:4px;font-style:normal;font-family:var(--data);font-weight:800;font-size:.7rem;letter-spacing:.08em;text-transform:uppercase;color:#1A1200;background:linear-gradient(90deg,#FFE97A,#FFC93C,#FFE97A);padding:2px 8px 2px 6px;border-radius:999px;box-shadow:0 0 10px rgba(255,210,63,.45);width:max-content;margin:2px 0}
 .pf-title svg,.rk-title svg{width:1.1em;height:1.1em;flex:none}
+.rank-row .rk-sub{grid-column:2/-1;display:flex;flex-wrap:wrap;gap:4px 6px;margin:-4px 0 0;min-width:0}.rank-row .rk-sub .rk-title{margin:0}
+.rank-row .rk-day{display:flex;align-items:center;gap:4px;width:max-content;max-width:100%;margin:0;padding:1px 7px;border-radius:999px;font-size:.6rem!important;font-weight:700;letter-spacing:.02em;color:var(--muted)!important;background:rgba(255,255,255,.06);border:1px solid rgba(255,255,255,.1)}
+.rank-row .rk-day.on{color:#FFE27A!important;background:rgba(255,200,60,.12);border-color:rgba(255,200,60,.4)}.rank-row .rk-day svg{width:1.15em;height:1.15em;flex:none}
 .rank-row .rk-title{display:flex;font-size:.56rem!important;color:#1A1200!important;padding:1px 6px 1px 4px;margin:2px 0 0}
 .pf-sigs{display:flex;gap:10px;overflow-x:auto;padding:4px 2px 8px;scroll-snap-type:x proximity}
 .pf-sig{flex:none;width:76px;display:flex;flex-direction:column;align-items:center;gap:4px;scroll-snap-align:start}.pf-sig .mini{width:100%}
@@ -4214,10 +4217,10 @@ function renderMatchTab(){
     const tb=net.on?`<button class="btn rb" type="button" data-prof="${esc(x.pid)}">Profil</button>`:''; // le profil, équipe comprise, pour tout le monde
     const act0=meRow||!net.on?'':frIds.has(x.pid)?(cIn?`<button class="btn rb def" type="button" data-chok="${esc(cIn.id)}">Accepter</button>`:cOut?`<button class="btn rb" type="button" data-chcancel="${esc(cOut.id)}" title="Annuler ton défi">Annuler</button>`:`<button class="btn rb def" type="button" data-defi="${esc(x.pid)}"${x.team?'':' disabled title="Pas encore d\'équipe enregistrée"'}>Défier</button>`):addBtn(x.pid,frState(x.pid));
     const act=tb||act0?`<span class="rk-acts">${tb}${act0}</span>`:'';
-    return`${sep}<div class="rank-row${meRow?' me':''}${pos<=3?' top':''}${act?' act':''}"><b>${pos}</b><span>${esc(meRow?state.pseudo:x.pseudo)}${meRow?' (toi)':''}${x.title==='collector'?`<em class="rk-title" title="Toutes les Signature">${TITLE_SVG}Collectionneur</em>`:''}${!meRow&&frIds.has(x.pid)&&!x.team?' <em>sans équipe</em>':''}${!meRow&&frIds.has(x.pid)&&cOut?' <em>défi en attente</em>':''}${!meRow&&!frIds.has(x.pid)&&frState(x.pid)==='sent'?' <em>demande envoyée</em>':''}${!meRow&&!frIds.has(x.pid)&&frState(x.pid)==='got'?' <em>veut être ton ami</em>':''}</span><small>${x.w}V ${x.l}D</small><b>${x.elo}</b>${act}</div>`;};
+    return`${sep}<div class="rank-row${meRow?' me':''}${pos<=3?' top':''}${act?' act':''}"><b>${pos}</b><span>${esc(meRow?state.pseudo:x.pseudo)}${meRow?' (toi)':''}${!meRow&&frIds.has(x.pid)&&!x.team?' <em>sans équipe</em>':''}${!meRow&&frIds.has(x.pid)&&cOut?' <em>défi en attente</em>':''}${!meRow&&!frIds.has(x.pid)&&frState(x.pid)==='sent'?' <em>demande envoyée</em>':''}${!meRow&&!frIds.has(x.pid)&&frState(x.pid)==='got'?' <em>veut être ton ami</em>':''}</span><small>${x.w}V ${x.l}D</small><b>${x.elo}</b>${act}${(()=>{const sub=`${x.title==='collector'?`<em class="rk-title" title="Toutes les Signature">${TITLE_SVG}Collectionneur</em>`:''}${RR.day&&!meRow&&typeof x.fresh==='boolean'?(x.fresh?`<em class="rk-day on" title="Premier défi du jour contre ce joueur : il compte pour l'élo et rapporte des pièces">${COIN_SVG}1er défi du jour · élo + pièces</em>`:'<em class="rk-day" title="Vous vous êtes déjà affrontés aujourd\'hui : les défis suivants sont amicaux, sans élo ni pièces">Déjà joué aujourd\'hui · amical</em>'):''}`;return sub?`<div class="rk-sub">${sub}</div>`:'';})()}</div>`;};
   $('m-rank').innerHTML=RR.rows.map((x,i)=>rowOf(x,i,RR)).join('')+
     (RR.note?`<p class="note" style="margin:4px 0 0">${RR.note}</p>`:'');
-  { const fr=net.rank?[...net.rank.friends].filter(x=>x.pid!==state.pid).sort((a,b)=>b.elo-a.elo):[],FR={rows:fr};
+  { const fr=net.rank?[...net.rank.friends].filter(x=>x.pid!==state.pid).sort((a,b)=>(b.fresh===true)-(a.fresh===true)||b.elo-a.elo):[],FR={rows:fr,day:1}; // ceux qui rapportent encore de l'élo et des pièces d'abord
     $('m-friends').innerHTML=fr.map((x,i)=>rowOf({...x,pos:0},i,FR)).join('');
     $('mf-note').textContent=!net.on?'Hors connexion.':fr.length?'':'Pas encore d\'amis : ajoute-les dans l\'onglet Amis, juste au-dessus.';}
   netRank();
@@ -4695,7 +4698,7 @@ function renderCampRank(){
   rows.sort((a,b)=>(a.pos||0)-(b.pos||0)||b.cst-a.cst||a.ctr-b.ctr);
   const lab=x=>x.cst>CP_N?'Qualifié !':`Étape ${x.cst}`,tierOf=x=>cpTier(Math.min(CP_N,x.cst));
   box.innerHTML=rows.map((x,i)=>{const meRow=x.pid===me,pos=x.pos||i+1,sep=x.pos&&x.pos>rows.length?'<div class="rank-sep">…</div>':'';
-    return`${sep}<div class="rank-row${meRow?' me':''}${pos<=3?' top':''}"><b>${pos}</b><span>${esc(meRow?state.pseudo:x.pseudo)}${meRow?' (toi)':''}${x.title==='collector'?`<em class="rk-title" title="Toutes les Signature">${TITLE_SVG}Collectionneur</em>`:''}</span><small style="color:${tierOf(x).col}">${lab(x)}</small><b>${x.ctr} essai${x.ctr>1?'s':''}</b></div>`;}).join('')+(note?`<p class="note" style="margin:4px 0 0">${note}</p>`:'');
+    return`${sep}<div class="rank-row${meRow?' me':''}${pos<=3?' top':''}"><b>${pos}</b><span>${esc(meRow?state.pseudo:x.pseudo)}${meRow?' (toi)':''}</span><small style="color:${tierOf(x).col}">${lab(x)}</small><b>${x.ctr} essai${x.ctr>1?'s':''}</b>${x.title==='collector'?`<div class="rk-sub"><em class="rk-title" title="Toutes les Signature">${TITLE_SVG}Collectionneur</em></div>`:''}</div>`;}).join('')+(note?`<p class="note" style="margin:4px 0 0">${note}</p>`:'');
 }
 /* ---------- jouer ---------- */
 async function cpPlay(){
