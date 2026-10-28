@@ -2712,7 +2712,7 @@ function setTab(t){
   if(t==='multi'){t='match';setTimeout(()=>openSocial('defis'),0);} // l'ancien onglet Multi vit dans Social
   ['cards','shop','packs','binder','team','match','totw'].forEach(k=>{$('tab-'+k).hidden=t!==k;$('tab-btn-'+k).setAttribute('aria-selected',t===k);});
   $('fab').hidden=t!=='cards';try{localStorage.setItem('cartes-volley-onglet',t);}catch(e){}
-  if(t==='packs')refreshPackLock();
+  if(t==='packs'){renderPacks();refreshPackLock();} // boosters bonus gagnés ailleurs (doublons, campagne, boutique) visibles tout de suite
   if(t==='binder')renderBinder();
   if(t==='team')renderTeam();
   if(t==='match')setMMode('camp');
