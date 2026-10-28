@@ -1412,6 +1412,7 @@ input[type=range]::-moz-range-thumb{width:20px;height:20px;border-radius:50%;bac
 .tv-dvi{min-width:0;display:flex;flex-direction:column;gap:3px}.tv-dvi small{font-family:var(--data);font-size:.66rem;letter-spacing:.14em;text-transform:uppercase;color:#7FE0FF}
 .tv-dvi b{font-family:var(--display);font-weight:900;font-size:1.15rem;text-transform:uppercase;line-height:1.05}
 .tv-dvi span{display:flex;flex-wrap:wrap;gap:4px}.tv-dvi em{font-style:normal;font-family:var(--data);font-weight:700;font-size:.72rem;color:#3BEA7E;background:rgba(59,234,126,.1);border:1px solid rgba(59,234,126,.3);border-radius:999px;padding:1px 7px}.tv-dvi i{font-size:.78rem;color:var(--muted)}
+.sim-box{display:flex;flex-direction:column;gap:6px;margin-top:8px}.sim-box .note{margin:0;line-height:1.5}
 .tv-tac{margin:0;font-size:.86rem}.tv-tac span{color:var(--muted)}
 .tv-list{display:flex;flex-direction:column;gap:10px}
 .tv-row{display:grid;grid-template-columns:64px minmax(0,1fr);gap:10px;align-items:center;padding:10px;border-radius:14px;background:rgba(255,255,255,.04);border:1px solid var(--line)}
@@ -1723,6 +1724,7 @@ input[type=range]::-moz-range-thumb{width:20px;height:20px;border-radius:50%;bac
       <label class="toggle" for="o-sound"><input type="checkbox" id="o-sound"><span class="sw" aria-hidden="true"></span><span><b>Son et vibrations</b><small>Les bruitages des boosters et des matchs</small></span></label></div>
     <div class="section adm-only" id="o-admin"><span class="label">Outils admin</span>
       <div class="row-actions"><button class="btn" type="button" id="o-cards">Éditer les cartes</button><button class="btn" type="button" id="o-totw">Team of the Week</button></div>
+      <div class="sim-box"><button class="btn" type="button" id="o-sim">Simuler la finale de campagne</button><div id="o-sim-out" class="note" hidden></div></div>
 <div class="adm-acc" id="adm-acc" hidden><div class="rank-head"><span class="label">Comptes (admin)</span><span class="acc-badge" id="adm-acc-n" hidden></span></div>
       <p class="note" style="margin:0" id="adm-acc-txt"></p><button class="btn" type="button" id="adm-acc-go">Gérer les comptes</button></div>
     </div>
@@ -3297,6 +3299,11 @@ $('hb-quests').addEventListener('click',()=>{show('quests');renderMissions();ren
 $('hb-notifs').addEventListener('click',()=>{renderNotifs();show('notifs');});
 $('o-cards').addEventListener('click',()=>{closeAll();setTab('cards');});
 $('o-totw').addEventListener('click',()=>{closeAll();setTab('totw');});
+$('o-sim').addEventListener('click',()=>{const b=$('o-sim'),out=$('o-sim-out');b.disabled=true;b.textContent='Calcul…';out.hidden=false;out.textContent='1 000 matchs simulés par cas…';
+  setTimeout(()=>{try{const R=[['Sans complicité',{N:1000}],['Complicité max (+5)',{chem:5,N:1000}],['Complicité max + toutes les Signature',{chem:5,sig:1,N:1000}]].map(([l,o])=>[l,simCampaign(CP_N,o)]);
+    if(!R[0][1]){out.textContent='Pas assez de cartes pour faire une équipe.';return;}const r=R[0][1];
+    out.innerHTML=`<b>Meilleure équipe possible</b> (toutes les cartes du jeu) : note ${r.note}${r.obj||r.gym?` avec ${[r.obj,r.gym].filter(Boolean).map(esc).join(' + ')}`:''}, contre <b>${esc(cpTeam(CP_N).name)}</b> (note ${r.opNote}, ${cpFmtL(cpTier(CP_N).fmt)}).<br>`+R.map(([l,x])=>`${l} : <b>${x.pct} %</b> de victoires${x.note!==r.note?` (note ${x.note})`:''}`).join('<br>')+`<br><small>Équipe : ${r.team.map(esc).join(', ')} · consignes du conseiller.</small>`;}
+    catch(e){out.textContent='Erreur de calcul.';}finally{b.disabled=false;b.textContent='Simuler la finale de campagne';}},50);});
 $('o-sound').addEventListener('change',()=>{if($('o-sound').checked===SFX.muted)document.querySelector('.mute-btn').click();});
 
 /* =================== Missions du jour =================== */
@@ -4621,6 +4628,24 @@ const TITLE_SVG='<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"
 const arSgn=p=>sgOf(p)?`<span class="ar-sgn">Signé · +${sgOf(p)} partout</span>`:'';
 const dispCards=T=>T.cards.map((c,i)=>{const p=players.find(q=>q.id===c.id);return p?{...p,s:c.s,sg:c.sg||0,_eff:1}:{...c,id:'x'+i,kind:'joueur',photo:null,_eff:1};}); // stats du match (bonus, TOTW, Signature compris)
 
+/* admin : la meilleure équipe possible (toutes les cartes du jeu) contre une étape de la campagne */
+function bestPossible(o={}){
+  const slots=SLOT_ORDER.map(k=>TEAM_SLOTS.find(x=>x.k===k)),sigN=new Set(players.filter(p=>isSigP(p)&&!isDiv(p)).map(nameKey));
+  const g=p=>o.sig&&sigN.has(nameKey(p))?SIG_BOOST:0;
+  const pool=players.filter(p=>!p.example&&!isDiv(p)&&!isSigP(p)).map(p=>({...p,s:withBonus(p.s,Object.fromEntries(SKILLS.map(x=>[x.k,g(p)]))),sg:g(p),_eff:1}));
+  const pick=bestUnique(slots,pool);if(pick.some(x=>!x))return null;
+  const objs=[null,...players.filter(p=>isDiv(p)&&!isSigP(p)&&!isGym(p))],gyms=[null,...players.filter(p=>isGym(p)&&!isSigP(p))];
+  let best=null;
+  for(const ob of objs)for(const gy of gyms){const b={};SKILLS.forEach(x=>b[x.k]=[ob,gy].filter(Boolean).reduce((t,c)=>t+(bonOf(c)[x.k]||0)+(bonOf(c).mor||0),0));
+    const cards=pick.map(p=>({id:p.id,name:p.name,poste:p.poste,s:withBonus(p.s,b)})),v=payloadTeamScore({cards});if(!best||v>best.v)best={v,ob,gy,cards};}
+  return{...best,ids:pick.map(p=>p.id)};
+}
+function simCampaign(n=CP_N,o={}){
+  const B=bestPossible(o);if(!B)return null;const op=cpTeam(n),f=cpTier(n).fmt,N=o.N||400;
+  const me={ids:B.ids,cards:B.cards,chem:B.cards.map((c,i)=>i<5?(o.chem||0):0),tac:{}};me.tac=tacAdvice(me,op).tac;
+  let w=0;for(let i=0;i<N;i++)if(simulateMatch(me,op,hashStr('simcp|'+n+'|'+i),f).winner===0)w++;
+  return{pct:Math.round(100*w/N),note:Math.round(B.v),opNote:Math.round(op.lv),obj:B.ob&&B.ob.name,gym:B.gy&&B.gy.name,team:B.cards.map(c=>c.name),tac:me.tac};
+}
 /* ---------- état du jour ---------- */
 let cpStatus='checking',cpTimer=null,cpBusy=false,mMode='camp';
 // mMode : 'camp' quand l'onglet Campagne est ouvert, 'pvp' pour l'onglet Multijoueur
