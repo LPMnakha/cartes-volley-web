@@ -2652,7 +2652,7 @@ let adminType='classic';
 const nextType=()=>isAdmin?adminType:typeForN((+state.count||0)+1);
 // Chances voulues par booster : au moins une carte de ce type dans les 5 (Argent, Or, Icône, Full Art, Signature)
 const PACK_ODDS={classic:{silver:.30,gold:.05,icon:.01,fa:.10,sig:.005},silver:{silver:.80,gold:.15,icon:.03,fa:.30,sig:.01},
-  gold:{silver:.85,gold:.50,icon:.10,fa:.50,sig:.025},icon:{silver:.95,gold:.75,icon:.25,fa:.75,sig:.05}};
+  gold:{silver:.85,gold:.50,icon:.10,fa:.50,sig:.025},icon:{silver:.95,gold:.65,icon:.35,fa:.80,sig:.05}};
 const perSlot=T=>1-Math.pow(1-T,1/PACK_SIZE); // « au moins une sur 5 » → chance pour chaque carte
 // Tirage carte par carte : d'abord la rareté selon les chances du booster, puis Full Art ou non, puis une carte de ce groupe
 // (dans une même rareté, les mieux notées restent un peu plus rares). Les chances tiennent quelle que soit la liste de cartes.
@@ -3317,7 +3317,7 @@ async function netMev(k){if(!net.on)return;try{const j=await api('mev',{k});netA
 
 /* =================== Boutique =================== */
 const COIN_SVG='<svg class="coin" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="10" fill="#E3A21A"/><circle cx="12" cy="12" r="8" fill="#FFD23F" stroke="#B87A0B" stroke-width="1"/><path d="M8.2 8.6c2.4-.6 5.2-.6 7.6 0M8.4 15.4c2.4.6 4.8.6 7.2 0M12 6.5c-1.6 1.8-1.6 9.2 0 11M12 6.5c1.6 1.8 1.6 9.2 0 11" fill="none" stroke="#B87A0B" stroke-width="1.1" stroke-linecap="round"/></svg>';
-const SHOP=[{t:'classic',l:'Booster Bronze',p:30,d:'Comme le booster gratuit'},{t:'silver',l:'Booster Argent',p:100,d:'80 % d\'avoir une argent'},{t:'gold',l:'Booster Or',p:250,d:'50 % d\'avoir une or'},{t:'icon',l:'Booster Icône',p:500,d:'25 % d\'avoir une icône'}];
+const SHOP=[{t:'classic',l:'Booster Bronze',p:30,d:'Comme le booster gratuit'},{t:'silver',l:'Booster Argent',p:100,d:'80 % d\'avoir une argent'},{t:'gold',l:'Booster Or',p:250,d:'50 % d\'avoir une or'},{t:'icon',l:'Booster Icône',p:500,d:'35 % d\'avoir une icône'}];
 let shopBusy=false,shopArm=null;
 const myCoins=()=>net.me&&net.me.coins!=null?net.me.coins:null; // net est déclaré plus bas : renderShop ne sert qu'après le chargement
 const pctTxt=v=>(v*100).toLocaleString('fr-FR',{maximumFractionDigits:1})+' %';
