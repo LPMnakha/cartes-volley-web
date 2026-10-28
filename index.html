@@ -193,6 +193,9 @@ body{padding-bottom:calc(90px + env(safe-area-inset-bottom,0px))}
 .card.totw.fullart .tw-bg{background:#0B0C12}
 .tw-up{font-style:normal;font-family:var(--data);font-weight:800;color:#3BEA7E;font-size:.5em;vertical-align:super;margin-left:.1em;letter-spacing:0;text-shadow:0 0 6px rgba(59,234,126,.45)}
 .card.fullart .tw-up{color:#5CFF98!important;text-shadow:0 1px 3px rgba(0,0,0,.95),0 0 6px rgba(59,234,126,.5)}
+.tw-up.sg{color:#FFD23F;text-shadow:0 0 6px rgba(255,210,63,.55)}.card.fullart .tw-up.sg{color:#FFE070!important;text-shadow:0 1px 3px rgba(0,0,0,.95),0 0 6px rgba(255,210,63,.6)}
+.tw-up.both,.card.fullart .tw-up.both{background:linear-gradient(90deg,#3BEA7E,#FFD23F);-webkit-background-clip:text;background-clip:text;color:transparent!important;text-shadow:none}
+.tw-tr.sg{background:#FFD23F!important}.tw-note.sg b{color:#FFD23F}
 .c-stats b{position:relative}.c-stats .tw-up{position:absolute;left:92%;top:-.42em;font-size:.6em;margin:0}
 .c-ovr .tw-up{font-size:.34em;vertical-align:1.3em}
 .bar .track{position:relative}.bar .tw-tr{position:absolute;top:0;bottom:0;background:linear-gradient(90deg,#1FBF5E,#3BEA7E);border-radius:0 99px 99px 0;box-shadow:0 0 8px rgba(59,234,126,.5)}
@@ -485,6 +488,12 @@ body.player #tab-btn-cards,body.player #fab,body.player #m-export-cards,body.pla
 .pf-id{min-width:0}.pf-id small{display:block;font-family:var(--data);font-size:.66rem;letter-spacing:.14em;text-transform:uppercase;color:var(--muted)}
 .pf-id b{display:block;font-family:var(--display);font-weight:900;font-size:1.45rem;text-transform:uppercase;line-height:1.05;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .pf-id span{font-size:.82rem;color:var(--muted)}
+.pf-title,.rk-title{display:flex;align-items:center;gap:4px;font-style:normal;font-family:var(--data);font-weight:800;font-size:.7rem;letter-spacing:.08em;text-transform:uppercase;color:#1A1200;background:linear-gradient(90deg,#FFE97A,#FFC93C,#FFE97A);padding:2px 8px 2px 6px;border-radius:999px;box-shadow:0 0 10px rgba(255,210,63,.45);width:max-content;margin:2px 0}
+.pf-title svg,.rk-title svg{width:1.1em;height:1.1em;flex:none}
+.rank-row .rk-title{display:flex;font-size:.56rem!important;color:#1A1200!important;padding:1px 6px 1px 4px;margin:2px 0 0}
+.pf-sigs{display:flex;gap:10px;overflow-x:auto;padding:4px 2px 8px;scroll-snap-type:x proximity}
+.pf-sig{flex:none;width:76px;display:flex;flex-direction:column;align-items:center;gap:4px;scroll-snap-align:start}.pf-sig .mini{width:100%}
+.pf-sig small{font-size:.68rem;color:#FFE97A;text-align:center;max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .pf-elo{text-align:center}.pf-elo b{display:block;font-family:var(--data);font-weight:800;font-size:1.6rem;color:var(--ball);line-height:1}.pf-elo small{font-family:var(--data);font-size:.66rem;color:var(--muted);letter-spacing:.12em;text-transform:uppercase}
 .pf-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-top:12px}
 .pf-tile{padding:12px;border-radius:14px;background:rgba(255,255,255,.04);border:1px solid var(--line);display:flex;flex-direction:column;gap:6px;min-width:0}
@@ -1227,6 +1236,23 @@ input[type=range]::-moz-range-thumb{width:20px;height:20px;border-radius:50%;bac
 .ar-p.off{filter:brightness(.55) saturate(.7)}
 .ar-p.cheer .mini{animation:arCheer .5s cubic-bezier(.3,.6,.4,1) infinite alternate;animation-delay:var(--dl,0s)}
 .ar-p.sad{filter:grayscale(1) brightness(.6);rotate:var(--rot,5deg)}
+.ar-p.signed .mini{outline:2px solid #FFD23F;outline-offset:1px;border-radius:9%;box-shadow:0 0 12px rgba(255,210,63,.65)}
+.ar-p.signed.on::after{content:"signé";position:absolute;left:50%;bottom:-1.25em;transform:translateX(-50%);font-family:"Great Vibes","Brush Script MT",cursive;font-size:1.05rem;color:#FFE97A;text-shadow:0 0 6px #000,0 0 12px rgba(255,210,63,.8);white-space:nowrap;pointer-events:none}
+.ar-p.sgswap .mini{animation:arSigIn 1s cubic-bezier(.2,.9,.3,1.25) both}
+.ar-big.sgd{border-left-color:#FFD23F;box-shadow:0 0 0 1px rgba(255,210,63,.45),0 0 26px rgba(255,210,63,.3)}
+.ar-big.sgmvp .mini{animation:arSigIn 1.1s cubic-bezier(.2,.9,.3,1.25) both,arSigGlow 1.6s 1.1s ease-in-out infinite alternate}
+.ar-sgn{font-family:"Great Vibes","Brush Script MT",cursive;font-size:1.25rem!important;color:#FFE97A!important;text-shadow:0 0 8px rgba(255,210,63,.6)}
+@keyframes arSigIn{0%{transform:perspective(600px) rotateY(95deg) scale(.6);filter:brightness(3) saturate(0)}60%{transform:perspective(600px) rotateY(-12deg) scale(1.08);filter:brightness(1.6)}100%{transform:none;filter:none}}
+@keyframes arSigGlow{from{filter:drop-shadow(0 0 6px rgba(255,210,63,.5))}to{filter:drop-shadow(0 0 18px rgba(255,210,63,.95))}}
+.mt-sig{position:absolute;inset:0;z-index:60;display:grid;place-items:center;pointer-events:none;background:radial-gradient(circle at 50% 42%,rgba(255,215,0,.5),rgba(120,80,0,.55) 38%,rgba(4,6,16,.88) 72%);-webkit-backdrop-filter:blur(3px);backdrop-filter:blur(3px);animation:mtSigBg .5s ease-out both}
+.mt-sig.out{opacity:0;transition:opacity .35s}
+.mt-sig-in{display:flex;flex-direction:column;align-items:center;gap:4px;text-align:center;color:#fff}
+.mt-sig-in .mini{width:min(40vw,150px);animation:arSigIn 1s cubic-bezier(.2,.9,.3,1.25) both,arSigGlow 1.2s 1s ease-in-out infinite alternate}
+.mt-sig-in small{margin-top:10px;font-family:var(--data);font-weight:700;font-size:.8rem;letter-spacing:.16em;text-transform:uppercase;color:#FFD23F}
+.mt-sig-in b{font-family:var(--display);font-weight:900;font-size:clamp(1.8rem,9vw,2.8rem);line-height:.95;text-transform:uppercase;text-shadow:0 2px 12px rgba(0,0,0,.7)}
+.mt-sig-in span{font-family:"Great Vibes","Brush Script MT",cursive;font-size:1.6rem;color:#FFE97A;text-shadow:0 0 10px rgba(255,210,63,.8)}
+@keyframes mtSigBg{from{opacity:0;backdrop-filter:brightness(2.2)}to{opacity:1}}
+@media (prefers-reduced-motion:reduce){.ar-big.sgmvp .mini,.mt-sig-in .mini,.ar-p.sgswap .mini{animation:none}}
 .ar-p.sad .mini{transform:translateY(5%)}
 .ar-p.slide{transition:left 2.6s linear,top .7s cubic-bezier(.3,.7,.3,1)}
 .ar-net{position:absolute;z-index:2;transform:translateY(-100%);
@@ -1978,9 +2004,18 @@ const bonShort=p=>bonList(p).map(x=>`+${x.v} ${x.a}`).join(' ');
 const LS_TOTW='cartes-volley-totw';
 let TOTW=(()=>{try{const t=JSON.parse(localStorage.getItem(LS_TOTW)||'null');return t&&t.cards?t:{ts:0,cards:{}};}catch(e){return{ts:0,cards:{}};}})();
 const twOf=p=>p&&p.id&&!isDiv(p)&&!isSigP(p)?TOTW.cards[p.id]||null:null;
-const effS=p=>{const b=twOf(p);if(!b)return p.s;const o={};SKILLS.forEach(x=>o[x.k]=Math.min(100,(+p.s[x.k]||0)+(b[x.k]||0)));return o;};
+const nameKey=p=>String(p&&p.name||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').trim().toLowerCase();
+const twS=p=>{const b=twOf(p);if(!b)return p.s;const o={};SKILLS.forEach(x=>o[x.k]=Math.min(100,(+p.s[x.k]||0)+(b[x.k]||0)));return o;};
+/* Signature possédée : toutes les cartes de ce joueur gagnent +2 partout (comme le serveur en match) */
+const SIG_BOOST=2;let sgMemo=null;
+const sigSet=()=>{if(!sgMemo){sgMemo=new Set(players.filter(p=>isSigP(p)&&!isDiv(p)&&owns(p.id)).map(nameKey));queueMicrotask(()=>{sgMemo=null;});}return sgMemo;};
+const sgOf=p=>!p||!p.s||isDiv(p)||isSigP(p)?0:p._eff?(p.sg||0):p.name&&sigSet().has(nameKey(p))?SIG_BOOST:0; // _eff : stats déjà calculées (équipe vue, match)
+const sigOfP=p=>p?players.find(q=>isSigP(q)&&!isDiv(q)&&nameKey(q)===nameKey(p))||null:null; // la carte Signature de ce joueur
+const effS=p=>{if(p&&p._eff)return p.s;const s=twS(p),g=sgOf(p);if(!g)return s;const o={};SKILLS.forEach(x=>o[x.k]=Math.min(100,(+s[x.k]||0)+g));return o;};
 const twUp=(p,k)=>{const b=twOf(p);return b?Math.min(100,(+p.s[k]||0)+(b[k]||0))-(+p.s[k]||0):0;}; // ce que la TOTW ajoute vraiment (plafond 100)
-const twOvrUp=p=>twOf(p)?ovr(effS(p))-ovr(p.s):0;
+const twOvrUp=p=>twOf(p)?ovr(twS(p))-ovr(p.s):0;
+const sgUp=(p,k)=>{const g=sgOf(p);if(!g)return 0;if(p._eff)return g;const v=+twS(p)[k]||0;return Math.min(100,v+g)-v;};
+const sgOvrUp=p=>sgOf(p)?(p._eff?sgOf(p):ovr(effS(p))-ovr(twS(p))):0;
 const vt=p=>isSigP(p)?'gold':tier(ovr(p.s)); // couleur affichée : dorée pour les Signature
 const sortVal=p=>isSigP(p)?101:ovr(p.s);
 const SIG_CHANCE=0.005; // 0,5 % de chance qu'un booster contienne une Signature, tirée au hasard parmi toutes
@@ -2205,18 +2240,19 @@ function hexIcon(s){
 }
 const STAR=`<svg class="c-star" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2l2.9 6.6 7.1.6-5.4 4.7 1.6 7L12 17.3 5.8 20.9l1.6-7L2 9.2l7.1-.6z" fill="currentColor" fill-opacity=".75"/></svg>`;
 const twTag=v=>v>0?`<i class="tw-up">+${v}</i>`:''; // le petit « +2 » vert des stats boostées
+const upTag=(t,g)=>t>0&&g>0?`<i class="tw-up both">+${t+g}</i>`:g>0?`<i class="tw-up sg">+${g}</i>`:twTag(t); // vert TOTW, doré Signature
 function cardHTML(p,i=0,tagOk=true){
   const tw=twOf(p),es=effS(p),o=ovr(es),dv=isDiv(p),fa=p.fullart&&p.photo,sg=p.signature&&p.photo;
   return`<button class="card ${vt(p)}${dv?' divers':''}${fa?' fullart':''}${sg?' signature':''}${tw?' totw':''}" type="button" data-id="${esc(p.id)}" style="--i:${i}" aria-label="${esc(p.name)}, ${dv?divKindL(p):posteL(p.poste)}, ${sg?'Signature':dv?(bonTxt(p)||'sans bonus'):'note '+o+(tw?', Team of the Week':'')}">
     ${p.example&&tagOk?'<span class="tag">Exemple</span>':''}
     <div class="face">
       ${sg?'<div class="sig-rim"></div>':''}${tw?'<div class="tw-bg"></div>':''}${!fa&&!sg?engSVG(engKey(p)):''}${fa?`<div class="fa-art"><img src="${p.photo}" alt=""><div class="fa-holo"></div><div class="fa-glit"></div></div>`:''}
-      <div class="c-top"><div>${sg||dv?'':`<div class="c-ovr">${o}${tw?twTag(twOvrUp(p)):''}</div>`}<span class="c-pos">${dv?(isGym(p)?'GYM':'OBJET'):esc(p.poste)}</span></div>${dv||sg?STAR:hexIcon(p.s)}</div>
+      <div class="c-top"><div>${sg||dv?'':`<div class="c-ovr">${o}${upTag(twOvrUp(p),sgOvrUp(p))}</div>`}<span class="c-pos">${dv?(isGym(p)?'GYM':'OBJET'):esc(p.poste)}</span></div>${dv||sg?STAR:hexIcon(p.s)}</div>
       <div class="c-photo">${p.photo?`<img src="${p.photo}" alt="">`:esc(initials(p.name))}</div>
       <div class="c-name">${esc(p.name)}</div>
       ${dv&&!sg?(()=>{const L=bonList(p);return`<div class="c-div"><span class="c-kind">${isGym(p)?'GYMNASE':'OBJET'}</span>${L.length?`<div class="c-stats c-bon" style="--n:${L.length>4?4:L.length}">${L.map(x=>`<div><b>+${x.v}</b><span>${x.a}</span></div>`).join('')}</div>`:''}${L.length<=3&&p.desc?`<span class="c-desc">${esc(p.desc)}</span>`:''}</div>`;})()
         :sg?'<div class="c-sigline">Édition signée</div>'
-        :`<div class="c-stats">${SKILLS.map(x=>`<div><b>${es[x.k]}${tw?twTag(twUp(p,x.k)):''}</b><span>${x.a}</span></div>`).join('')}</div>`}
+        :`<div class="c-stats">${SKILLS.map(x=>`<div><b>${es[x.k]}${upTag(twUp(p,x.k),sgUp(p,x.k))}</b><span>${x.a}</span></div>`).join('')}</div>`}
       ${tw?'<span class="tw-badge">TOTW</span>':''}
     </div></button>`;
 }
@@ -2303,8 +2339,9 @@ function openDetail(id,keepScroll){
   const es=effS(p),sorted=[...SKILLS].sort((a,b)=>es[b.k]-es[a.k]);
   $('d-traits').innerHTML=`<div class="trait up"><span class="label">Point fort</span><b>${sorted[0].l}</b></div>
     <div class="trait down"><span class="label">À travailler</span><b>${sorted[5].l}</b></div>`;
-  $('d-bars').innerHTML=SKILLS.map(x=>{const u=twUp(p,x.k);return`<div class="bar${u?' tw':''}"><span>${x.l}</span><span class="track"><i style="width:${p.s[x.k]}%"></i>${u?`<i class="tw-tr" style="left:${p.s[x.k]}%;width:${u}%"></i>`:''}</span><b>${es[x.k]}${twTag(u)}</b></div>`;}).join('')
-    +(twOf(p)?`<p class="note tw-note"><b>Team of the Week</b> : les chiffres en vert sont ajoutés aux stats de base tant que la carte est dans la TOTW.</p>`:'');
+  $('d-bars').innerHTML=SKILLS.map(x=>{const u=twUp(p,x.k),g=sgUp(p,x.k),b0=+p.s[x.k]||0;return`<div class="bar${u?' tw':''}"><span>${x.l}</span><span class="track"><i style="width:${b0}%"></i>${u?`<i class="tw-tr" style="left:${b0}%;width:${u}%"></i>`:''}${g?`<i class="tw-tr sg" style="left:${b0+u}%;width:${g}%"></i>`:''}</span><b>${es[x.k]}${upTag(u,g)}</b></div>`;}).join('')
+    +(twOf(p)?`<p class="note tw-note"><b>Team of the Week</b> : les chiffres en vert sont ajoutés aux stats de base tant que la carte est dans la TOTW.</p>`:'')
+    +(sgOf(p)?`<p class="note tw-note sg"><b>Signature possédée</b> : tu as la Signature de ${esc(p.name)}, toutes ses cartes gagnent +${SIG_BOOST} partout, en match aussi.</p>`:!isDiv(p)&&!isSigP(p)&&sigOfP(p)?`<p class="note tw-note sg">Il existe une <b>Signature</b> de ${esc(p.name)} : si tu la trouves, toutes ses cartes gagnent +${SIG_BOOST} partout.</p>`:'');
   $('d-actions').innerHTML=p.example
     ?`<button class="btn primary full" type="button" id="d-template">Partir de ce modèle</button>`
     :`<button class="btn full" type="button" id="d-share">Partager en image</button>${isAdmin?'<button class="btn" type="button" id="d-del">Supprimer</button><button class="btn primary" type="button" id="d-edit">Modifier</button>':''}`;
@@ -2682,7 +2719,7 @@ function simPacks(normal,O,N,R){
 // un pourcentage lisible, même pour les cartes très rares
 const oddTxt=c=>{const v=c*100;if(v<=0)return'0 %';if(v<.01)return'< 0,01 %';return v.toLocaleString('fr-FR',{maximumFractionDigits:v<.1?3:v<1?2:v<10?1:0})+' %';};
 function packHTML(type='classic'){return`<div class="pack-top"></div><div class="pack-bot"><div class="pack-art">${HEX_BIG}<b>BOOSTER</b><span>${PACK_TYPES[type].sub}</span><i>5 CARTES</i></div></div>`;}
-function miniHTML(p){const tw=twOf(p),o=ovr(effS(p)),dv=isDiv(p);const fa=p.fullart&&p.photo,sg=p.signature&&p.photo;return`<div class="mini ${vt(p)}${dv?' divers':''}${isGym(p)?' gym':''}${fa?' fullart':''}${sg?' signature':''}${tw?' totw':''}"><div class="mface">${sg?'<div class="msr"></div>':''}${!fa&&!sg?engSVG(engKey(p)):''}${fa?`<div class="mfa"><img src="${p.photo}" alt=""></div>`:''}<div class="mo">${sg||dv?'':o}${tw?twTag(twOvrUp(p)):''}<small>${dv?'':esc(p.poste)}</small></div>
+function miniHTML(p){const tw=twOf(p),o=ovr(effS(p)),dv=isDiv(p);const fa=p.fullart&&p.photo,sg=p.signature&&p.photo;return`<div class="mini ${vt(p)}${dv?' divers':''}${isGym(p)?' gym':''}${fa?' fullart':''}${sg?' signature':''}${tw?' totw':''}"><div class="mface">${sg?'<div class="msr"></div>':''}${!fa&&!sg?engSVG(engKey(p)):''}${fa?`<div class="mfa"><img src="${p.photo}" alt=""></div>`:''}<div class="mo">${sg||dv?'':o}${sg||dv?'':upTag(twOvrUp(p),sgOvrUp(p))}<small>${dv?'':esc(p.poste)}</small></div>
   <div class="mp">${p.photo?`<img src="${p.photo}" alt="">`:esc(initials(p.name))}</div><div class="mn">${esc(p.name)}</div></div></div>`;}
 function renderCycle(){
   const nt=nextType(),c=+state.count||0,pos=c%28; // pos = boosters déjà ouverts dans le cycle en cours
@@ -3394,7 +3431,6 @@ const TEAM_SLOTS=[
 const POSTE_W={PAS:{pas:.5,def:.15,ser:.15,rec:.1,blo:.05,att:.05},PTU:{att:.45,blo:.2,ser:.2,def:.1,rec:.05},
   R4:{rec:.3,att:.3,def:.2,ser:.15,blo:.05},CEN:{blo:.45,att:.3,ser:.15,pas:.05,def:.05},LIB:{rec:.45,def:.45,pas:.1}};
 // deux cartes du même nom sont deux versions du même joueur : une seule peut jouer
-const nameKey=p=>String(p&&p.name||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').trim().toLowerCase();
 const sameName=(a,b)=>!!a&&!!b&&a.id!==b.id&&nameKey(a)===nameKey(b);
 const twinSlot=(p,except)=>TEAM_SLOTS.find(x=>x.k!==except&&sameName(players.find(q=>q.id===state.team[x.k]),p));
 // retire de l'équipe les doublons de nom (on garde la meilleure version) ; renvoie les noms concernés
@@ -3651,7 +3687,7 @@ async function drawCardImage(p){
   }
   const sh2=fa?{c:'rgba(0,0,0,.9)',b:14}:{c:'transparent',b:0};const txt=(s2,x,y,font,al='left',col=ink)=>{g.save();g.font=font;g.textAlign=al;g.fillStyle=col;g.shadowColor=sh2.c;g.shadowBlur=sh2.b;g.fillText(s2,x,y);g.restore();};
   if(!sg&&!dv){txt(String(o),cx+cw*.09,cy+ch*.17,'900 150px "Big Shoulders Display","Arial Narrow",Impact,sans-serif');
-    const d=tw?twOvrUp(p):0;if(d>0){g.save();g.font='900 150px "Big Shoulders Display","Arial Narrow",Impact,sans-serif';const ow=g.measureText(String(o)).width;g.restore();txt('+'+d,cx+cw*.09+ow+8,cy+ch*.1,'800 50px "Chakra Petch",monospace','left','#3BEA7E');}}
+    const dT=tw?twOvrUp(p):0,dG=sgOvrUp(p),d=dT+dG;if(d>0){g.save();g.font='900 150px "Big Shoulders Display","Arial Narrow",Impact,sans-serif';const ow=g.measureText(String(o)).width;g.restore();txt('+'+d,cx+cw*.09+ow+8,cy+ch*.1,'800 50px "Chakra Petch",monospace','left',dT?'#3BEA7E':'#FFD23F');}}
   txt(dv?(isGym(p)?'GYM':'OBJET'):p.poste,cx+cw*.095,cy+ch*(sg||dv?.1:.215),'700 44px "Chakra Petch",monospace,sans-serif');
   if(!fa){ // médaillon photo
     const r0=cw*.25,mx0=cx+cw/2,my0=cy+ch*.44;g.save();g.beginPath();g.arc(mx0,my0,r0,0,7);g.fillStyle='rgba(0,0,0,.14)';g.fill();g.clip();
@@ -3668,7 +3704,7 @@ async function drawCardImage(p){
     else txt(p.desc||'',cx+cw/2,cy+ch*.865,'italic 600 38px Barlow,sans-serif','center');}
   else SKILLS.forEach((x,i)=>{const col=i%3,row=Math.floor(i/3),xx=cx+cw*(.25+col*.25),yy=cy+ch*(.825+row*.075);
     txt(String(es[x.k]),xx,yy,'700 54px "Chakra Petch",monospace','center');txt(x.a,xx,yy+30,'600 24px "Chakra Petch",monospace','center');
-    const u=tw?twUp(p,x.k):0;if(u)txt('+'+u,xx+42,yy-22,'800 30px "Chakra Petch",monospace','left','#3BEA7E');});
+    const u=tw?twUp(p,x.k):0,gU=sgUp(p,x.k);if(u+gU)txt('+'+(u+gU),xx+42,yy-22,'800 30px "Chakra Petch",monospace','left',u?'#3BEA7E':'#FFD23F');});
   if(tw){g.save();const bw2=210,bh2=50,bx2=cx+cw/2-bw2/2,by2=cy+ch*.958-bh2/2;g.beginPath();g.roundRect(bx2,by2,bw2,bh2,25);g.fillStyle=TWC;g.shadowColor=TWC;g.shadowBlur=24;g.fill();g.restore();
     txt('TOTW',cx+cw/2,by2+37,'800 34px "Chakra Petch",monospace','center','#0B0C12');}
   g.restore();
@@ -4158,7 +4194,7 @@ const CHAMP_BOOST=2; // moral de champion : +2 à toutes les stats pendant 24 h
 const boostOn=()=>(state.boostUntil||0)>Date.now();
 // les bonus (objet, gymnase, moral de champion) sont déjà ajoutés aux stats des cartes
 const divInfo=()=>{const o={};DIV_SLOTS.forEach(sl=>{const c=divCard(sl.k);if(c)o[sl.k.toLowerCase()]={id:c.id,name:c.name,bon:{...bonOf(c)}};});return o;};
-function myTeam(){if(!teamFull())return null;const ids=teamIds(),b=teamBonus();return{ids,tac:{...(state.tac||{})},chem:chemArr(ids),div:divInfo(),cards:ids.map(id=>{const p=players.find(x=>x.id===id);return{id,name:p.name,s:withBonus(effS(p),b),poste:p.poste};})};}
+function myTeam(){if(!teamFull())return null;const ids=teamIds(),b=teamBonus();return{ids,tac:{...(state.tac||{})},chem:chemArr(ids),div:divInfo(),cards:ids.map(id=>{const p=players.find(x=>x.id===id);const g=sgOf(p);return{id,name:p.name,s:withBonus(effS(p),b),poste:p.poste,...(g?{sg:g}:{})};})};}
 function payloadTeamScore(d){return Math.round(d.cards.reduce((t,c,i)=>{const sl=TEAM_SLOTS.find(x=>x.k===SLOT_ORDER[i]);return t+Math.round(Object.entries(POSTE_W[sl.p]).reduce((u,[k,v])=>u+c.s[k]*v,0));},0)/d.cards.length);} // même note que dans l'onglet Équipe (6 ou 7 joueurs)
 const multiOn=()=>!$('social').hidden;
 function renderMatchTab(){
@@ -4177,7 +4213,7 @@ function renderMatchTab(){
     const tb=net.on?`<button class="btn rb" type="button" data-prof="${esc(x.pid)}">Profil</button>`:''; // le profil, équipe comprise, pour tout le monde
     const act0=meRow||!net.on?'':frIds.has(x.pid)?(cIn?`<button class="btn rb def" type="button" data-chok="${esc(cIn.id)}">Accepter</button>`:cOut?`<button class="btn rb" type="button" data-chcancel="${esc(cOut.id)}" title="Annuler ton défi">Annuler</button>`:`<button class="btn rb def" type="button" data-defi="${esc(x.pid)}"${x.team?'':' disabled title="Pas encore d\'équipe enregistrée"'}>Défier</button>`):addBtn(x.pid,frState(x.pid));
     const act=tb||act0?`<span class="rk-acts">${tb}${act0}</span>`:'';
-    return`${sep}<div class="rank-row${meRow?' me':''}${pos<=3?' top':''}${act?' act':''}"><b>${pos}</b><span>${esc(meRow?state.pseudo:x.pseudo)}${meRow?' (toi)':''}${!meRow&&frIds.has(x.pid)&&!x.team?' <em>sans équipe</em>':''}${!meRow&&frIds.has(x.pid)&&cOut?' <em>défi en attente</em>':''}${!meRow&&!frIds.has(x.pid)&&frState(x.pid)==='sent'?' <em>demande envoyée</em>':''}${!meRow&&!frIds.has(x.pid)&&frState(x.pid)==='got'?' <em>veut être ton ami</em>':''}</span><small>${x.w}V ${x.l}D</small><b>${x.elo}</b>${act}</div>`;};
+    return`${sep}<div class="rank-row${meRow?' me':''}${pos<=3?' top':''}${act?' act':''}"><b>${pos}</b><span>${esc(meRow?state.pseudo:x.pseudo)}${meRow?' (toi)':''}${x.title==='collector'?`<em class="rk-title" title="Toutes les Signature">${TITLE_SVG}Collectionneur</em>`:''}${!meRow&&frIds.has(x.pid)&&!x.team?' <em>sans équipe</em>':''}${!meRow&&frIds.has(x.pid)&&cOut?' <em>défi en attente</em>':''}${!meRow&&!frIds.has(x.pid)&&frState(x.pid)==='sent'?' <em>demande envoyée</em>':''}${!meRow&&!frIds.has(x.pid)&&frState(x.pid)==='got'?' <em>veut être ton ami</em>':''}</span><small>${x.w}V ${x.l}D</small><b>${x.elo}</b>${act}</div>`;};
   $('m-rank').innerHTML=RR.rows.map((x,i)=>rowOf(x,i,RR)).join('')+
     (RR.note?`<p class="note" style="margin:4px 0 0">${RR.note}</p>`:'');
   { const fr=net.rank?[...net.rank.friends].filter(x=>x.pid!==state.pid).sort((a,b)=>b.elo-a.elo):[],FR={rows:fr};
@@ -4365,6 +4401,7 @@ function teamSectors(cards,slots){
     ['Attaque au centre','centraux',av(['CEN1','CEN2'],'att')],['Attaque aux ailes','R4 et pointu',av(['R4a','R4b','PTU'],'att')],
     ['Contre','centraux et pointu',av(['CEN1','CEN2','PTU'],'blo')],['Défense',lib?'R4, passeur et libéro':'R4 et passeur',av(lib?['R4a','R4b','PAS','LIB']:['R4a','R4b','PAS'],'def')]].filter(x=>x[2]!=null);}
 function teamViewHTML(name,cards,o={}){
+  cards=cards.map(p=>p._eff?p:{...p,_eff:1}); // stats déjà finales (bonus, TOTW, Signature) : ne rien rajouter
   const slots=o.slots||SLOT_ORDER.slice(0,cards.length),full=!o.slots||slots.length===cards.length&&(cards.length===7||cards.length===6)&&slots.every((k,i)=>k===SLOT_ORDER[i]);
   const note=cards.length?(full?Math.round(teamNote({cards})):Math.round(cards.reduce((t,p,i)=>t+slotScore(p,TEAM_SLOTS.find(x=>x.k===slots[i])),0)/cards.length)):0,lib=slots.includes('LIB'),sec=teamSectors(cards,slots);
   return`<div class="tv-head"><div><small>${esc(o.sub||'Équipe')}</small><b>${esc(name)}</b><span>${o.subline||(lib?'Avec libéro':'Sans libéro, à 6')}</span></div><div class="tv-note"><b style="color:${TIER_COL[tier(note)]}">${note}</b><small>note d'équipe</small></div></div>
@@ -4373,7 +4410,7 @@ function teamViewHTML(name,cards,o={}){
     ${sec.length?`<div class="tv-sec"><b>Moyennes par secteur</b><div>${sec.map(([l,w,v])=>`<div><span>${l}<small>${w}</small></span><i><u style="width:${Math.max(2,Math.min(100,v))}%;background:${TIER_COL[tier(v)]}"></u></i><em>${v}</em></div>`).join('')}</div></div>`:''}
     <div class="tv-list">${cards.map((p,i)=>{const sl=TEAM_SLOTS.find(x=>x.k===slots[i]),v=slotScore(p,sl);
       return`<div class="tv-row">${miniHTML(p)}<div class="tv-info"><div class="tv-pos"><b>${esc(p.name)}</b><span>${sl.l} · note au poste <em style="color:${TIER_COL[tier(v)]}">${v}</em></span></div>
-        <div class="tv-stats">${TV_ST.map(([k,l])=>{const x=Math.round(+p.s[k]||0),u=(TOTW.cards[p.id]||{})[k]||0;return`<div><small>${l}</small><i><u style="width:${Math.max(2,Math.min(100,x))}%;background:${TIER_COL[tier(x)]}"></u></i><b>${x}${twTag(u)}</b></div>`;}).join('')}</div></div></div>`;}).join('')}</div>
+        <div class="tv-stats">${TV_ST.map(([k,l])=>{const x=Math.round(+p.s[k]||0),u=(TOTW.cards[p.id]||{})[k]||0;return`<div><small>${l}</small><i><u style="width:${Math.max(2,Math.min(100,x))}%;background:${TIER_COL[tier(x)]}"></u></i><b>${x}${upTag(u,p.sg||0)}</b></div>`;}).join('')}</div></div></div>`;}).join('')}</div>
     ${o.foot?`<p class="note" style="margin:0">${o.foot}</p>`:''}`;
 }
 function openTeamView(name,cards,o={}){$('tv-title').textContent=name;$('tv-body').innerHTML=teamViewHTML(name,cards,o);$('tview').hidden=false;$('tv-body').scrollTop=0;sfx.flip();}
@@ -4383,7 +4420,7 @@ $('tv-body').addEventListener('click',e=>{if(e.target.closest('[data-go-team]'))
 $('t-stats').addEventListener('click',()=>{const sl=activeSlots().filter(x=>teamCard(x));
   if(!sl.length){toast('Place des cartes dans ton équipe pour voir leurs stats.');return;}
   const n=activeSlots().length,b=teamBonus(),bt=bonusTxt(b);
-  openTeamView(state.pseudo||'Mon équipe',sl.map(x=>{const p=teamCard(x);return{...p,s:withBonus(effS(p),b)};}),{slots:sl.map(x=>x.k),sub:'Mon équipe',tac:state.tac,tacL:'Tes consignes',div:divInfo(),
+  openTeamView(state.pseudo||'Mon équipe',sl.map(x=>{const p=teamCard(x);return{...p,s:withBonus(effS(p),b),sg:sgOf(p),_eff:1};}),{slots:sl.map(x=>x.k),sub:'Mon équipe',tac:state.tac,tacL:'Tes consignes',div:divInfo(),
     foot:bt?`Stats avec tes bonus (${bt}).`:'',
     subline:sl.length<n?`${sl.length} / ${n} postes remplis`:(state.noLib?'Sans libéro, à 6':'Avec libéro')});});
 
@@ -4392,7 +4429,7 @@ $('t-stats').addEventListener('click',()=>{const sl=activeSlots().filter(x=>team
 function collSummary(){const L=players.filter(p=>!p.example),own=L.filter(p=>owns(p.id)),pr=f=>{const a=L.filter(f);return[a.filter(p=>owns(p.id)).length,a.length];};
   const tiers={};['bronze','silver','gold','icon'].forEach(t=>tiers[t]=pr(p=>!isSigP(p)&&!isDiv(p)&&tier(ovr(p.s))===t));
   let rare=null;for(const p of own)if(!rare||rarer(p,rare))rare=p;
-  return{own:own.length,total:L.length,tiers,fa:pr(p=>!isSigP(p)&&!!(p.fullart&&p.photo)),sig:pr(isSigP),div:pr(p=>isDiv(p)&&!isSigP(p)),rare:rare?rare.id:null};}
+  return{own:own.length,total:L.length,tiers,fa:pr(p=>!isSigP(p)&&!!(p.fullart&&p.photo)),sig:pr(isSigP),div:pr(p=>isDiv(p)&&!isSigP(p)),rare:rare?rare.id:null,sigs:own.filter(isSigP).map(p=>p.id)};}
 let profSent='',profTimer=null;
 function netProfSoon(){clearTimeout(profTimer);profTimer=setTimeout(async()=>{if(!net.on||!players.length)return;const c=collSummary(),k=JSON.stringify(c);if(k===profSent)return;try{await api('prof',{coll:c});profSent=k;}catch(e){}},3000);}
 const pfBar=(a,b,col)=>`<i class="pf-bar"><u style="width:${b?Math.round(100*a/b):0}%;${col?'background:'+col:''}"></u></i>`;
@@ -4409,17 +4446,22 @@ async function openProfile(pid,btn){
         ${C.sig[1]?`<div class="pf-row"><span style="color:#FFD700">Signature</span>${pfBar(C.sig[0],C.sig[1],'#FFD700')}<b>${C.sig[0]} / ${C.sig[1]}</b></div>`:''}
         ${C.div[1]?`<div class="pf-row"><span>Objets et gymnases</span>${pfBar(C.div[0],C.div[1],'#5CD6FF')}<b>${C.div[0]} / ${C.div[1]}</b></div>`:''}
         ${rare?`<div class="pf-rare">${miniHTML(rare)}<div><small>Sa carte la plus rare</small><b>${esc(rare.name)}</b><span>${isSigP(rare)?'Signature':TIER_L[tier(ovr(rare.s))]}${rare.fullart&&rare.photo&&!isSigP(rare)?' · Full Art':''}</span></div></div>`:''}`;
+    const allSig=players.filter(isSigP),mySig=C&&Array.isArray(C.sigs)?C.sigs.map(id=>allSig.find(p=>p.id===id)).filter(Boolean):[];
+    const sigShow=!allSig.length||!C?'':`<div class="pf-big"><b style="color:#FFD700;white-space:nowrap">${mySig.length} / ${allSig.length}</b><span>${P.title==='collector'?'Toutes les Signature : <em style="font-style:normal;font-weight:700;color:#FFD23F">Collectionneur</em> !':mySig.length?'Signature possédées':'Pas encore de Signature'}</span></div>
+        ${mySig.length?`<div class="pf-sigs">${mySig.map(p=>`<div class="pf-sig">${miniHTML(p)}<small>${esc(p.name)}</small></div>`).join('')}</div>`:''}
+        <p class="note" style="margin:0">Chaque Signature donne +${SIG_BOOST} à toutes les stats des cartes de ce joueur. Les avoir toutes donne le titre « Collectionneur ».</p>`;
     const camp=j.camp.st>CP_N?'Qualifié pour les Régionales !':`Étape ${j.camp.st} / ${CP_N}`;
     let team='<p class="note" style="margin:0">Pas encore d\'équipe complète enregistrée.</p>';
-    if(j.team){const cards=j.team.cards.map((c,i)=>{const p=players.find(q=>q.id===c.id);return p?{...p,s:c.s}:{...c,id:'pf'+i,kind:'joueur',photo:null};});
+    if(j.team){const cards=j.team.cards.map((c,i)=>{const p=players.find(q=>q.id===c.id);return p?{...p,s:c.s,sg:c.sg||0,_eff:1}:{...c,id:'pf'+i,kind:'joueur',photo:null,_eff:1};});
       team=teamViewHTML(P.pseudo,cards,{sub:'Son équipe',div:j.team.div,foot:(j.team.div&&(j.team.div.obj||j.team.div.gym)||j.team.boost?'Stats avec ses bonus. ':'')+(j.me?'':'Ses consignes de jeu restent secrètes.')});}
     $('tv-title').textContent=j.me?'Mon profil':'Profil';
-    $('tv-body').innerHTML=`<div class="pf-head"><div class="pf-av">${esc(initials(P.pseudo))}</div><div class="pf-id"><small>${j.me?'Toi':j.friend?'Ton ami':'Joueur'}</small><b>${esc(P.pseudo)}</b><span>${rankName(P.elo)}${j.since?' · depuis '+fmt.format(new Date(j.since)):''}</span></div><div class="pf-elo"><b>${P.elo}</b><small>élo</small></div></div>
+    $('tv-body').innerHTML=`<div class="pf-head"><div class="pf-av">${esc(initials(P.pseudo))}</div><div class="pf-id"><small>${j.me?'Toi':j.friend?'Ton ami':'Joueur'}</small><b>${esc(P.pseudo)}</b>${P.title==='collector'?`<em class="pf-title">${TITLE_SVG}Collectionneur</em>`:''}<span>${rankName(P.elo)}${j.since?' · depuis '+fmt.format(new Date(j.since)):''}</span></div><div class="pf-elo"><b>${P.elo}</b><small>élo</small></div></div>
       <div class="pf-grid">
         ${tile('Élo',row('Actuel',P.elo)+row('Meilleur atteint',j.bestElo)+row('Classement',`${j.rank.pos}<small> / ${j.rank.total}</small>`))}
         ${tile('Bilan',row('Défis classés',n?`${R.w} V · ${R.l} D`:'aucun')+row('Victoires',n?Math.round(100*R.w/n)+' %':'–')+row('Meilleure série',R.best+(R.best>1?' victoires':R.best?' victoire':''))+row('Série en cours',R.cur))}
         ${tile('Trophées',`<div class="pf-tro">${TROPHY}<b>${j.tours.won}</b><span>tournoi${j.tours.won>1?'s':''} gagné${j.tours.won>1?'s':''}</span></div>`+row('Finales jouées',j.tours.finals)+row('Tournois joués',j.tours.played)+row('Campagne',camp),1)}
         ${tile('Collection',coll,1)}
+        ${sigShow?tile('Vitrine des Signature',sigShow,1):''}
       </div>
       <div class="pf-team"><span class="label">Équipe</span>${team}</div>`;
     $('tview').hidden=false;$('tv-body').scrollTop=0;sfx.flip();}
@@ -4431,7 +4473,7 @@ async function friendTeam(pid,btn){
   if(btn)btn.disabled=true;
   try{const j=await api('fteam',{code:pid});
     if(!j.team){toast(`${j.friend.pseudo} n'a pas encore d'équipe complète.`);return;}
-    const cards=j.team.cards.map((c,i)=>{const p=players.find(q=>q.id===c.id);return p?{...p,s:c.s}:{...c,id:'ft'+i,kind:'joueur',photo:null};}); // stats avec ses bonus
+    const cards=j.team.cards.map((c,i)=>{const p=players.find(q=>q.id===c.id);return p?{...p,s:c.s,sg:c.sg||0,_eff:1}:{...c,id:'ft'+i,kind:'joueur',photo:null,_eff:1};}); // stats avec ses bonus
     openTeamView(j.friend.pseudo,cards,{sub:`Équipe de ton ami · ${j.friend.elo} élo`,div:j.team.div,foot:(j.team.div&&(j.team.div.obj||j.team.div.gym)?'Stats avec ses bonus. ':'')+'Ses consignes de jeu restent secrètes : tu les découvriras sur la feuille de match.'});}
   catch(e){toast(e.code==='not_friend'?"Vous n'êtes pas (encore) amis.":netMsg(e));}
   finally{if(btn)btn.disabled=false;}
@@ -4563,7 +4605,9 @@ function cpChance(me,n){
   return cpChCache[key]=Math.round(w/N*100);
 }
 // cartes à afficher : la vraie carte (avec sa photo) si elle est dans la liste, sinon une carte sans photo
-const dispCards=T=>T.cards.map((c,i)=>players.find(p=>p.id===c.id)||{...c,id:'x'+i,kind:'joueur',photo:null});
+const TITLE_SVG='<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M12 2l2.9 6.1 6.6.8-4.9 4.6 1.3 6.5L12 16.8 6.1 20l1.3-6.5L2.5 8.9l6.6-.8z"/></svg>';
+const arSgn=p=>sgOf(p)?`<span class="ar-sgn">Signé · +${sgOf(p)} partout</span>`:'';
+const dispCards=T=>T.cards.map((c,i)=>{const p=players.find(q=>q.id===c.id);return p?{...p,s:c.s,sg:c.sg||0,_eff:1}:{...c,id:'x'+i,kind:'joueur',photo:null,_eff:1};}); // stats du match (bonus, TOTW, Signature compris)
 
 /* ---------- état du jour ---------- */
 let cpStatus='checking',cpTimer=null,cpBusy=false,mMode='camp';
@@ -4642,7 +4686,7 @@ let campView='friends';try{const v=localStorage.getItem('cartes-volley-rank-camp
 function renderCampRank(){
   const box=$('cp-rank');if(!box)return;const R=net.rank,me=state.pid,c=state.camp;
   document.querySelectorAll('#cr-seg button').forEach(b=>b.setAttribute('aria-pressed',b.dataset.r===campView));$('cr-seg').hidden=!R;
-  const mine={pid:me,pseudo:state.pseudo,cst:c.st,ctr:c.tries};
+  const mine={pid:me,pseudo:state.pseudo,cst:c.st,ctr:c.tries,title:R&&R.me?R.me.title:null};
   let rows,note='';
   if(!R){rows=[mine];note=net.on?'Chargement…':'Hors ligne : le classement de la campagne s\'affiche avec internet.';}
   else if(campView==='friends'){rows=[mine].concat(R.friends);note=R.friends.length?'':'Ajoute des amis (Match → Contre un pote) pour comparer vos campagnes.';}
@@ -4650,7 +4694,7 @@ function renderCampRank(){
   rows.sort((a,b)=>(a.pos||0)-(b.pos||0)||b.cst-a.cst||a.ctr-b.ctr);
   const lab=x=>x.cst>CP_N?'Qualifié !':`Étape ${x.cst}`,tierOf=x=>cpTier(Math.min(CP_N,x.cst));
   box.innerHTML=rows.map((x,i)=>{const meRow=x.pid===me,pos=x.pos||i+1,sep=x.pos&&x.pos>rows.length?'<div class="rank-sep">…</div>':'';
-    return`${sep}<div class="rank-row${meRow?' me':''}${pos<=3?' top':''}"><b>${pos}</b><span>${esc(meRow?state.pseudo:x.pseudo)}${meRow?' (toi)':''}</span><small style="color:${tierOf(x).col}">${lab(x)}</small><b>${x.ctr} essai${x.ctr>1?'s':''}</b></div>`;}).join('')+(note?`<p class="note" style="margin:4px 0 0">${note}</p>`:'');
+    return`${sep}<div class="rank-row${meRow?' me':''}${pos<=3?' top':''}"><b>${pos}</b><span>${esc(meRow?state.pseudo:x.pseudo)}${meRow?' (toi)':''}${x.title==='collector'?`<em class="rk-title" title="Toutes les Signature">${TITLE_SVG}Collectionneur</em>`:''}</span><small style="color:${tierOf(x).col}">${lab(x)}</small><b>${x.ctr} essai${x.ctr>1?'s':''}</b></div>`;}).join('')+(note?`<p class="note" style="margin:4px 0 0">${note}</p>`:'');
 }
 /* ---------- jouer ---------- */
 async function cpPlay(){
@@ -4674,7 +4718,7 @@ async function cpPlay(){
   c.last={ts:now,st,win,sh:sheetFrom(sim,me,op,[state.pseudo,op.name],0)};
   const na=checkAch(false);await saveState();cpStatus=isAdmin?'ready':'locked';netCamp();
   cpBusy=false;
-  const disp=[dispCards(me),op.cards.map((x,i)=>({...x,id:'o'+i,kind:'joueur',photo:null}))];
+  const disp=[dispCards(me),op.cards.map((x,i)=>({...x,id:'o'+i,kind:'joueur',photo:null,_eff:1}))];
   await cpArenaIntro(sim,disp,st,me,op);
   const pm=playMatch(sim,disp,[state.pseudo,op.name],0,
     {fmt:T.fmt,title:`${rd.r} · ${T.n}`,tier:T.id,arena:true,hall:HALLS[T.id],tc:[AR_TC[0],cpOpCol(op.name)],camp:{st,win,rew,rd,T,op,next:win&&st<CP_N?st+1:null}});
@@ -4957,8 +5001,8 @@ async function arenaIntro(sim,disp,names,myIdx,o){
       const notes=team.map((p,i)=>slotScore(p,arSlot(i))),best=notes.indexOf(Math.max(...notes));C.dim=.5;C.sweep=0;
       AR.cards.flat().forEach(e=>e.classList.add('off'));
       for(let i=0;i<team.length&&!AR.skip;i++){const p=team[i],sl=arSlot(i),e=AR.cards[sd][i],[sk,sv]=arBestStat(p);
-        AR.cards[sd].forEach(x=>x.classList.remove('on'));e.classList.remove('off');e.classList.add('on');setTimeout(()=>arSpot([e]),60);
-        stage.innerHTML=`<div class="ar-big ar-in" style="--tc:${AR.tc[sd]}">${miniHTML(p)}<div class="ar-bt"><small>${AR_POSTE[sl.p]||sl.l}</small><b>${esc(p.name)}</b><span>Note au poste <em>${notes[i]}</em></span><span>Point fort : ${AR_STL[sk]} <em>${sv}</em>${i===best?' · <span class="star">la star</span>':''}</span></div></div>`;
+        AR.cards[sd].forEach(x=>x.classList.remove('on'));e.classList.remove('off');e.classList.add('on');if(sgOf(p))e.classList.add('signed');setTimeout(()=>arSpot([e]),60);
+        stage.innerHTML=`<div class="ar-big ar-in${sgOf(p)?' sgd':''}" style="--tc:${AR.tc[sd]}">${miniHTML(p)}<div class="ar-bt"><small>${AR_POSTE[sl.p]||sl.l}</small><b>${esc(p.name)}</b><span>Note au poste <em>${notes[i]}</em></span><span>Point fort : ${AR_STL[sk]} <em>${sv}</em>${i===best?' · <span class="star">la star</span>':''}</span>${arSgn(p)}</div></div>`;if(sgOf(p))setTimeout(()=>{if(!AR.skip)sfx.sparkle();},250);
         sfx.whoosh();tone('triangle',420+notes[i]*5,420+notes[i]*5,.16,.05);C.jump(sd,.5+(i===best?.8:0));CrowdSnd.cheer(.35+notes[i]/220+(i===best?.5:0));if(i===best){C.flash(10);buzz(30);}
         await arWait(i===best?1100:760);e.classList.add('off');}
       AR.cards[sd].forEach(x=>x.classList.remove('on'));}),
@@ -5023,9 +5067,11 @@ async function arenaOutro(sim,disp,names,myIdx,res,rec){
     async()=>{clear();const [mt,mi]=sh.mvp,sd=mt===me?0:1,p=disp[mt][mi],e=AR.cards[sd][mi];if(!p||!e)return;
       AR.cards.flat().forEach(x=>x.classList.add('off'));e.classList.remove('off');e.classList.add('on');e.style.setProperty('--tc','#FFD23F');setTimeout(()=>arSpot([e]),80);C.dim=.6;C.ex=.8;
       top.innerHTML=`<div class="ar-in"><span class="ar-kick">${esc(names[mt])}</span><b class="ar-h s" style="--tc:rgba(255,210,63,.7)">Homme du match</b></div>`;
-      stage.innerHTML=`<div class="ar-big ar-in" style="--tc:#FFD23F">${miniHTML(p)}<div class="ar-bt"><small>Homme du match</small><b>${esc(p.name)}</b><span>${esc(sheetLine(sh.s[mt][mi]))}</span></div></div>`;
-      sfx.ding('gold');setTimeout(()=>{if(!AR.skip)sfx.sparkle();},300);CrowdSnd.cheer(1.3);C.jump(sd,1.3);C.flash(14);buzz([40,40,80]);
-      await arWait(3300);e.style.setProperty('--tc',AR.tc[sd]);},
+      const sgc=sgOf(p)?sigOfP(p):null; // il a sa Signature : c'est elle qui monte sur scène
+      stage.innerHTML=`<div class="ar-big ar-in${sgc?' sgd sgmvp':''}" style="--tc:#FFD23F">${miniHTML(sgc||p)}<div class="ar-bt"><small>Homme du match${sgc?' · édition signée':''}</small><b>${esc(p.name)}</b><span>${esc(sheetLine(sh.s[mt][mi]))}</span></div></div>`;
+      if(sgc){e.innerHTML=miniHTML(sgc);e.classList.add('signed','sgswap');}
+      sfx.ding('gold');setTimeout(()=>{if(!AR.skip)sfx.sparkle();},300);if(sgc)setTimeout(()=>{if(!AR.skip){sfx.sparkle();C.flash(18);}},900);CrowdSnd.cheer(1.3);C.jump(sd,1.3);C.flash(14);buzz(sgc?[40,40,80,40,120]:[40,40,80]);
+      await arWait(sgc?3900:3300);e.style.setProperty('--tc',AR.tc[sd]);if(sgc){e.innerHTML=miniHTML(p);e.classList.remove('sgswap');}},
     async()=>{clear();stage.innerHTML='';C.dim=.4;C.ex=.5;const H=arHighlights(sim,disp,names,myIdx);if(!H.length)return;
       top.innerHTML=`<div class="ar-in"><span class="ar-kick">Le match en bref</span><b class="ar-h s">Temps forts</b></div>`;AR.stageHi=true;arLayout();AR.cards.flat().forEach(e=>e.classList.add('off'));
       stage.innerHTML='<div class="ar-list"></div>';const L=stage.firstChild;
@@ -5113,8 +5159,8 @@ async function cpArenaIntro(sim,disp,st,meT,op){
     stage.innerHTML='';sfx.whoosh();if(sd)CrowdSnd.cheer(.6*HL.vol);await arWait(sd?1100:900);if(AR.skip)return;
     const notes=team.map((p,i)=>slotScore(p,arSlot(i))),best=notes.indexOf(Math.max(...notes));C.dim=Math.max(.45,HL.dark||0);C.sweep=0;AR.cards.flat().forEach(e=>e.classList.add('off'));
     for(let i=0;i<team.length&&!AR.skip;i++){const p=team[i],sl=arSlot(i),e=AR.cards[sd][i],[sk,sv]=arBestStat(p),isCap=sd===0&&i===cap;
-      AR.cards[sd].forEach(x=>x.classList.remove('on'));e.classList.remove('off');e.classList.add('on');setTimeout(()=>arSpot([e]),60);
-      stage.innerHTML=`<div class="ar-big ar-in" style="--tc:${tc[sd]}">${miniHTML(p)}<div class="ar-bt"><small>${AR_POSTE[sl.p]||sl.l}${isCap?' · capitaine':''}</small><b>${esc(p.name)}</b><span>Note au poste <em>${notes[i]}</em></span><span>Point fort : ${AR_STL[sk]} <em>${sv}</em>${i===best?' · <span class="star">la star</span>':''}</span></div></div>`;
+      AR.cards[sd].forEach(x=>x.classList.remove('on'));e.classList.remove('off');e.classList.add('on');if(sgOf(p))e.classList.add('signed');setTimeout(()=>arSpot([e]),60);
+      stage.innerHTML=`<div class="ar-big ar-in${sgOf(p)?' sgd':''}" style="--tc:${tc[sd]}">${miniHTML(p)}<div class="ar-bt"><small>${AR_POSTE[sl.p]||sl.l}${isCap?' · capitaine':''}</small><b>${esc(p.name)}</b><span>Note au poste <em>${notes[i]}</em></span><span>Point fort : ${AR_STL[sk]} <em>${sv}</em>${i===best?' · <span class="star">la star</span>':''}</span>${arSgn(p)}</div></div>`;if(sgOf(p))setTimeout(()=>{if(!AR.skip)sfx.sparkle();},250);
       sfx.whoosh();tone('triangle',420+notes[i]*5,420+notes[i]*5,.16,.05);C.jump(sd,.5+(i===best||isCap?.7:0));CrowdSnd.cheer((.3+notes[i]/250+(i===best?.4:0))*HL.vol);if(i===best){C.flash(10);buzz(30);}
       await arWait(i===best||isCap?dur+300:dur);e.classList.add('off');}
     AR.cards[sd].forEach(x=>x.classList.remove('on'));});
@@ -5212,9 +5258,11 @@ async function cpArenaOutro(sim,disp,names,res){
   S.push(async()=>{clear();const [mt,mi]=sh.mvp,sd=mt,p=disp[mt][mi],e=AR.cards[sd][mi];if(!p||!e)return;
     AR.cards.flat().forEach(x=>x.classList.add('off'));e.classList.remove('off');e.classList.add('on');e.style.setProperty('--tc','#FFD23F');setTimeout(()=>arSpot([e]),80);C.dim=.6;C.ex=.8;
     top.innerHTML=`<div class="ar-in"><span class="ar-kick">${esc(names[mt])}</span><b class="ar-h s" style="--tc:rgba(255,210,63,.7)">Homme du match</b></div>`;
-    stage.innerHTML=`<div class="ar-big ar-in" style="--tc:#FFD23F">${miniHTML(p)}<div class="ar-bt"><small>Homme du match</small><b>${esc(p.name)}</b><span>${esc(sheetLine(sh.s[mt][mi]))}</span></div></div>`;
-    sfx.ding('gold');setTimeout(()=>{if(!AR.skip)sfx.sparkle();},300);CrowdSnd.cheer(1.2*HL.vol);C.jump(sd,1.3);C.flash(14);buzz([40,40,80]);
-    await arWait(3100);e.style.setProperty('--tc',tc[sd]);});
+    const sgc=sgOf(p)?sigOfP(p):null; // il a sa Signature : c'est elle qui monte sur scène
+    stage.innerHTML=`<div class="ar-big ar-in${sgc?' sgd sgmvp':''}" style="--tc:#FFD23F">${miniHTML(sgc||p)}<div class="ar-bt"><small>Homme du match${sgc?' · édition signée':''}</small><b>${esc(p.name)}</b><span>${esc(sheetLine(sh.s[mt][mi]))}</span></div></div>`;
+    if(sgc){e.innerHTML=miniHTML(sgc);e.classList.add('signed','sgswap');}
+    sfx.ding('gold');setTimeout(()=>{if(!AR.skip)sfx.sparkle();},300);if(sgc)setTimeout(()=>{if(!AR.skip){sfx.sparkle();C.flash(18);}},900);CrowdSnd.cheer(1.2*HL.vol);C.jump(sd,1.3);C.flash(14);buzz(sgc?[40,40,80,40,120]:[40,40,80]);
+    await arWait(sgc?3700:3100);e.style.setProperty('--tc',tc[sd]);if(sgc){e.innerHTML=miniHTML(p);e.classList.remove('sgswap');}});
   if(rd.ko>=1)S.push(async()=>{clear();stage.innerHTML='';C.dim=.4;C.ex=.5;const Hh=arHighlights(sim,disp,names,0);if(!Hh.length)return;
     top.innerHTML=`<div class="ar-in"><span class="ar-kick">Le match en bref</span><b class="ar-h s">Temps forts</b></div>`;AR.stageHi=true;arLayout();AR.cards.flat().forEach(e=>e.classList.add('off'));
     stage.innerHTML='<div class="ar-list"></div>';const L=stage.firstChild;
@@ -5448,6 +5496,11 @@ async function playMatch(sim,disp,names,myIdx,res){
       if(!isMP)crowd.ex=Math.min(.85,.4+(sc[0]+sc[1])/90);
       if(HLm.ola&&(run[r.winner]===4||run[r.winner]===8)){crowd.wave();CrowdSnd.claps(36,2.4);$('mt-com').insertAdjacentHTML('beforeend',' · <b>la ola dans les tribunes !</b>');}}
     if(!(mSkip||mFF)){sfx[r.winner===myIdx?'ding':'thump'](r.winner===myIdx?'silver':undefined);buzz(r.winner===myIdx?[30,30,60]:40);await sleep(1100);}
+    if(ri===sim.rallies.length-1&&!(mSkip||mFF)&&alive()){ // le point de la victoire marqué par un joueur dont l'équipe a la Signature
+      const L=r.acts[r.acts.length-1]||{},who=L.k==='stuff'?[1-L.t,L.b]:L.k==='ace'||L.k==='kill'?[L.t,L.p]:null,pp=who&&disp[who[0]]&&disp[who[0]][who[1]],sgc=pp&&sgOf(pp)?sigOfP(pp):null;
+      if(sgc){const e=document.createElement('div');e.className='mt-sig';e.innerHTML=`<div class="mt-sig-in">${miniHTML(sgc)}<small>Point de la victoire</small><b>${esc(pp.name)}</b><span>édition signée</span></div>`;M.appendChild(e);
+        flashTok(toks[who[0]][who[1]]);sfx.sparkle();setTimeout(()=>{if(alive())sfx.sparkle();},450);buzz([50,40,50,40,140]);if(crowd){crowd.flash(14);CrowdSnd.cheer(1.4*HV);}
+        const wt=ms=>new Promise(r2=>setTimeout(r2,ms));await wt(2600);e.classList.add('out');await wt(350);e.remove();}} // pas accéléré : c'est le moment fort
     // temps mort : l'équipe qui vient d'encaisser 4 points (puis 7) d'affilée l'appelle, deux fois au plus
     {const l=1-r.winner,nx=sim.rallies[ri+1];
     if(res.arena&&!(mSkip||mFF)&&alive()&&nx&&nx.set===r.set&&(run[r.winner]===4||run[r.winner]===7)&&toUsed[l]<2){toUsed[l]++;
