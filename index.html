@@ -1407,6 +1407,11 @@ input[type=range]::-moz-range-thumb{width:20px;height:20px;border-radius:50%;bac
 .tv-head>div:first-child{display:flex;flex-direction:column;gap:2px;min-width:0}.tv-head small{font-family:var(--data);font-size:.7rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted)}
 .tv-head b{font-family:var(--display);font-weight:900;font-size:1.6rem;text-transform:uppercase;line-height:1;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}.tv-head span{font-size:.82rem;color:var(--muted)}
 .tv-note{display:flex;flex-direction:column;align-items:center}.tv-note b{font-size:2.4rem}
+.tv-div{display:flex;flex-direction:column;gap:8px;padding:10px;border-radius:12px;background:rgba(92,214,255,.06);border:1px solid rgba(92,214,255,.2)}
+.tv-dv{display:flex;align-items:center;gap:12px}.tv-dv .mini{width:62px;flex:none}
+.tv-dvi{min-width:0;display:flex;flex-direction:column;gap:3px}.tv-dvi small{font-family:var(--data);font-size:.66rem;letter-spacing:.14em;text-transform:uppercase;color:#7FE0FF}
+.tv-dvi b{font-family:var(--display);font-weight:900;font-size:1.15rem;text-transform:uppercase;line-height:1.05}
+.tv-dvi span{display:flex;flex-wrap:wrap;gap:4px}.tv-dvi em{font-style:normal;font-family:var(--data);font-weight:700;font-size:.72rem;color:#3BEA7E;background:rgba(59,234,126,.1);border:1px solid rgba(59,234,126,.3);border-radius:999px;padding:1px 7px}.tv-dvi i{font-size:.78rem;color:var(--muted)}
 .tv-tac{margin:0;font-size:.86rem}.tv-tac span{color:var(--muted)}
 .tv-list{display:flex;flex-direction:column;gap:10px}
 .tv-row{display:grid;grid-template-columns:64px minmax(0,1fr);gap:10px;align-items:center;padding:10px;border-radius:14px;background:rgba(255,255,255,.04);border:1px solid var(--line)}
@@ -4412,7 +4417,8 @@ function teamViewHTML(name,cards,o={}){
   const note=cards.length?(full?Math.round(teamNote({cards})):Math.round(cards.reduce((t,p,i)=>t+slotScore(p,TEAM_SLOTS.find(x=>x.k===slots[i])),0)/cards.length)):0,lib=slots.includes('LIB'),sec=teamSectors(cards,slots);
   return`<div class="tv-head"><div><small>${esc(o.sub||'Équipe')}</small><b>${esc(name)}</b><span>${o.subline||(lib?'Avec libéro':'Sans libéro, à 6')}</span></div><div class="tv-note"><b style="color:${TIER_COL[tier(note)]}">${note}</b><small>note d'équipe</small></div></div>
     ${o.tac?`<p class="tv-tac"><span>${o.tacL||'Leur jeu'} :</span> <b>${esc(tacTxt(o.tac))}</b></p>`:''}${o.pre||''}
-    ${o.div&&(o.div.obj||o.div.gym)?`<p class="tv-tac">${[['obj','Objet'],['gym','Gymnase']].filter(([k])=>o.div[k]).map(([k,l])=>`<span>${l} :</span> <b>${esc(o.div[k].name)}</b>${bonShort({kind:'divers',bon:o.div[k].bon})?` <small>(${esc(bonShort({kind:'divers',bon:o.div[k].bon}))})</small>`:''}`).join(' &nbsp; ')}</p>`:''}
+    ${o.div&&(o.div.obj||o.div.gym)?`<div class="tv-div">${[['obj','Objet'],['gym','Gymnase']].filter(([k])=>o.div[k]).map(([k,l])=>{const d=o.div[k],c=players.find(p=>p.id===d.id)||{id:'dv-'+k,kind:'divers',name:d.name,poste:'DIV',dt:k==='gym'?'gym':'objet',bon:d.bon,note:55,s:allS(55),photo:null},L=bonList({kind:'divers',bon:d.bon||{}});
+      return`<div class="tv-dv">${miniHTML(c)}<div class="tv-dvi"><small>${l}</small><b>${esc(d.name)}</b><span>${L.length?L.map(x=>`<em>+${x.v} ${x.k==='mor'?'Moral · toutes les stats':x.l}</em>`).join(''):'<i>aucun bonus</i>'}</span></div></div>`;}).join('')}${['obj','gym'].some(k=>o.div[k]&&bonList({kind:'divers',bon:o.div[k].bon||{}}).length)?'<p class="note" style="margin:0">Bonus pour tous les joueurs de l\'équipe.</p>':''}</div>`:''}
     ${sec.length?`<div class="tv-sec"><b>Moyennes par secteur</b><div>${sec.map(([l,w,v])=>`<div><span>${l}<small>${w}</small></span><i><u style="width:${Math.max(2,Math.min(100,v))}%;background:${TIER_COL[tier(v)]}"></u></i><em>${v}</em></div>`).join('')}</div></div>`:''}
     <div class="tv-list">${cards.map((p,i)=>{const sl=TEAM_SLOTS.find(x=>x.k===slots[i]),v=slotScore(p,sl);
       return`<div class="tv-row">${miniHTML(p)}<div class="tv-info"><div class="tv-pos"><b>${esc(p.name)}</b><span>${sl.l} · note au poste <em style="color:${TIER_COL[tier(v)]}">${v}</em></span></div>
