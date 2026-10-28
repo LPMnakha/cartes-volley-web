@@ -3359,7 +3359,7 @@ $('bonus-list').addEventListener('click',e=>{const b=e.target.closest('[data-bon
 
 /* =================== Classeur : pages complètes =================== */
 function fullPages(){const l=binderList(),out=[];for(let k=0;k*PER_PAGE<l.length;k++){const pg=l.slice(k*PER_PAGE,k*PER_PAGE+PER_PAGE);if(pg.length===PER_PAGE&&pg.every(p=>owns(p.id)))out.push(k);}return out;}
-const binderComplete=()=>players.length>0&&players.every(p=>owns(p.id));
+const binderComplete=()=>{const l=players.filter(p=>!p.example);return l.length>0&&l.every(p=>owns(p.id));};
 async function celebrate(pages,all,alive){
   const O=$('opening');
   const txt=all?'<b>Classeur complet !</b><span>Tu as obtenu toutes les cartes.</span>':`<b>Page ${pages.map(k=>k+1).join(' et ')} complète !</b><span>${pages.length>1?'Deux pages':'Une page'} entière de ton classeur.</span>`;
@@ -3371,20 +3371,21 @@ async function celebrate(pages,all,alive){
 
 /* =================== Succès =================== */
 const TROPHY='<svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true"><path d="M7 3h10v2h3v3a4 4 0 01-4 4h-.4A5 5 0 0113 14.9V18h3v3H8v-3h3v-3.1A5 5 0 018.4 12H8a4 4 0 01-4-4V5h3zm-1 4v1a2 2 0 002 2V7zm12 0v3a2 2 0 002-2V7z"/></svg>';
-const tierCards=t=>players.filter(p=>!isSigP(p)&&tier(ovr(p.s))===t);
+const tierCards=t=>players.filter(p=>!p.example&&!isSigP(p)&&!isDiv(p)&&tier(ovr(p.s))===t); // les cartes joueurs (Full Art comprises) : pas les objets ni les gymnases, comme le profil
+const tierAny=t=>players.filter(p=>!p.example&&!isSigP(p)&&tier(ovr(p.s))===t);
 const tierDone=t=>{const l=tierCards(t);return l.length>0&&l.every(p=>owns(p.id));};
 const realHist=()=>state.history.filter(h=>h.how!=='admin');
 const ACH=[
   {k:'pack1',t:'Premier booster',d:'Ouvre ton premier booster',ok:()=>state.history.length>0},
-  {k:'gold1',t:"De l'or !",d:'Obtiens une carte or',ok:()=>tierCards('gold').some(p=>owns(p.id))},
-  {k:'icon1',t:'Légende',d:'Obtiens une carte icône',ok:()=>tierCards('icon').some(p=>owns(p.id))},
+  {k:'gold1',t:"De l'or !",d:'Obtiens une carte or',ok:()=>tierAny('gold').some(p=>owns(p.id))},
+  {k:'icon1',t:'Légende',d:'Obtiens une carte icône',ok:()=>tierAny('icon').some(p=>owns(p.id))},
   {k:'fa1',t:'Premier Full Art',d:'Obtiens une carte Full Art',ok:()=>players.some(p=>p.fullart&&p.photo&&!isSigP(p)&&owns(p.id))},
   {k:'sig1',t:'Première Signature',d:'Obtiens une carte Signature',ok:()=>players.some(p=>isSigP(p)&&owns(p.id))},
   {k:'page1',t:'Page complète',d:'Remplis une page entière du classeur',ok:()=>fullPages().length>0},
-  {k:'cBronze',t:'Classeur bronze complet',d:'Toutes les cartes bronze',ok:()=>tierDone('bronze')},
-  {k:'cSilver',t:'Classeur argent complet',d:'Toutes les cartes argent',ok:()=>tierDone('silver')},
-  {k:'cGold',t:'Classeur or complet',d:'Toutes les cartes or',ok:()=>tierDone('gold')},
-  {k:'cIcon',t:'Classeur icône complet',d:'Toutes les cartes icône',ok:()=>tierDone('icon')},
+  {k:'cBronze',t:'Classeur bronze complet',d:'Toutes les cartes joueurs bronze',ok:()=>tierDone('bronze')},
+  {k:'cSilver',t:'Classeur argent complet',d:'Toutes les cartes joueurs argent',ok:()=>tierDone('silver')},
+  {k:'cGold',t:'Classeur or complet',d:'Toutes les cartes joueurs or',ok:()=>tierDone('gold')},
+  {k:'cIcon',t:'Classeur icône complet',d:'Toutes les cartes joueurs icône',ok:()=>tierDone('icon')},
   {k:'cAll',t:'Classeur complet',d:'Obtiens toutes les cartes',ok:()=>binderComplete()},
   {k:'s3',t:"3 jours d'affilée",d:'Une série de 3 jours',ok:()=>state.streak.best>=3},
   {k:'s7',t:"7 jours d'affilée",d:'Une série de 7 jours',ok:()=>state.streak.best>=7},
@@ -3395,7 +3396,7 @@ const ACH=[
   {k:'team80',t:'Équipe de choc',d:'Une équipe complète notée 80 ou plus',ok:()=>teamFull()&&teamScore()>=80},
   {k:'m1',t:'Premier match',d:'Joue un match contre un pote',ok:()=>state.matches.length>0},
   {k:'w1',t:'Première victoire',d:'Gagne un match',ok:()=>state.matches.some(m=>m.win)},
-  {k:'w5',t:'Série de 5',d:'Gagne 5 matchs',ok:()=>state.matches.filter(m=>m.win).length>=5},
+  {k:'w5',t:'5 victoires',d:'Gagne 5 matchs',ok:()=>state.matches.filter(m=>m.win).length>=5},
   {k:'e600',t:'600 d\'élo',d:'Atteins 600 points d\'élo',ok:()=>state.elo>=600},
   {k:'cp1',t:'En route !',d:'Gagne ton premier match de campagne',ok:()=>state.camp.st>1},
   {k:'cpLoisir',t:'Champion loisir',d:'Remporte le tournoi loisir',ok:()=>state.camp.st>6},
