@@ -1508,7 +1508,7 @@ input[type=range]::-moz-range-thumb{width:20px;height:20px;border-radius:50%;bac
       <div class="shop-list" id="shop-list"></div>
       <details class="odds"><summary>Chances par booster</summary><div id="shop-odds"></div></details></div>
 <div class="section"><span class="label">Doublons</span>
-      <p class="note" style="margin:0">15 doublons d'une rareté = 1 booster bonus de la même rareté. Les Full Art comptent dans leur rareté, les Signature comme icône.</p>
+      <p class="note" style="margin:0">15 doublons d'une rareté = 1 booster bonus de la même rareté. Un doublon Full Art compte triple (3 doublons). Les Full Art comptent dans leur rareté, les Signature comme icône (triple aussi).</p>
       <div class="dups" id="dups"></div></div>
   </div>
   <div class="tabpane" id="tab-packs" role="tabpanel" aria-labelledby="tab-btn-packs" hidden>
@@ -3223,19 +3223,21 @@ window.addEventListener('resize',()=>{if(!$('opening').hidden)fxSize();});
 const DUP_COST=15; // doublons à échanger contre un booster bonus
 const DUP_TIERS=[{t:'bronze',l:'Bronze',pack:'classic',c:'#E9A877'},{t:'silver',l:'Argent',pack:'silver',c:'#DCE3EA'},{t:'gold',l:'Or',pack:'gold',c:'#FFD23F'},{t:'icon',l:'Icône',pack:'icon',c:'#C9B8FF'}];
 const dupTier=p=>isSigP(p)?'icon':tier(ovr(p.s));
-function dupStock(t){return players.filter(p=>dupTier(p)===t).reduce((n,p)=>n+Math.max(0,(state.counts[p.id]||0)-1),0);}
+const dupVal=p=>p.fullart&&p.photo?3:1; // un doublon Full Art (ou Signature) compte triple
+const dupExtra=p=>Math.max(0,(state.counts[p.id]||0)-1);
+function dupStock(t){return players.filter(p=>dupTier(p)===t).reduce((n,p)=>n+dupExtra(p)*dupVal(p),0);}
+const dupFA=t=>players.filter(p=>dupTier(p)===t&&dupVal(p)>1).reduce((n,p)=>n+dupExtra(p),0);
 function renderDups(){
   $('dups').innerHTML=DUP_TIERS.map(d=>{const n=dupStock(d.t);return`<div class="dup-row"><i style="background:${d.c}"></i>
-    <div class="dmeta"><span>${d.l}</span><span class="track"><i style="width:${Math.min(100,n/DUP_COST*100)}%"></i></span><small>${n} doublon${n>1?'s':''}${n>=DUP_COST?` · ${Math.floor(n/DUP_COST)} échange${n>=2*DUP_COST?'s':''} possible${n>=2*DUP_COST?'s':''}`:` · encore ${DUP_COST-n}`}</small></div>
+    <div class="dmeta"><span>${d.l}</span><span class="track"><i style="width:${Math.min(100,n/DUP_COST*100)}%"></i></span><small>${n} doublon${n>1?'s':''}${dupFA(d.t)?` (dont ${dupFA(d.t)} Full Art ×3)`:''}${n>=DUP_COST?` · ${Math.floor(n/DUP_COST)} échange${n>=2*DUP_COST?'s':''} possible${n>=2*DUP_COST?'s':''}`:` · encore ${DUP_COST-n}`}</small></div>
     <button class="btn primary" type="button" data-ex="${d.t}" ${n>=DUP_COST?'':'disabled'}>Échanger</button></div>`;}).join('');
 }
 $('dups').addEventListener('click',async e=>{
   const b=e.target.closest('[data-ex]');if(!b||b.disabled)return;const d=DUP_TIERS.find(x=>x.t===b.dataset.ex);
   if(dupStock(d.t)<DUP_COST)return;
-  for(let k=0;k<DUP_COST;k++){ // on retire un exemplaire en trop aux cartes qui en ont le plus
-    const c=players.filter(p=>dupTier(p)===d.t&&(state.counts[p.id]||0)>1).sort((a,b)=>state.counts[b.id]-state.counts[a.id])[0];
-    if(!c)break;state.counts[c.id]--;
-  }
+  let need=DUP_COST; // on retire des exemplaires en trop (ceux des cartes qui en ont le plus) : les Full Art valent 3, les autres 1, sans gaspiller
+  while(need>0){const L=players.filter(p=>dupTier(p)===d.t&&dupExtra(p)>0).sort((a,b)=>state.counts[b.id]-state.counts[a.id]),fa=L.find(p=>dupVal(p)>1),nm=L.find(p=>dupVal(p)===1);
+    const c=need>=3&&fa?fa:nm||fa;if(!c)break;state.counts[c.id]--;need-=dupVal(c);}
   state.bonus[d.pack]=(state.bonus[d.pack]||0)+1;state.exchanges=(state.exchanges||0)+1;
   await saveState();renderBinder();renderPacks();sfx.sparkle();buzz([30,40,60]);
   toast(`${DUP_COST} doublons ${d.l.toLowerCase()} échangés : 1 ${PACK_TYPES[d.pack].l.toLowerCase()} bonus dans l'onglet Boosters`);
