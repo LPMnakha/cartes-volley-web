@@ -65,6 +65,7 @@ button{font:inherit;color:inherit;cursor:pointer}
 .hud-btns{display:flex;gap:6px;flex:none}
 .hud-btn{position:relative;width:40px;height:40px;border:0;border-radius:11px;display:grid;place-items:center;color:#DDE7FF;cursor:pointer;
   background:linear-gradient(180deg,#2B4BA8,#1A2F73);box-shadow:inset 0 -3px 0 rgba(0,0,0,.3),inset 0 1px 0 rgba(255,255,255,.25),0 0 0 1px rgba(0,0,0,.4)}
+.hud-btn.pend::after{content:"";position:absolute;top:5px;right:5px;width:9px;height:9px;border-radius:50%;background:#FF9F1C;box-shadow:0 0 0 2px #0B1330}
 .hud-btn svg{width:22px;height:22px}.hud-btn:active{transform:translateY(1px)}
 .hb-n{position:absolute;top:-6px;right:-6px;min-width:19px;height:19px;padding:0 5px;border-radius:99px;background:#FF3B3B;color:#fff;font-family:var(--data);font-weight:800;font-size:.72rem;display:grid;place-items:center;box-shadow:0 0 0 2px #0A1430}
 .botnav{position:fixed;left:0;right:0;bottom:0;z-index:20;display:flex;align-items:flex-end;justify-content:center;gap:0;margin:0;border:0;border-radius:0;
@@ -2122,7 +2123,7 @@ async function sha256(t){const b=await crypto.subtle.digest('SHA-256',new TextEn
 let appReady=false; // passe à vrai une fois tout le script chargé
 function renderAdmin(){$('adm-off').hidden=isAdmin;$('adm-on').hidden=!isAdmin;applyRole();if(isAdmin&&appReady)renderOfficial();}
 // seul l'admin voit l'onglet Cartes et peut créer ou modifier des cartes
-function applyRole(){document.body.classList.toggle('player',!isAdmin);if(appReady&&!isAdmin&&(!$('tab-cards').hidden||!$('tab-totw').hidden))setTab('match');}
+function applyRole(){document.body.classList.toggle('player',!isAdmin);if(!isAdmin)$('menu-btn').classList.remove('pend');if(appReady&&!isAdmin&&(!$('tab-cards').hidden||!$('tab-totw').hidden))setTab('match');}
 $('adm-form').addEventListener('submit',async e=>{
   e.preventDefault();const pw=$('adm-pw').value.trim();if(!pw)return;
   let h='';try{h=await sha256(pw);}catch(err){toast("Vérification impossible dans cette vue.");return;}
@@ -2185,7 +2186,8 @@ async function connect(){
 }
 
 async function persist(p,keepTime){
-  if(!keepTime)p.updatedAt=Date.now(); // une carte officielle reçue garde sa date (sinon elle passerait pour une modification)setTimeout(()=>{if(isAdmin&&typeof renderOfficial==='function')renderOfficial();},0);
+  if(!keepTime)p.updatedAt=Date.now(); // une carte officielle reçue garde sa date (sinon elle passerait pour une modification)
+  setTimeout(()=>{if(isAdmin&&typeof renderOfficial==='function')renderOfficial();},0); // le bouton « Publier » voit tout de suite la modification
   const i=players.findIndex(x=>x.id===p.id);
   if(i>=0)players[i]=p;else players.push(p);
   writeLocal();render();
@@ -2522,7 +2524,7 @@ $('form').addEventListener('submit',async e=>{
     :{id,fullart,kind:'joueur',name,poste,photo:draftPhoto,s:formS()};
   p.signature=signature;if(signature){p.s=allS(0);if(p.kind==='divers')p.note=0;}p.createdAt=(editing&&editing.createdAt)||Date.now();
   await persist(p);
-  toast(isNew?'Carte créée':'Carte mise à jour');
+  toast((isNew?'Carte créée':'Carte mise à jour')+(isAdmin&&off.ver?' · à publier dans Options':''));
   editing=null;openDetail(id);
 });
 
@@ -2530,7 +2532,7 @@ $('form').addEventListener('submit',async e=>{
 function renderMe(){ensureProfile();if(document.activeElement!==$('m-pseudo'))$('m-pseudo').value=state.pseudo;$('m-elo').textContent=state.elo;$('m-rankname').textContent=rankName(state.elo);
   const rk=state.matches.filter(m=>!m.friendly),w=rk.filter(m=>m.win).length,l=rk.length-w;
   $('m-record').textContent=rk.length?`${w} victoire${w>1?'s':''} · ${l} défaite${l>1?'s':''}`:'Tout le monde commence à '+ELO_START+' d\'élo. Gagner contre plus fort que toi rapporte plus.';}
-$('menu-btn').addEventListener('click',()=>{renderMe();show('menu');});
+$('menu-btn').addEventListener('click',()=>{renderMe();if(isAdmin)renderOfficial();show('menu');});
 let exportCardsOnly=false;
 // sauvegarde = ta progression (classeur, équipe, succès, campagne, élo…), sans les cartes, qui viennent de la liste officielle
 // « Exporter les cartes seulement » (admin) reste un fichier à part
@@ -3951,7 +3953,7 @@ function renderOfficial(){
   if(!$('off-box'))return;const d=offDiff(),fmt=new Intl.DateTimeFormat('fr-FR',{day:'numeric',month:'short',hour:'2-digit',minute:'2-digit'});
   $('off-status').innerHTML=(off.ver?`Liste en ligne : <b>${Object.keys(off.snap).length} cartes</b>, publiée le ${fmt.format(new Date(off.ver))}.`:'Aucune liste publiée pour l\'instant.')+
     (d.n?` <b>${d.n} modification${d.n>1?'s':''} non publiée${d.n>1?'s':''}</b> (${d.add.length} nouvelle${d.add.length>1?'s':''}, ${d.upd.length} modifiée${d.upd.length>1?'s':''}, ${d.del.length} supprimée${d.del.length>1?'s':''}).`:off.ver?' Tout est à jour.':'');
-  $('off-pub').disabled=!d.n||!players.length;$('off-get').hidden=!off.ver||!d.n;$('off-pwform').hidden=!!admTok();
+  $('off-pub').disabled=!d.n||!players.length;$('menu-btn').classList.toggle('pend',isAdmin&&d.n>0); // pastille : des cartes à publier$('off-get').hidden=!off.ver||!d.n;$('off-pwform').hidden=!!admTok();
   if(!net.on)$('off-status').innerHTML+=' <br>Hors ligne : connecte-toi pour publier.';
 }
 async function offAdminLogin(pw){if(!net.on||!pw)return false;try{const j=await api('admin',{pw});try{localStorage.setItem(LS_ADMTOK,j.token);}catch(e){}renderOfficial();return true;}catch(e){return false;}}
