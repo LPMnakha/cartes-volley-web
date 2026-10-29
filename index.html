@@ -108,8 +108,9 @@ body{padding-bottom:calc(90px + env(safe-area-inset-bottom,0px))}
 .ch-rm{display:flex;flex-direction:column;align-items:flex-end;gap:4px}.ch-rm small{font-size:.7rem;color:var(--muted)}
 .ch-rm i{font-style:normal;min-width:20px;height:20px;padding:0 6px;border-radius:99px;background:#22C55E;color:#04210F;font-family:var(--data);font-weight:800;font-size:.72rem;display:grid;place-items:center}
 .ch-conv{gap:8px}
+#social.ch-on #m-net{display:none}
 .ch-head{display:flex;align-items:center;gap:10px}.ch-head div{min-width:0;display:flex;flex-direction:column}.ch-head b{font-family:var(--display);font-weight:900;font-size:1.2rem;text-transform:uppercase}.ch-head small{font-size:.75rem;color:var(--muted)}
-.ch-msgs{display:flex;flex-direction:column;gap:6px;height:min(58vh,520px);overflow-y:auto;padding:6px 2px;overscroll-behavior:contain}
+.ch-msgs{display:flex;flex-direction:column;gap:6px;height:50vh;overflow-y:auto;padding:6px 2px;overscroll-behavior:contain}
 .ch-day{align-self:center;font-family:var(--data);font-size:.66rem;letter-spacing:.1em;text-transform:uppercase;color:var(--muted);padding:6px 0 2px}
 .ch-m{max-width:82%;align-self:flex-start;display:flex;flex-direction:column;gap:2px}
 .ch-m.me{align-self:flex-end;align-items:flex-end}
@@ -3339,8 +3340,13 @@ const chTime=ts=>{const d=new Date(ts),n=new Date(),hm=d.toLocaleTimeString('fr-
 const chDay=ts=>{const d=new Date(ts),n=new Date(),y=new Date(n);y.setDate(n.getDate()-1);return d.toDateString()===n.toDateString()?"Aujourd'hui":d.toDateString()===y.toDateString()?'Hier':d.toLocaleDateString('fr-FR',{weekday:'long',day:'numeric',month:'long'});};
 const chName=id=>id==='g'?'Général':((CH.rooms||[]).find(r=>r.id===id)||{}).pseudo||((net.rank&&net.rank.friends||[]).find(f=>f.pid===id)||{}).pseudo||'Ami';
 function chatStop(){clearTimeout(CH.timer);CH.timer=null;}
+// la conversation remplit l'écran restant : la zone d'écriture reste toujours visible (clavier ouvert compris)
+function chSize(){if($('ch-conv').hidden||$('social').hidden)return;const box=$('ch-msgs'),sh=$('social'),vh=window.visualViewport?window.visualViewport.height:window.innerHeight;
+  sh.scrollTop=0;const top=box.getBoundingClientRect().top,pb=parseFloat(getComputedStyle(sh).paddingBottom)||0,below=$('ch-form').offsetHeight+($('ch-muted').hidden?0:$('ch-muted').offsetHeight)+36;
+  box.style.height=Math.max(140,Math.floor(vh-top-below-Math.min(pb,40)))+'px';}
+window.addEventListener('resize',()=>chSize());if(window.visualViewport)window.visualViewport.addEventListener('resize',()=>{chSize();const b=$('ch-msgs');if(b&&!$('ch-conv').hidden)b.scrollTop=b.scrollHeight;});
 function chatShow(){if(CH.open)chatOpen(CH.open,true);else chatList();}
-async function chatList(){chatStop();CH.open=null;$('ch-conv').hidden=true;$('ch-listv').hidden=false;
+async function chatList(){chatStop();CH.open=null;$('ch-conv').hidden=true;$('ch-listv').hidden=false;$('ch-msgs').style.height='';$('social').classList.remove('ch-on');
   if(!net.on){$('ch-rooms').innerHTML='<p class="note" style="margin:0">Hors connexion : le tchat a besoin d\'internet.</p>';return;}
   try{const j=await api('chat');CH.rooms=j.rooms;CH.muted=j.muted;onUnread(j.unread);renderHud();}catch(e){if(!CH.rooms){$('ch-rooms').innerHTML=`<p class="note" style="margin:0">${esc(e.code==='pending'?'Le tchat s\'ouvre quand ton compte est validé.':netMsg(e))}</p>`;return;}}
   renderChatList();CH.timer=setTimeout(()=>{if(!$('social').hidden&&soTab==='chat'&&!CH.open)chatList();},8000);}
@@ -3354,7 +3360,7 @@ function renderChatList(){const R=CH.rooms||[],G=R.find(r=>r.id==='g')||{id:'g'}
   $('ch-new-sec').hidden=!fr.length;$('ch-new').innerHTML=fr.map(f=>`<button class="ch-fr" type="button" data-room="${esc(f.pid)}">${MSG_SVG} ${esc(f.pseudo)}</button>`).join('');}
 function chatTo(pid){openSocial('chat');chatOpen(pid);}
 async function chatOpen(id,again){chatStop();const fresh=CH.open!==id||!again;CH.open=id;if(fresh){CH.msgs=[];CH.last=0;}
-  $('ch-listv').hidden=true;$('ch-conv').hidden=false;$('ch-title').textContent=chName(id);$('ch-sub').textContent=id==='g'?'Tous les joueurs · 200 derniers messages':'Conversation privée';
+  $('ch-listv').hidden=true;$('ch-conv').hidden=false;$('social').classList.add('ch-on');requestAnimationFrame(chSize);$('ch-title').textContent=chName(id);$('ch-sub').textContent=id==='g'?'Tous les joueurs · 200 derniers messages':'Conversation privée';
   if(fresh)$('ch-msgs').innerHTML='<p class="note" style="margin:auto">Chargement…</p>';
   await chatPull();}
 async function chatPull(){const id=CH.open;if(!id)return;chatStop();
@@ -3368,7 +3374,7 @@ function renderChat(scroll=true){const box=$('ch-msgs'),atEnd=box.scrollHeight-b
     return`${sep}<div class="ch-m${me?' me':''}"><small>${!me&&g?`<b>${esc(m.pseudo)}</b>`:''}${chTime(m.ts).slice(-5)}${adm&&!me?`<span class="ch-adm"><button type="button" data-cdel="${m.id}" title="Supprimer ce message">Suppr.</button><button type="button" data-cmute="${esc(m.pid)}" data-on="${m.mute?0:1}" title="${m.mute?'Rendre le tchat':'Couper le tchat'} à ${esc(m.pseudo)}">${m.mute?'Rendre':'Couper'}</button></span>`:''}</small><div class="ch-b">${esc(m.txt)}</div></div>`;}).join('')
     :`<p class="note" style="margin:auto;text-align:center">${g?'Personne n\'a encore écrit. Lance la discussion !':'Pas encore de message. Dis bonjour à '+esc(chName(CH.open))+' !'}</p>`;
   if(scroll||atEnd)box.scrollTop=box.scrollHeight;
-  $('ch-muted').hidden=!CH.muted;$('ch-form').hidden=CH.muted;}
+  $('ch-muted').hidden=!CH.muted;$('ch-form').hidden=CH.muted;chSize();if(scroll||atEnd)box.scrollTop=box.scrollHeight;}
 $('ch-rooms').addEventListener('click',e=>{const b=e.target.closest('[data-room]');if(b)chatOpen(b.dataset.room);});
 $('ch-new').addEventListener('click',e=>{const b=e.target.closest('[data-room]');if(b)chatOpen(b.dataset.room);});
 $('ch-back').addEventListener('click',()=>chatList());
@@ -3382,7 +3388,7 @@ $('ch-msgs').addEventListener('click',async e=>{const d=e.target.closest('[data-
   try{if(d){await api('chatmod',{token:admTok(),del:+d.dataset.cdel});CH.msgs=CH.msgs.filter(x=>x.id!==+d.dataset.cdel);renderChat(false);toast('Message supprimé');}
     else{const on=m.dataset.on==='1';await api('chatmod',{token:admTok(),target:m.dataset.cmute,mute:on});CH.msgs.forEach(x=>{if(x.pid===m.dataset.cmute){if(on)x.mute=1;else delete x.mute;}});renderChat(false);toast(on?'Tchat coupé pour ce joueur':'Tchat rendu à ce joueur');}}
   catch(x){toast(x.code==='not_admin'?'Connexion admin expirée : reconnecte-toi dans Options.':netMsg(x));}});
-function soShow(k){soTab=k;document.querySelectorAll('.so-tabs [data-so]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.so===k));document.querySelectorAll('.so-pane').forEach(e=>e.hidden=e.dataset.sp!==k);$('social').scrollTop=0;if(k==='chat')chatShow();else chatStop();}
+function soShow(k){soTab=k;document.querySelectorAll('.so-tabs [data-so]').forEach(b=>b.setAttribute('aria-pressed',b.dataset.so===k));document.querySelectorAll('.so-pane').forEach(e=>e.hidden=e.dataset.sp!==k);$('social').scrollTop=0;if(k==='chat')chatShow();else{chatStop();$('social').classList.remove('ch-on');}}
 function openSocial(k){show('social');if(!k&&(CH.unread||{}).dm)k='chat';if(k)soShow(k);else if(soTab==='chat')chatShow();renderMatchTab();if(net.on){net.rankTs=0;netRank(true);}}
 document.querySelector('.so-tabs').addEventListener('click',e=>{const b=e.target.closest('[data-so]');if(b)soShow(b.dataset.so);});
 $('hb-social').addEventListener('click',()=>openSocial());
