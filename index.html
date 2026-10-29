@@ -745,7 +745,7 @@ body.player #tab-btn-cards,body.player #fab,body.player #m-export-cards,body.pla
 .cp-tros{display:flex;gap:3px;flex-wrap:wrap;justify-content:flex-end}
 .cp-tro{width:22px;height:22px;color:rgba(255,255,255,.14)}.cp-tro svg{width:100%;height:100%}
 .cp-tro.on{color:var(--c);filter:drop-shadow(0 0 6px var(--c))}
-.cp-prog{display:grid;grid-template-columns:repeat(30,1fr);gap:2px}
+.cp-prog{display:grid;grid-template-columns:repeat(31,1fr);gap:2px}
 .cp-prog i{height:8px;border-radius:2px;background:rgba(255,255,255,.1)}
 .cp-prog i.on{background:var(--c);box-shadow:0 0 6px color-mix(in srgb,var(--c) 70%,transparent)}
 .cp-prog i.cur{background:#fff;animation:cpBlink 1.2s ease-in-out infinite}
@@ -1597,7 +1597,7 @@ input[type=range]::-moz-range-thumb{width:20px;height:20px;border-radius:50%;bac
       <div class="chem" id="t-chem"></div></div>
   </div>
   <div class="tabpane" id="tab-match" role="tabpanel" aria-labelledby="tab-btn-match" hidden>
-    <div class="pack-head home-head"><div><h2 class="pane-title">Campagne</h2><p class="note">30 étapes jusqu'aux Régionales, une tentative par jour.</p></div></div>
+    <div class="pack-head home-head"><div><h2 class="pane-title">Campagne</h2><p class="note">31 étapes jusqu'aux Régionales, une tentative par jour.</p></div></div>
     <div class="boost-b" id="c-boost" hidden></div>
     <div class="cp-root" id="m-camp"><div class="cp-root" id="cp-root"></div></div>
   </div>
@@ -2112,7 +2112,7 @@ const shown=()=>players.length?players:EXAMPLES;
 const LS_STATE='cartes-volley-etat';
 const ELO_START=400; // élo de départ de tout le monde
 let state=loadState(),timeOffset=null,lockTimer=null,packStatus='checking',openBusy=false;
-function blankState(){return{owned:[],counts:{},lastDay:'',lastTs:0,pkT:0,count:0,rev:0,bonus:{classic:0,silver:0,gold:0,icon:0},streak:{cur:0,best:0,lastDay:''},history:[],ach:{},team:{},exchanges:0,pid:'',key:'',pseudo:'',elo:ELO_START,eloBase:ELO_START,matches:[],opps:{},played:[],noLib:false,tac:{},chem:{},chemPend:[],camp:{st:1,day:'',ts:0,res:{},last:null,tries:0}};}
+function blankState(){return{owned:[],counts:{},lastDay:'',lastTs:0,pkT:0,count:0,rev:0,bonus:{classic:0,silver:0,gold:0,icon:0},streak:{cur:0,best:0,lastDay:''},history:[],ach:{},team:{},exchanges:0,pid:'',key:'',pseudo:'',elo:ELO_START,eloBase:ELO_START,matches:[],opps:{},played:[],noLib:false,tac:{},chem:{},chemPend:[],camp:{st:1,day:'',ts:0,res:{},last:null,tries:0},campV:2};}
 function fixState(j){
   const o=blankState();if(!j||typeof j!=='object')return o;
   if(j.counts&&typeof j.counts==='object')for(const k in j.counts){const n=Math.max(0,Math.floor(+j.counts[k]||0));if(n)o.counts[String(k)]=n;}
@@ -2128,8 +2128,11 @@ function fixState(j){
   o.matches=Array.isArray(j.matches)?j.matches.slice(0,40):[];o.opps=j.opps&&typeof j.opps==='object'?{...j.opps}:{};o.played=Array.isArray(j.played)?j.played.slice(-300):[];
   // départ passé de 500 à 400 : les anciens comptes sont décalés une seule fois de -100, avec l'élo des potes, pour garder les écarts
   if(j.eloBase!==ELO_START&&j.elo!=null&&j.elo!==''){const sh=ELO_START-500;o.elo+=sh;for(const k in o.opps)if(o.opps[k]&&Number.isFinite(+o.opps[k].e))o.opps[k]={...o.opps[k],e:Math.round(+o.opps[k].e)+sh};}
-  {const c=j.camp&&typeof j.camp==='object'?j.camp:{};o.camp={st:Math.max(1,Math.min(31,Math.floor(+c.st||1))),day:String(c.day||''),ts:+c.ts||0,
-    res:c.res&&typeof c.res==='object'?{...c.res}:{},last:c.last&&c.last.sh?c.last:null,tries:Math.max(0,Math.floor(+c.tries||0))};}
+  {const c=j.camp&&typeof j.camp==='object'?j.camp:{};o.camp={st:Math.max(1,Math.min(32,Math.floor(+c.st||1))),day:String(c.day||''),ts:+c.ts||0,
+    res:c.res&&typeof c.res==='object'?{...c.res}:{},last:c.last&&c.last.sh?c.last:null,tries:Math.max(0,Math.floor(+c.tries||0))};
+   if((+j.campV||1)<2){ // v104 : une poule de plus en Ligue 2 (nouvelle étape 15) : ceux qui étaient en quart de Ligue 2 ou plus loin avancent d'une étape et restent au même match
+     if(o.camp.st>=15)o.camp.st=Math.min(32,o.camp.st+1);const r={};for(const k in o.camp.res){const n=+k;r[n>=15?n+1:n]=o.camp.res[k];}o.camp.res=r;}
+   o.campV=2;}
   o.noLib=!!j.noLib;o.tac=j.tac&&typeof j.tac==='object'?{...j.tac}:{};
   o.chem=j.chem&&typeof j.chem==='object'?{...j.chem}:{};o.chemPend=Array.isArray(j.chemPend)?j.chemPend.filter(k=>typeof k==='string').slice(-500):[];
   o.ach=j.ach&&typeof j.ach==='object'?{...j.ach}:{};o.team=j.team&&typeof j.team==='object'?{...j.team}:{};
@@ -3515,10 +3518,10 @@ const ACH=[
   {k:'cp1',t:'En route !',d:'Gagne ton premier match de campagne',ok:()=>state.camp.st>1},
   {k:'cpLoisir',t:'Champion loisir',d:'Remporte le tournoi loisir',ok:()=>state.camp.st>6},
   {k:'cpL3',t:'Ligue 3 conquise',d:'Remporte le tournoi FSGT Ligue 3',ok:()=>state.camp.st>12},
-  {k:'cpL2',t:'Ligue 2 conquise',d:'Remporte le tournoi FSGT Ligue 2',ok:()=>state.camp.st>17},
-  {k:'cpL1',t:'Roi de la Ligue 1',d:'Remporte le tournoi FSGT Ligue 1',ok:()=>state.camp.st>23},
-  {k:'cpDep',t:'Champion départemental',d:'Remporte le tournoi départemental',ok:()=>state.camp.st>29},
-  {k:'cpReg',t:'Qualifié aux Régionales',d:'Termine la campagne',ok:()=>state.camp.st>30},
+  {k:'cpL2',t:'Ligue 2 conquise',d:'Remporte le tournoi FSGT Ligue 2',ok:()=>state.camp.st>18},
+  {k:'cpL1',t:'Roi de la Ligue 1',d:'Remporte le tournoi FSGT Ligue 1',ok:()=>state.camp.st>24},
+  {k:'cpDep',t:'Champion départemental',d:'Remporte le tournoi départemental',ok:()=>state.camp.st>30},
+  {k:'cpReg',t:'Qualifié aux Régionales',d:'Termine la campagne',ok:()=>state.camp.st>31},
 ];
 function checkAch(save){
   const out=[];ACH.forEach(a=>{if(!state.ach[a.k]&&a.ok()){state.ach[a.k]=Date.now();out.push(a);}});
@@ -4653,23 +4656,23 @@ async function drawSheetImage(m){
 /* =================== Campagne : la route des Régionales =================== */
 const CP_F3={sets:3,pts:25,tie:15};
 const CP_TIERS=[
-  {id:'init',n:'Initiation au volley',lo:15,hi:30,a:1,b:3,fmt:{sets:1,pts:25,tie:25},col:'#E9A877',venue:'Gymnase du quartier',lvl:'Débutants',tro:"Diplôme d'initiation",tw:"ton diplôme d'initiation",
+  {id:'init',n:'Initiation au volley',lo:30,hi:38,a:1,b:3,fmt:{sets:1,pts:25,tie:25},col:'#E9A877',venue:'Gymnase du quartier',lvl:'Débutants',tro:"Diplôme d'initiation",tw:"ton diplôme d'initiation",
     teams:['Les Débutants du Mardi','Les Petits Smashs','Section Découverte']},
-  {id:'loisir',n:'Tournoi loisir',lo:25,hi:50,a:4,b:6,fmt:{sets:2,pts:25,tie:15},col:'#7FE0B0',venue:'Salle municipale',lvl:'Amateurs',tro:'Coupe du tournoi loisir',tw:'la coupe du tournoi loisir',
+  {id:'loisir',n:'Tournoi loisir',lo:38,hi:50,a:4,b:6,fmt:{sets:2,pts:25,tie:15},col:'#7FE0B0',venue:'Salle municipale',lvl:'Amateurs',tro:'Coupe du tournoi loisir',tw:'la coupe du tournoi loisir',
     teams:['Les Manchots Volants','Volley Apéro','Les Filets Perdus']},
   {id:'l3',n:'Tournoi FSGT Ligue 3',lo:50,hi:65,a:7,b:12,fmt:CP_F3,col:'#5CD6FF',venue:'Gymnase du club',lvl:'Amateurs entraînés',tro:'Coupe FSGT Ligue 3',tw:'la coupe FSGT Ligue 3',
     teams:['Les Diagonales','Bloc Party','Les Requins du Lac','Smash & Chill','Les Pieds Carrés','Les Ours du Semnoz']},
-  {id:'l2',n:'Tournoi FSGT Ligue 2',lo:60,hi:75,a:13,b:17,fmt:CP_F3,col:'#DCE3EA',venue:'Halle des sports',lvl:'Bons joueurs',tro:'Coupe FSGT Ligue 2',tw:'la coupe FSGT Ligue 2',
-    teams:['Les Fous du Filet','Team Pipeline','Les Lynx de Savoie','Les Missiles du Revard','Volley des Aravis']},
-  {id:'l1',n:'Tournoi FSGT Ligue 1',lo:70,hi:85,a:18,b:23,fmt:CP_F3,col:'#FFD23F',venue:'Gymnase intercommunal',lvl:'Bons joueurs',tro:'Coupe FSGT Ligue 1',tw:'la coupe FSGT Ligue 1',
+  {id:'l2',n:'Tournoi FSGT Ligue 2',lo:60,hi:75,a:13,b:18,fmt:CP_F3,col:'#DCE3EA',venue:'Halle des sports',lvl:'Bons joueurs',tro:'Coupe FSGT Ligue 2',tw:'la coupe FSGT Ligue 2',
+    teams:['Les Fous du Filet','Team Pipeline','Les Bouquetins de Belledonne','Les Lynx de Savoie','Les Missiles du Revard','Volley des Aravis']},
+  {id:'l1',n:'Tournoi FSGT Ligue 1',lo:70,hi:85,a:19,b:24,fmt:CP_F3,col:'#FFD23F',venue:'Gymnase intercommunal',lvl:'Bons joueurs',tro:'Coupe FSGT Ligue 1',tw:'la coupe FSGT Ligue 1',
     teams:['Les Tigres du Chéran','Les Bombardiers','Les Aigles des Bauges','Team Météore','Volley Plus','Les Titans du Mont-Blanc']},
-  {id:'dep',n:'Tournoi départemental',lo:75,hi:88,a:24,b:29,fmt:CP_F3,col:'#FF7A2F',venue:'Complexe sportif départemental',lvl:'Joueurs confirmés',tro:'Titre départemental',tw:'le titre départemental',
+  {id:'dep',n:'Tournoi départemental',lo:75,hi:88,a:25,b:30,fmt:CP_F3,col:'#FF7A2F',venue:'Complexe sportif départemental',lvl:'Joueurs confirmés',tro:'Titre départemental',tw:'le titre départemental',
     teams:['Entente des Deux Lacs','Les Vipères','Union des Glières','Les Panthères Noires','Haute-Savoie Smash','Les Cobras']},
-  {id:'reg',n:'Qualification aux Régionales',lo:80,hi:90,a:30,b:30,fmt:CP_F3,col:'#C9B8FF',venue:'Palais des sports',lvl:'Élite du département',tro:'Qualification aux Régionales',tw:'ta place aux Régionales',
+  {id:'reg',n:'Qualification aux Régionales',lo:80,hi:90,a:31,b:31,fmt:CP_F3,col:'#C9B8FF',venue:'Palais des sports',lvl:'Élite du département',tro:'Qualification aux Régionales',tw:'ta place aux Régionales',
     teams:['Les Rois du Filet']},
 ];
-const CP_N=30;
-const CP_REW={3:['classic',1],6:['silver',1],12:['gold',1],17:['gold',1],23:['gold',1],24:['classic',1],25:['classic',1],26:['classic',1],27:['classic',1],28:['classic',1],29:['icon',1],30:['icon',3]};
+const CP_N=31; // v104 : une poule de plus en Ligue 2 (étapes 13 à 18)
+const CP_REW={3:['classic',1],6:['silver',1],12:['gold',1],18:['gold',1],24:['gold',1],25:['classic',1],26:['classic',1],27:['classic',1],28:['classic',1],29:['classic',1],30:['icon',1],31:['icon',3]};
 const CP_REWL={classic:'Booster classique',silver:'Booster Argent',gold:'Booster Or',icon:'Booster Icône'};
 const CP_REWC={classic:'#E9A877',silver:'#DCE3EA',gold:'#FFD23F',icon:'#C9B8FF'};
 const cpTier=n=>CP_TIERS.find(t=>n>=t.a&&n<=t.b)||CP_TIERS[CP_TIERS.length-1];
@@ -4771,7 +4774,7 @@ function renderCamp(){
     <small class="cp-hero-sub">${done?'Tu as gagné ta place aux Régionales. Légende.':`${esc(T.n)} · ${esc(rd.r)}`}</small></div>`;
   // l'affiche du prochain match
   let poster='';
-  if(done){poster=`<div class="cp-champ">${TROPHY}<b>Qualifié pour les Régionales</b><p>30 étapes, ${c.tries} tentative${c.tries>1?'s':''}. Ton équipe est entrée dans la légende.</p></div>`;}
+  if(done){poster=`<div class="cp-champ">${TROPHY}<b>Qualifié pour les Régionales</b><p>${CP_N} étapes, ${c.tries} tentative${c.tries>1?'s':''}. Ton équipe est entrée dans la légende.</p></div>`;}
   else{
     const op=cpTeam(st),me=myTeam(),myLv=me?teamAvg(me):null,rew=CP_REW[st],ko=rd.ko;
     const prev=c.res[st],tryN=prev&&!prev.w?prev.tries+1:1;
@@ -4791,7 +4794,7 @@ function renderCamp(){
       <div class="home-row"><button class="home-sc" type="button" id="home-team"></button><button class="home-sc" type="button" id="home-packs"></button></div>
     </div>`;
   }
-  // la carte des 30 étapes
+  // la carte des 31 étapes
   const road=CP_TIERS.map(t=>{
     const state2=c.st>t.b?'won':c.st>=t.a?'now':'lock';
     const nodes=[];for(let n=t.a;n<=t.b;n++){const r=cpRound(n),rw=CP_REW[n],res=c.res[n],cls=n<c.st?'done':n===c.st?'cur':'lock';
