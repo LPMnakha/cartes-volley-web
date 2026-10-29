@@ -3321,7 +3321,7 @@ function renderHud(){
     hudCount('hb-opts-n',isAdmin?(+net.pending||0):0);
   }catch(e){}}
 function hudPack(){const t=$('hud-pack-t');if(!t)return;const n=estNow()||Date.now(),ch=isAdmin?PK_MAX:pkCharges(n),bon=Object.values(state.bonus||{}).reduce((a,b)=>a+(+b||0),0);
-  t.textContent=ch+bon>0?`×${ch+bon}`:(()=>{const ms=pkNext(n)||0,h=Math.floor(ms/3600e3),m=Math.floor(ms%3600e3/60e3);return h?`${h} h ${String(m).padStart(2,'0')}`:`${m} min`;})();
+  t.textContent=ch+bon>0?`×${ch+bon}`:(()=>{const ms=pkNext(n)||0,h=Math.floor(ms/3600e3),m=Math.floor(ms%3600e3/60e3);return h?`${h}h${String(m).padStart(2,'0')}`:`${Math.max(1,Math.ceil(ms/60e3))}m`;})(); // court pour tenir dans le HUD : 21m, 3h20
   $('hud-pack').classList.toggle('ready',ch>0||bon>0);}
 setInterval(()=>{hudPack();if(!$('tab-match').hidden)renderHomePacks();},30000);
 function renderHome(){renderHomeTeam();renderHomePacks();}
