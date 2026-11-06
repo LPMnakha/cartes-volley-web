@@ -2032,7 +2032,7 @@ const LS='cartes-volley-v1', LS_MIG='cartes-volley-migre';
 const $=id=>document.getElementById(id);
 const esc=t=>String(t??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c]);
 const ovr=s=>Math.round(SKILLS.reduce((t,x)=>t+(+s[x.k]||0),0)/SKILLS.length);
-const tier=o=>o>=85?'icon':o>=75?'gold':o>=65?'silver':'bronze';
+const tier=o=>o>=80?'icon':o>=65?'gold':o>=50?'silver':'bronze'; // v107 : bronze < 50, argent 50-64, or 65-79, icône 80 et plus
 const TIER_L={icon:'Carte icône',gold:'Carte or',silver:'Carte argent',bronze:'Carte bronze'};
 const POSTES_ALL=[...POSTES,{v:'DIV',l:'Divers'}];
 const posteL=v=>(POSTES_ALL.find(p=>p.v===v)||{l:v}).l;
@@ -2040,7 +2040,8 @@ const isDiv=p=>!!p&&p.kind==='divers';
 const isSigP=p=>!!(p&&p.signature&&p.photo); // une Signature n'a ni note ni stats
 // cartes divers : un objet ou un gymnase, avec des bonus de 0 à 5 qui s'ajoutent à tous les joueurs de l'équipe
 const DIV_BON=[{k:'ser',l:'Service',a:'SER'},{k:'blo',l:'Contre',a:'CTR'},{k:'att',l:'Attaque',a:'ATT'},{k:'rec',l:'Réception',a:'REC'},{k:'def',l:'Défense',a:'DEF'},{k:'pas',l:'Passe',a:'PAS'},{k:'mor',l:'Moral',a:'MOR'}];
-const DIV_RAR=[['bronze','Bronze',55],['silver','Argent',70],['gold','Or',80],['icon','Icône',90]]; // rareté d'une carte divers (sa note cachée)
+const DIV_RAR=[['bronze','Bronze',45],['silver','Argent',57],['gold','Or',72],['icon','Icône',85]]; // rareté d'une carte divers (sa note cachée)
+const DIV_OLD={55:45,70:57,80:72,90:85}; // anciennes notes fixes (paliers 65/75/85) → même rareté avec les nouveaux paliers
 const cleanBon=b=>{const o={};DIV_BON.forEach(x=>{const v=Math.max(0,Math.min(5,Math.round(+(b&&b[x.k])||0)));if(v)o[x.k]=v;});return o;};
 const isGym=p=>isDiv(p)&&p.dt==='gym';
 const divKindL=p=>isGym(p)?'Gymnase':'Objet';
@@ -2097,7 +2098,7 @@ function normalize(p){
   base.fullart=(!!p.fullart||base.signature)&&!!base.photo;
   base.createdAt=+p.createdAt||idTime(base.id)||base.updatedAt;
   if(p.kind==='divers'){ // une carte divers n'a qu'une note : on la recopie partout pour que tri, rareté et boosters marchent pareil
-    const n0=clampN(p.note!=null?p.note:(p.s?ovr(p.s):50)),note=base.signature?n0:DIV_RAR.find(x=>x[0]===tier(n0))[2]; // note fixe selon la rareté : 55, 70, 80 ou 90
+    const n0=clampN(p.note!=null?p.note:(p.s?ovr(p.s):50)),note=base.signature?n0:DIV_OLD[n0]||DIV_RAR.find(x=>x[0]===tier(n0))[2]; // note fixe selon la rareté : 45, 57, 72 ou 85
     const dt=p.dt==='gym'||p.dt==='objet'?p.dt:(/gymnase|salle|stade/i.test(base.name)?'gym':'objet');
     return{...base,kind:'divers',poste:'DIV',note,desc:String(p.desc||'').slice(0,60),s:allS(note),dt,bon:cleanBon(p.bon)};
   }
@@ -2567,7 +2568,7 @@ $('form').addEventListener('submit',async e=>{
   const isNew=!editing.id;
   const id=editing.id||('p'+Date.now().toString(36)+Math.random().toString(36).slice(2,6));
   if($('f-fullart').checked&&!draftPhoto){$('f-err').textContent='Ajoute une photo pour faire une carte Full Art.';$('f-err').hidden=false;return;}
-  const rt=formRar(),n=DIV_RAR.find(x=>x[0]===rt)[2]; // note fixe selon la rareté : 55, 70, 80 ou 90
+  const rt=formRar(),n=DIV_RAR.find(x=>x[0]===rt)[2]; // note fixe selon la rareté : 45, 57, 72 ou 85
   const signature=$('f-sig').checked,fullart=$('f-fullart').checked||signature;
   const p=formDiv()?{id,fullart,kind:'divers',name,poste:'DIV',note:n,desc:$('f-desc').value.trim().slice(0,60),photo:draftPhoto,s:allS(n),dt:$('f-dt-gym').checked?'gym':'objet',bon:formBon()}
     :{id,fullart,kind:'joueur',name,poste,photo:draftPhoto,s:formS()};
@@ -3125,7 +3126,7 @@ async function openPack(bonusType){
   const newAch=checkAch(true);
   saveState();if(isAdmin)packStatus='ready';else if(!isBonus)packStatus=pkCharges(now)>0?'ready':'locked';renderPacks();
   if(ptype!=='classic'){sfx.sparkle();buzz([30,40,30]);}
-  const best=pulled.map(vt).reduce((m,t)=>TIER_RANK[t]>TIER_RANK[m]?t:m,'bronze'),bestR=TIER_RANK[best]; // la lueur annonce le plus haut niveau du booster
+  let best=pulled.map(vt).reduce((m,t)=>TIER_RANK[t]>TIER_RANK[m]?t:m,'bronze'),bestR=TIER_RANK[best]; // la lueur annonce le plus haut niveau du booster
   const O=$('opening'),stage=$('op-stage'),tray=$('op-tray');
   O.hidden=false;O.classList.remove('dark');document.body.style.overflow='hidden';fxSize();FX.parts=[];
   $('op-count').textContent='BOOSTER';tray.innerHTML='<div class="slot"></div>'.repeat(5);tray.hidden=false;
@@ -3135,13 +3136,15 @@ async function openPack(bonusType){
   await nextTap();if(!alive())return;
   hint('',false);
   // 1. Charge : plus le booster est rare, plus elle dure, et la lueur change de couleur en chemin
+  const sly=(bestR>=1||pulled.some(isSigP))&&Math.random()<1/3; // 1 fois sur 3 : le booster ne trahit rien pendant la charge (la surprise vient carte par carte)
+  if(sly){best='bronze';bestR=0;}
   const CM=CHARGE_MS[best],seen=bestR===3?'gold':best; // ce que le joueur voit : une icône se fait passer pour une or
   pack.style.animationDuration=CM+'ms';pack.classList.add('charge');sfx.riser(CM/1000);
   buzz([30,120,30,90,40,60,50,40,60,20,80,20,100]);
   const setGlow=t=>{pack.style.setProperty('--glow',TIER_FX[t].glow);glow.style.setProperty('--wc',TIER_FX[t].glow);glow.classList.add('on');};
   if(bestR>=1)setTimeout(()=>alive()&&setGlow(bestR>=2?'silver':best),CM*.35);
   if(bestR>=2)setTimeout(()=>alive()&&setGlow('gold'),CM*.6);
-  if(pulled.some(isSigP))setTimeout(()=>{if(!alive())return;pack.style.setProperty('--glow','rgba(255,215,0,.95)');glow.style.setProperty('--wc','rgba(255,215,0,.95)');glow.classList.add('on');O.classList.add('dark');burst(...centerOf(pack),GOLD_C,60,6,{spark:1});},CM*.92);
+  if(!sly&&pulled.some(isSigP))setTimeout(()=>{if(!alive())return;pack.style.setProperty('--glow','rgba(255,215,0,.95)');glow.style.setProperty('--wc','rgba(255,215,0,.95)');glow.classList.add('on');O.classList.add('dark');burst(...centerOf(pack),GOLD_C,60,6,{spark:1});},CM*.92);
   if(bestR>=2)setTimeout(()=>{if(!alive())return;O.classList.add('dark');heartbeat(2,500,alive);},CM*.82);
   const sparkT=setInterval(()=>{if(!alive()||!FX.w)return;const[x,y]=centerOf(pack);burst(x,y,TIER_FX[seen].c,bestR>=2?12:4,4+Math.min(bestR,2),{up:1,spark:1,big:3});},140);
   await wait(CM);clearInterval(sparkT);if(!alive())return;
