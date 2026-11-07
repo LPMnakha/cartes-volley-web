@@ -109,6 +109,29 @@ body{padding-bottom:calc(90px + env(safe-area-inset-bottom,0px))}
 .ch-rm{display:flex;flex-direction:column;align-items:flex-end;gap:4px}.ch-rm small{font-size:.7rem;color:var(--muted)}
 .ch-rm i{font-style:normal;min-width:20px;height:20px;padding:0 6px;border-radius:99px;background:#22C55E;color:#04210F;font-family:var(--data);font-weight:800;font-size:.72rem;display:grid;place-items:center}
 .ch-conv{gap:8px}
+.rs-dlg{position:fixed;inset:0;z-index:300;display:grid;place-items:center;padding:16px;background:rgba(3,6,18,.78);-webkit-backdrop-filter:blur(4px);backdrop-filter:blur(4px)}
+.rs-dlg[hidden]{display:none}
+.rs-box{width:min(440px,100%);max-height:90vh;overflow:auto;background:linear-gradient(170deg,#1B2A66,#0E1638);border:1px solid rgba(255,210,63,.4);border-radius:20px;padding:20px;display:flex;flex-direction:column;gap:10px;box-shadow:0 20px 60px rgba(0,0,0,.6)}
+.rs-box h2{margin:0;font-family:var(--display);font-weight:900;font-size:1.8rem;text-transform:uppercase;color:#FFD23F}.rs-box p{margin:0;line-height:1.45;font-size:.95rem}
+.rs-ic{width:56px;height:56px;color:#FFD23F}.rs-ic svg{width:100%;height:100%}.rs-act{display:flex;gap:8px;justify-content:flex-end;margin-top:6px}
+.bulk-btn{width:100%;margin-bottom:6px}
+.bulk{position:fixed;inset:0;z-index:250;overflow-y:auto;background:radial-gradient(circle at 50% 0,#1D2D70,#070B1E 70%)}.bulk[hidden]{display:none}
+.bulk-in{max-width:560px;margin:0 auto;padding:max(14px,env(safe-area-inset-top)) 16px 40px;display:flex;flex-direction:column;gap:12px}
+.bulk-top{display:flex;align-items:center;gap:12px}.bulk-top b{font-family:var(--display);font-weight:900;font-size:1.5rem;text-transform:uppercase}
+.bulk-cnt{display:flex;flex-wrap:wrap;gap:6px}.bulk-cnt span{padding:4px 10px;border-radius:999px;background:rgba(255,255,255,.06);border:1px solid var(--line);font-size:.85rem}.bulk-cnt b{font-family:var(--data)}
+.bulk-rare{display:flex;flex-wrap:wrap;gap:10px;justify-content:center}
+.bk-flip{width:92px;aspect-ratio:5/7;border:0;padding:0;background:none;perspective:700px;cursor:pointer}
+.bk-flip .inner3d{position:relative;width:100%;height:100%;transition:transform .6s cubic-bezier(.2,.9,.3,1.2);transform-style:preserve-3d}
+.bk-flip.on .inner3d{transform:rotateY(180deg)}
+.bk-flip.on .side.front{animation:bkFlash 1s ease-out}.bk-flip.on.icon .side.front,.bk-flip.on.sg .side.front{animation:bkFlash 1.2s ease-out,arSigGlow 1.4s 1.2s ease-in-out infinite alternate}
+@keyframes bkFlash{0%{filter:brightness(3) drop-shadow(0 0 30px #FFE97A)}100%{filter:none}}
+.bk-flip .side{position:absolute;inset:0;backface-visibility:hidden;-webkit-backface-visibility:hidden}.bk-flip .side.front{transform:rotateY(180deg)}
+.bk-flip .cardback{width:100%;height:100%;border-radius:10px;display:grid;place-items:center;background:linear-gradient(160deg,#2B3F9E,#121B4A);border:2px solid rgba(255,210,63,.6);box-shadow:0 0 16px rgba(255,210,63,.35);animation:bkPulse 1.4s ease-in-out infinite alternate}
+.bk-flip .cardback svg{width:50%;color:#FFD23F}
+@keyframes bkPulse{to{box-shadow:0 0 26px rgba(255,210,63,.75)}}
+.bulk-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(70px,1fr));gap:8px}
+.bk-c{position:relative}.bk-c .mini{width:100%}.bk-c i{position:absolute;top:2px;right:2px;font-style:normal;font-family:var(--data);font-weight:800;font-size:.7rem;background:#0B1330;color:#fff;border-radius:6px;padding:0 4px}
+.bk-c.nw::after{content:"NOUVELLE";position:absolute;left:50%;top:-6px;transform:translateX(-50%);font-family:var(--data);font-size:.5rem;font-weight:800;background:#FFD23F;color:#1A1200;border-radius:4px;padding:1px 4px}
 #social.ch-on #m-net{display:none}
 .ch-head{display:flex;align-items:center;gap:10px}.ch-head div{min-width:0;display:flex;flex-direction:column}.ch-head b{font-family:var(--display);font-weight:900;font-size:1.2rem;text-transform:uppercase}.ch-head small{font-size:.75rem;color:var(--muted)}
 .ch-msgs{display:flex;flex-direction:column;gap:6px;height:50vh;overflow-y:auto;padding:6px 2px;overscroll-behavior:contain}
@@ -2135,6 +2158,7 @@ function fixState(j){
    if((+j.campV||1)<2){ // v104 : une poule de plus en Ligue 2 (nouvelle étape 15) : ceux qui étaient en quart de Ligue 2 ou plus loin avancent d'une étape et restent au même match
      if(o.camp.st>=15)o.camp.st=Math.min(32,o.camp.st+1);const r={};for(const k in o.camp.res){const n=+k;r[n>=15?n+1:n]=o.camp.res[k];}o.camp.res=r;}
    o.campV=2;}
+  o.rs=Math.max(0,Math.floor(+j.rs||0));if(j.resetNote&&typeof j.resetNote==='object')o.resetNote={ts:+j.resetNote.ts||0,n:Math.max(0,+j.resetNote.n||0),seen:!!j.resetNote.seen};
   o.noLib=!!j.noLib;o.tac=j.tac&&typeof j.tac==='object'?{...j.tac}:{};
   o.chem=j.chem&&typeof j.chem==='object'?{...j.chem}:{};o.chemPend=Array.isArray(j.chemPend)?j.chemPend.filter(k=>typeof k==='string').slice(-500):[];
   o.ach=j.ach&&typeof j.ach==='object'?{...j.ach}:{};o.team=j.team&&typeof j.team==='object'?{...j.team}:{};
@@ -3290,18 +3314,75 @@ $('dups').addEventListener('click',async e=>{
 });
 /* =================== Barre du haut, accueil et notifications =================== */
 const hudCount=(id,n)=>{const e=$(id);if(!e)return;e.hidden=!n;e.textContent=n>9?'9+':String(n||'');};
+
+/* =================== Nouvelle saison (v108) : classeurs remis à zéro sauf les Signature, boosters rendus =================== */
+let seasonBusy=false;
+async function seasonCheck(ep){ep=+ep||0;if(!ep||(state.rs||0)>=ep||seasonBusy)return;
+  if(!Object.keys(state.counts).length&&!(+state.count||0)&&!state.history.length){state.rs=ep;saveState();return;} // compte tout neuf
+  if(!players.length)return;seasonBusy=true; // sans la liste des cartes on ne saurait pas reconnaître les Signature : on attend
+  try{
+    const had=Object.keys(state.counts).some(id=>{const p=players.find(q=>q.id===id);return !p||!isSigP(p);})||(+state.count||0)>0||state.history.length>0;
+    if(!had){state.rs=ep;await saveState();return;} // compte tout neuf : rien à remettre à zéro
+    const j=await api('resetinfo');if((+j.epoch||0)<ep)return;
+    const back={classic:0,silver:0,gold:0,icon:0};
+    for(let n=1;n<=(+state.count||0);n++)back[typeForN(n)]++; // boosters du jour, avec le type de chaque jour du cycle
+    for(let st=1;st<(state.camp.st||1);st++){const r=CP_REW[st];if(r)back[r[0]]+=r[1];} // récompenses de campagne déjà gagnées
+    for(const t in j.buys||{})if(t in back)back[t]+=Math.max(0,+j.buys[t]||0); // achats en boutique déjà livrés
+    const keep={};for(const id in state.counts){const p=players.find(q=>q.id===id);if(p&&isSigP(p))keep[id]=1;}
+    state.counts=keep;state.owned=Object.keys(keep);state.team={};state.captain=null;state.history=[];state.ach={};
+    state.bonus=back; // remplace les bonus en attente : achats et récompenses y sont déjà comptés
+    const n=Object.values(back).reduce((a,b)=>a+b,0);
+    state.rs=ep;state.resetNote={ts:Date.now(),n,seen:false};teamSent='';
+    await saveState();checkAch(true);
+    try{renderTeam();renderBinder();renderPacks();if(typeof renderHome==='function')renderHome();}catch(e){}renderExtras();renderHud();netProfSoon();
+    seasonDialog();
+  }catch(e){}finally{seasonBusy=false;}}
+function seasonDialog(){const N=state.resetNote;if(!N||N.seen)return;let d=$('rs-dlg');
+  if(!d){d=document.createElement('div');d.id='rs-dlg';d.className='rs-dlg';document.body.appendChild(d);}
+  d.innerHTML=`<div class="rs-box" role="dialog" aria-modal="true" aria-labelledby="rs-t"><div class="rs-ic">${HEX_BIG}</div><h2 id="rs-t">Nouvelle saison !</h2>
+    <p>Les valeurs des cartes ont été modifiées (nouveaux paliers bronze, argent, or et icône). Pour que tout le monde reparte à égalité, <b>les classeurs ont été remis à zéro</b>, sauf les cartes Signature.</p>
+    <p>En compensation, <b>tes ${N.n} booster${N.n>1?'s':''} déjà ouvert${N.n>1?'s':''} t'${N.n>1?'ont':'a'} été rendu${N.n>1?'s':''}</b> : ils t'attendent dans Boosters bonus. L'élo repart à 400 pour tout le monde ; ton ancien élo et ton bilan sont gardés dans ton profil (« Saison 0 »). Ta campagne et tes pièces ne changent pas.</p>
+    <div class="rs-act"><button class="btn" type="button" data-rs="later">Plus tard</button><button class="btn primary" type="button" data-rs="open">Ouvrir mes boosters</button></div></div>`;
+  d.hidden=false;sfx.sparkle();
+  d.onclick=e=>{const b=e.target.closest('[data-rs]');if(!b)return;state.resetNote.seen=true;saveState();d.hidden=true;if(b.dataset.rs==='open'){closeAll();setTab('packs');}renderHud();};}
+// Tout ouvrir : les boosters bonus d'un coup, résumé puis révélation des cartes rares
+async function bulkOpen(){const types=Object.keys(PACK_TYPES).filter(t=>(state.bonus[t]||0)>0),N=types.reduce((a,t)=>a+state.bonus[t],0);
+  if(!N||openBusy)return;if(players.filter(p=>!isSigP(p)).length<PACK_SIZE){toast('Il faut au moins 5 cartes pour ouvrir un booster.');return;}
+  ac();const before=new Set(Object.keys(state.counts).filter(owns)),all=[];
+  for(const t of ['classic','silver','gold','icon'])while((state.bonus[t]||0)>0){const pulled=drawPack(players,t);state.bonus[t]--;pulled.forEach(p=>addCard(p.id));all.push(...pulled);
+    state.history.unshift({ts:Date.now(),type:t,how:'bonus',ids:pulled.map(p=>p.id),fresh:pulled.filter(p=>!before.has(p.id)).map(p=>p.id)});}
+  state.history=state.history.slice(0,30);if(typeof netMev==='function')netMev('pack');
+  const na=checkAch(true);await saveState();renderExtras();renderPacks();netProfSoon();
+  const by={};all.forEach(p=>{by[p.id]=(by[p.id]||0)+1;});
+  const uniq=Object.keys(by).map(id=>players.find(p=>p.id===id)).filter(Boolean).sort((a,b)=>rarer(a,b)?-1:rarer(b,a)?1:0);
+  const rare=uniq.filter(p=>isSigP(p)||TIER_RANK[vt(p)]>=2),cnt={bronze:0,silver:0,gold:0,icon:0};all.forEach(p=>{const t=isSigP(p)?'icon':vt(p);cnt[t]++;});
+  const fresh=uniq.filter(p=>!before.has(p.id));
+  let d=$('bulk');if(!d){d=document.createElement('div');d.id='bulk';d.className='bulk';document.body.appendChild(d);}
+  d.innerHTML=`<div class="bulk-in"><div class="bulk-top"><button class="icon-btn" type="button" data-bk="x" aria-label="Fermer"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg></button><b>${N} boosters ouverts</b></div>
+    <div class="bulk-cnt">${['bronze','silver','gold','icon'].map(t=>`<span class="rar-${t}"><b>${cnt[t]}</b> ${{bronze:'bronze',silver:'argent',gold:'or',icon:'icône'}[t]}</span>`).join('')}</div>
+    ${rare.length?`<span class="label">Les plus rares · touche pour révéler</span><div class="bulk-rare">${rare.map((p,i)=>`<button class="bk-flip" type="button" data-bf="${i}"><div class="inner3d"><div class="side"><div class="cardback">${HEX_BIG}</div></div><div class="side front">${miniHTML(p)}</div></div></button>`).join('')}</div><button class="btn" type="button" data-bk="all" style="align-self:center">Tout révéler</button>`:''}
+    <span class="label">${fresh.length} nouvelle${fresh.length>1?'s':''} carte${fresh.length>1?'s':''} · ${uniq.length} différentes</span>
+    <div class="bulk-grid">${uniq.map(p=>`<div class="bk-c${before.has(p.id)?'':' nw'}">${miniHTML(p)}${by[p.id]>1?`<i>×${by[p.id]}</i>`:''}</div>`).join('')}</div>
+    <button class="btn primary" type="button" data-bk="bind" style="align-self:center">Voir le classeur</button></div>`;
+  d.hidden=false;document.body.style.overflow='hidden';sfx.boom();buzz([60,40,100]);
+  const reveal=b=>{if(!b||b.classList.contains('on'))return;b.classList.add('on');const p=rare[+b.dataset.bf],r=b.getBoundingClientRect();sfx[isSigP(p)||vt(p)==='icon'?'sparkle':'ding'](isSigP(p)||vt(p)==='icon'?undefined:'gold');buzz(40);
+    b.classList.add(isSigP(p)?'sg':vt(p));};
+  d.onclick=e=>{const f=e.target.closest('[data-bf]');if(f){reveal(f);return;}const b=e.target.closest('[data-bk]');if(!b)return;
+    if(b.dataset.bk==='all'){d.querySelectorAll('.bk-flip:not(.on)').forEach((x,i)=>setTimeout(()=>reveal(x),i*220));return;}
+    d.hidden=true;document.body.style.overflow='';if(b.dataset.bk==='bind')setTab('binder');if(na.length)showAch(na);};}
 function notifItems(){const out=[],c=net.chals||{},f=net.freqs||{};
   for(const x of c.incoming||[])out.push({t:'defi',act:1,h:`<b>${esc(x.pseudo)}</b> te défie`,b:`<button class="btn rb" type="button" data-chno="${esc(x.id)}">Refuser</button><button class="btn rb def" type="button" data-chok="${esc(x.id)}">Accepter</button>`});
   for(const t of net.tours||[])if(t.st==='wait'&&t.myst==='wait')out.push({t:'tourn',act:1,h:`<b>${esc(t.ownerPseudo||'Un ami')}</b> t'invite à un tournoi à ${t.size}`,b:`<button class="btn rb" type="button" data-tno="${esc(t.id)}">Refuser</button><button class="btn rb def" type="button" data-tok="${esc(t.id)}">Accepter</button>`});
   for(const x of f.incoming||[])out.push({t:'ami',act:1,h:`<b>${esc(x.pseudo)}</b> veut être ton ami`,b:`<button class="btn rb" type="button" data-frno="${esc(x.pid)}">Refuser</button><button class="btn rb def" type="button" data-frok="${esc(x.pid)}">Accepter</button>`});
   for(const t of net.tours||[])if(t.st==='run')out.push({t:'tourn',h:`Tournoi de <b>${esc(t.ownerPseudo||'?')}</b> en cours`,b:`<button class="btn rb" type="button" data-ngo="multi">Voir</button>`});
+  {const N=state.resetNote,B=Object.values(state.bonus||{}).reduce((a,b)=>a+b,0);if(N&&N.n&&Date.now()-N.ts<14*864e5)out.push({t:'season',act:B>0?1:0,h:`<b>Nouvelle saison</b> : classeurs remis à zéro (nouvelles valeurs de cartes), tes ${N.n} boosters t'ont été rendus`,b:B>0?`<button class="btn rb def" type="button" data-ngo="packs">Ouvrir</button>`:''});}
   if((CH.unread||{}).dm)out.push({t:'msg',act:1,h:`<b>${CH.unread.dm} message${CH.unread.dm>1?'s':''}</b> privé${CH.unread.dm>1?'s':''} non lu${CH.unread.dm>1?'s':''}`,b:'<button class="btn rb def" type="button" data-ngo="chat">Lire</button>'});
   if(typeof boostOn==='function'&&boostOn())out.push({t:'moral',h:'<b>Moral de champion</b> : +2 à tous tes joueurs',b:''});
   const tw=Object.keys(TOTW.cards||{}).map(id=>players.find(p=>p.id===id)).filter(Boolean);
   if(tw.length)out.push({t:'totw',h:`<b>Team of the Week</b> : ${tw.map(p=>esc(p.name)).join(', ')}`,b:''});
   for(const m of state.matches.slice(0,5))out.push({t:m.win?'win':'loss',h:`${m.win?'Victoire':'Défaite'} ${m.my}-${m.op} contre <b>${esc(m.opp)}</b>${m.tour?' · tournoi':m.friendly?' · amical':''}`,b:m.sh?`<button class="btn rb" type="button" data-nsh="${state.matches.indexOf(m)}">Feuille</button>`:''});
   return out;}
-const NT_IC={msg:'✉',defi:'⚔',tourn:'🏆',ami:'+',moral:'★',totw:'T',win:'V',loss:'D'};
+const NT_IC={season:'↺',msg:'✉',defi:'⚔',tourn:'🏆',ami:'+',moral:'★',totw:'T',win:'V',loss:'D'};
 function renderNotifs(){const L=notifItems();$('nt-list').innerHTML=L.length?L.map(x=>`<div class="nt-row t-${x.t}${x.act?' act':''}"><i>${NT_IC[x.t]||'•'}</i><span>${x.h}</span><span class="nt-b">${x.b}</span></div>`).join(''):'<p class="note" style="margin:0">Rien de nouveau pour l\'instant.</p>';}
 $('nt-list').addEventListener('click',e=>{const q=k=>e.target.closest('[data-'+k+']');let b;
   if(b=q('chok'))answerChal(b.dataset.chok,true,b);else if(b=q('chno'))answerChal(b.dataset.chno,false,b);
@@ -3463,7 +3544,8 @@ function renderExtras(){
   // Boosters bonus
   const types=Object.keys(PACK_TYPES).filter(t=>(state.bonus[t]||0)>0),few=players.filter(p=>!isSigP(p)).length<PACK_SIZE;
   $('bonus-sec').hidden=!types.length;
-  $('bonus-list').innerHTML=types.map(t=>`<button class="bonus-btn t-${t}" type="button" data-bonus="${t}" ${few?'disabled':''}><span><b>${PACK_TYPES[t].l}</b><br><small>Bonus · s'ouvre quand tu veux</small></span><small>×${state.bonus[t]}</small></button>`).join('');
+  const totB=types.reduce((a,t)=>a+state.bonus[t],0);
+  $('bonus-list').innerHTML=(totB>=2?`<button class="btn primary bulk-btn" type="button" id="bulk-btn" ${few?'disabled':''}>Tout ouvrir (${totB} boosters)</button>`:'')+types.map(t=>`<button class="bonus-btn t-${t}" type="button" data-bonus="${t}" ${few?'disabled':''}><span><b>${PACK_TYPES[t].l}</b><br><small>Bonus · s'ouvre quand tu veux</small></span><small>×${state.bonus[t]}</small></button>`).join('');
   // Série
   const n=estNow()||Date.now(),today=parisDay(n),yest=parisDay(n-864e5),st=state.streak;
   const alive=st.lastDay===today||st.lastDay===yest,cur=alive?st.cur:0;
@@ -3476,7 +3558,7 @@ function renderExtras(){
   $('hist').innerHTML=state.history.slice(0,12).map(h=>`<div class="h-item"><div class="h-head"><b>${PACK_TYPES[h.type]?PACK_TYPES[h.type].l:'Booster'}${h.how==='bonus'?'<span class="h-tag">BONUS</span>':h.how==='admin'?'<span class="h-tag">ADMIN</span>':''}</b><span>${fmt.format(new Date(h.ts))}</span></div>
     <div class="h-row">${h.ids.map(id=>{const c=players.find(p=>p.id===id);return c?`<div class="sum-mini">${miniHTML(c)}${(h.fresh||[]).includes(id)?'<span class="newtag">NEW</span>':''}</div>`:'<div class="h-gone" title="Carte supprimée"></div>';}).join('')}</div></div>`).join('');
 }
-$('bonus-list').addEventListener('click',e=>{const b=e.target.closest('[data-bonus]');if(b&&!b.disabled)openPack(b.dataset.bonus);});
+$('bonus-list').addEventListener('click',e=>{if(e.target.closest('#bulk-btn')){bulkOpen();return;}const b=e.target.closest('[data-bonus]');if(b&&!b.disabled)openPack(b.dataset.bonus);});
 
 /* =================== Classeur : pages complètes =================== */
 function fullPages(){const l=binderList(),out=[];for(let k=0;k*PER_PAGE<l.length;k++){const pg=l.slice(k*PER_PAGE,k*PER_PAGE+PER_PAGE);if(pg.length===PER_PAGE&&pg.every(p=>owns(p.id)))out.push(k);}return out;}
@@ -4106,6 +4188,7 @@ async function api(path,body){
 function netMsg(e,who){const c=e&&e.code;who=who?esc(who):'ton pote';
   if(c==='net'||c==='off'||c==='http')return"Pas de connexion au serveur : il faut internet pour jouer contre un pote.";
   if(c==='version')return e.data&&e.data.who==='theirs'?`${who} n'a pas la dernière version de l'appli : il doit la mettre à jour (et l'ouvrir une fois) avant de jouer.`:"Ton appli n'est pas à jour : installe la dernière version pour jouer.";
+  if(c==='update_required')return"Ton appli n'est pas à jour : installe la dernière version.";
   if(c==='used')return"Ce QR a déjà servi pour un match. Demande à ton pote d'en préparer un nouveau.";
   if(c==='cards'){netCards();return e.data&&e.data.who==='theirs'?`L'équipe de ${who} contient des cartes qui ne sont pas dans la liste officielle : il doit rouvrir l'appli avec internet, refaire son équipe si besoin, puis préparer un nouveau QR.`:"Ton équipe contient des cartes qui ne sont pas (ou plus) dans la liste officielle. Ta liste vient d'être mise à jour : vérifie ton équipe et prépare un nouveau QR.";}
   if(c==='unknown_friend')return`${who} n'est pas encore connecté au serveur : il doit ouvrir la dernière version de l'appli avec internet.`;
@@ -4133,7 +4216,7 @@ async function netHello1(){
   ensureProfile();
   if(state.resetPending){try{await api('reset',{pseudo:state.pseudo});state.resetPending=false;await saveState();}catch(e){}}
   try{const w=state.matches.filter(m=>m.win).length,j=await api('hello',{pseudo:state.pseudo,elo:state.elo,w,l:state.matches.length-w});
-    net.on=true;net.err='';netApplyMe(j.me);if(j.chem)setChem(j.chem);onTotw(j.totw);onBuys(j.buys);onMissions(j.missions);netProfSoon();netStartPoll();if(j.inbox)netPoll();netRank(true);netCards();teamSent='';netTeamSoon();
+    net.on=true;net.err='';netApplyMe(j.me);seasonCheck(j.rs);if(j.chem)setChem(j.chem);onTotw(j.totw);onBuys(j.buys);onMissions(j.missions);netProfSoon();netStartPoll();if(j.inbox)netPoll();netRank(true);netCards();teamSent='';netTeamSoon();
     if((state.chemPend||[]).length||j.me.cst!==state.camp.st||j.me.ctr!==state.camp.tries)netCamp();if(isAdmin&&!admTok())renderOfficial();}
   catch(e){net.on=false;net.err=e.code;if(e.code==='net'||e.code==='server'||e.code==='http'){clearTimeout(net.retry);net.retry=setTimeout(netHello,15000);}}
   renderNet();
@@ -4142,7 +4225,7 @@ function netStartPoll(){if(net.timer)return;net.timer=setInterval(()=>{if(!docum
 document.addEventListener('visibilitychange',()=>{if(!document.hidden){if(net.on){netPoll();netCards();if(!$('social').hidden&&soTab==='chat')chatShow();}else if(SERVER)netHello();}});
 async function netPoll(){
   if(!net.on||net.polling)return;net.polling=true;
-  try{const j=await api('inbox',isAdmin&&admTok()?{token:admTok()}:{});netApplyMe(j.me);onPending(j.pending);
+  try{const j=await api('inbox',isAdmin&&admTok()?{token:admTok()}:{});netApplyMe(j.me);seasonCheck(j.rs);onPending(j.pending);
     for(const m of j.matches||[]){if(state.played.includes(m.id)){netAck(m.id);continue;}if(!net.queue.some(x=>x.id===m.id))net.queue.push(m);}
     onChals(j.chals);onFreqs(j.freqs);onTours(j.tours);onTotw(j.totw);onBuys(j.buys);onMissions(j.missions);onUnread(j.unread);renderHud();if(!$('notifs').hidden)renderNotifs();}
   catch(e){if(e.code==='net'){net.on=false;net.err='net';renderNet();clearInterval(net.timer);net.timer=null;setTimeout(netHello,15000);}}
@@ -4229,7 +4312,7 @@ $('frp-go').addEventListener('click',()=>{const x=frCur;$('frp').hidden=true;frC
 let teamSent='',teamTimer=null;
 function netTeamSoon(){clearTimeout(teamTimer);teamTimer=setTimeout(netTeam,1200);}
 async function netTeam(){if(!net.on)return;const ids=teamFull()?teamIds():null,tac=state.tac||{},obj=(divCard('OBJ')||{}).id||null,gym=(divCard('GYM')||{}).id||null,k=JSON.stringify([ids,tac,obj,gym]);if(k===teamSent)return;
-  try{await api('team',{ids,tac,obj,gym});teamSent=k;}catch(e){if(e.code==='cards')netCards();}}
+  try{await api('team',{ids,tac,obj,gym,rs:state.rs||0});teamSent=k;}catch(e){if(e.code==='cards')netCards();}}
 let defiBusy=false;
 async function challenge(pid,btn){
   if(defiBusy)return;if(!teamFull()){toast("Complète ton équipe dans l'onglet Équipe pour défier tes amis.");return;}
@@ -4582,6 +4665,7 @@ async function openProfile(pid,btn){
       <div class="pf-grid">
         ${tile('Élo',row('Actuel',P.elo)+row('Meilleur atteint',j.bestElo)+row('Classement',`${j.rank.pos}<small> / ${j.rank.total}</small>`))}
         ${tile('Bilan',row('Défis classés',n?`${R.w} V · ${R.l} D`:'aucun')+row('Victoires',n?Math.round(100*R.w/n)+' %':'–')+row('Meilleure série',R.best+(R.best>1?' victoires':R.best?' victoire':''))+row('Série en cours',R.cur))}
+        ${j.s0?tile('Saison 0',row('Élo final',j.s0.elo)+row('Meilleur atteint',j.s0.best)+row('Défis classés',j.s0.w+j.s0.l?`${j.s0.w} V · ${j.s0.l} D`:'aucun')):''}
         ${tile('Trophées',`<div class="pf-tro">${TROPHY}<b>${j.tours.won}</b><span>tournoi${j.tours.won>1?'s':''} gagné${j.tours.won>1?'s':''}</span></div>`+row('Finales jouées',j.tours.finals)+row('Tournois joués',j.tours.played)+row('Campagne',camp),1)}
         ${tile('Collection',coll,1)}
         ${sigShow?tile('Vitrine des Signature',sigShow,1):''}
